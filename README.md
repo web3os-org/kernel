@@ -80,10 +80,12 @@ From here, simply connect to [https://localhost:8080](https://localhost:8080) an
 Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js) offers far more power.
 
 To run a web3os script: `sh /path/to/script.sh`
-Or `window.kernel.executeScript('/path/to/script.sh')`
+
+- Or `window.kernel.executeScript('/path/to/script.sh')`
 
 To run a Javascript script: `eval /path/to/script.js`
-Or `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
+
+- Or `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
 
 ## w3 Packages
 
