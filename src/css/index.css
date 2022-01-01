@@ -1,0 +1,50 @@
+@import './rotate.css';
+@import 'https://cdnjs.cloudflare.com/ajax/libs/hint.css/2.7.0/hint.min.css';
+
+html {
+  height: 100vh;
+}
+
+html {
+  --mdc-theme-background: #121212;
+  --mdc-theme-surface: #121212;
+  --mdc-theme-primary: #028550;
+  --mdc-theme-secondary: #22f;
+  --mdc-theme-on-primary: #eee;
+  --mdc-dialog-heading-ink-color: #eee;
+  --mdc-dialog-content-ink-color: #eee;
+  --color-danger: #c91d12;
+  --mdc-dialog-z-index: 10000;
+}
+
+body {
+  height: 100%;
+  background-color: #121212;
+  overflow: hidden;
+  width: 100vw;
+  margin: 0;
+  padding: 0.5rem;
+  position: fixed;
+}
+
+#terminal {
+  display: none;
+}
+
+#terminal, .terminal {
+  width: 100% !important;
+  height: 98% !important;
+}
+
+.CodeMirror {
+  border-radius: 5px;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.winbox.max {
+  width: 100vw !important;
+  height: 100vh !important;
+}

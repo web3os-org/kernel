@@ -1,0 +1,131 @@
+#web3os-desktop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100%;
+  background-color: #121212;
+}
+
+#web3os-desktop-wallpaper {
+  width: 100%;
+  height: 100%;
+  transition: opacity 1.25s;
+}
+
+#web3os-desktop-menu-button {
+  color: white;
+  font-size: 2.5rem;
+  position: absolute;
+  bottom: 1em;
+  right: 1rem;
+  padding: 0.5rem;
+  background: green;
+  border-radius: 50%;
+  transition: transform 0.5s, background-color 0.25s;
+}
+
+#web3os-desktop-menu-button:hover {
+  cursor: pointer;
+  transform: rotate(45deg);
+  background-color: darkgreen;
+}
+
+#web3os-desktop-shell-button {
+  opacity: 0;
+  color: green;
+  font-size: 2.5rem;
+  position: absolute;
+  bottom: 3em;
+  right: 1rem;
+  padding: 0.5rem;
+  background: #121212;
+  border-radius: 50%;
+  transition: transform 0.5s, background-color 0.25s, opacity 1s;
+}
+
+#web3os-desktop-shell-button:hover {
+  cursor: pointer;
+  transform: rotate(45deg);
+  background-color: #080808;
+}
+
+#web3os-desktop-exit-button {
+  opacity: 0;
+  color: white;
+  font-size: 2.5rem;
+  position: absolute;
+  bottom: 1em;
+  right: 2.5em;
+  padding: 0.5rem;
+  background: rgb(45, 18, 71);
+  border-radius: 50%;
+  transition: transform 0.5s, background-color 0.25s, opacity 1s;
+}
+
+#web3os-desktop-exit-button:hover {
+  cursor: pointer;
+  transform: rotate(45deg);
+  background-color: #500f4a;
+}
+
+#web3os-desktop-launcher {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  gap: 1rem;
+  margin: 2rem;
+}
+
+.web3os-desktop-launcher-entry {
+  min-width: 75px;
+  text-align: center;
+  padding: 1.25rem;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: transform 0.5s;
+}
+
+.web3os-desktop-launcher-entry:hover {
+  transform: scale(1.25);
+  cursor: pointer;
+}
+
+.web3os-desktop-launcher-entry h1 {
+  font-size: 1.5rem;
+}
+
+.web3os-desktop-launcher-entry img {
+  width: 64px;
+  /* temporary hack; famous last words */
+  filter: invert(1);
+}
+
+#web3os-desktop-runner {
+  display: flex;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 1rem;
+  transform: translate(-50%, -50%);
+  background-color: #121212;
+  width: 60%;
+  height: 120px;
+  border-radius: 10px;
+  z-index: 200000;
+}
+
+#web3os-desktop-runner-input {
+  width: 98%;
+  margin: auto;
+  color: #333;
+  height: 64px;
+  font-size: 48px;
+  border-radius: 10px;
+}
+
+#web3os-desktop > mwc-icon {
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

@@ -1,0 +1,92 @@
+{
+  "name": "@web3os-org/kernel",
+  "description": "A developer-friendly ecosystem of apps designed to build a crypto-focused web-based operating system",
+  "homepage": "https://web3os.sh",
+  "funding": "https://github.com/sponsors/mathiscode",
+  "version": "0.1.14",
+  "license": "MIT",
+  "main": "src/index.js",
+  "author": {
+    "name": "Jay Mathis",
+    "email": "code@mathis.network",
+    "url": "https://github.com/mathiscode"
+  },
+  "contributors": [
+    {
+      "name": "Gary Walker",
+      "email": "gwalker@mathis.network",
+      "url": "https://github.com/garyjwalker"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web3os-org/kernel"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16.13.0",
+    "npm": ">=8.1.0"
+  },
+  "scripts": {
+    "start": "cross-env NODE_ENV=development webpack serve",
+    "watch": "webpack --watch",
+    "build": "webpack build",
+    "clean": "rimraf dist/*"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "babel-loader": "^8.2.3",
+    "chai": "^4.3.4",
+    "cross-env": "^7.0.3",
+    "crypto-browserify": "^3.12.0",
+    "css-loader": "^6.5.1",
+    "esm": "^3.2.25",
+    "html-webpack-plugin": "^5.5.0",
+    "jsdom": "^19.0.0",
+    "jsdom-global": "^3.0.2",
+    "rimraf": "^3.0.2",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.65.0",
+    "webpack-bundle-analyzer": "^4.5.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.7.1"
+  },
+  "dependencies": {
+    "@material/mwc-button": "^0.25.3",
+    "@material/mwc-dialog": "^0.25.3",
+    "@material/mwc-icon-button": "^0.25.3",
+    "@material/mwc-snackbar": "^0.25.3",
+    "@metamask/detect-provider": "^1.2.0",
+    "abort-controller": "^3.0.0",
+    "animate.css": "^4.1.1",
+    "ansi-colors": "^4.1.1",
+    "arg": "^5.0.1",
+    "browserfs": "^1.4.3",
+    "bytes": "^3.1.1",
+    "canvas-confetti": "^1.4.0",
+    "codemirror": "^5.64.0",
+    "columnify": "^1.5.4",
+    "ethers": "^5.5.1",
+    "figlet": "^1.5.2",
+    "https-browserify": "^1.0.0",
+    "ipfs-core": "^0.12.2",
+    "monaco-editor": "^0.31.1",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "shell-quote": "^1.7.3",
+    "simple-uniswap-sdk": "^3.6.2",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.0",
+    "web3": "^1.6.1",
+    "web3modal": "^1.9.4",
+    "winbox": "^0.2.1",
+    "xterm": "^4.15.0",
+    "xterm-addon-attach": "^0.6.0",
+    "xterm-addon-fit": "^0.6.0-beta.6",
+    "xterm-addon-web-links": "^0.4.0"
+  }
+}
