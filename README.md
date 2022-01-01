@@ -38,7 +38,7 @@ The project is still very young, and proper documentation is Coming Soon™.
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Developer-friendly: apps are just HTML/CSS/JS
 
-## Alpha Footage [![Watchers](https://img.shields.io/youtube/views/JsyJ8mbWMxc?style=social)](https://github.com/web3os-org/kernel)
+## Alpha Footage [![Watchers](https://img.shields.io/youtube/views/JsyJ8mbWMxc?style=social)](https://youtu.be/JsyJ8mbWMxc)
 
 Here's a quick video showcasing a few of the features: [web3os alpha demo](https://youtu.be/JsyJ8mbWMxc)
 
