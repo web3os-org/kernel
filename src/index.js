@@ -140,7 +140,6 @@ export async function dialog (options = {}) {
 }
 
 export async function execute (cmd, options = {}) {
-  console.log({ cmd, options })
   options.doPrompt = options.doPrompt || false
   let command = bin[cmd.split(' ')[0]]
   const term = options.terminal || window.terminal

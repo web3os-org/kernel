@@ -4,20 +4,17 @@ import { ethers as Ethers } from 'ethers'
 import { parse as cliParse } from 'shell-quote'
 
 import Web3 from 'web3'
-import Web3Modal from 'web3modal'
+// import Web3Modal from 'web3modal'
 
 import chains from './chains.json'
 
-// import ethIcon from '@fusion-icons/core/icons/coins/ETH_1027.svg'
-
 export const name = 'account'
 export const version = '0.1.1'
-// export const icon = ethIcon
 export const description = 'Manage everything related to your web3 wallet'
 export const help = `
   Usage:
     account                ${colors.gray('Display your wallet address, or connects if none')}
-    account <command>      ${colors.gray('Connect to your wallet')}
+    account <command>      ${colors.gray('Perform an account action')}
 
   Commands:
     connect                ${colors.gray('Connect to your wallet')}
@@ -78,16 +75,17 @@ export const account = {
 }
 
 export async function connect (args) {
-  const modal = new Web3Modal({
-    cacheProvider: true
-  })
+  // Not ready to implement this yet
+  // const modal = new Web3Modal({
+  //   cacheProvider: true
+  // })
 
   try {
-    provider = await modal.connect()
+    provider = window.web3.currentProvider
     web3 = new Web3(provider)
     window.web3 = web3
   } catch {
-    throw new Error(colors.danger('Failed to connect to web3 provider'))
+    throw new Error(colors.danger('Failed to connect to web3 provider. Do you have https://metamask.io installed?'))
   }
 
   account.address = (await web3.eth.getAccounts())[0]
