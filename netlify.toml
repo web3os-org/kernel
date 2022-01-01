@@ -1,0 +1,13 @@
+[build]
+  command = "yarn build"
+  publish = "dist"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    SameSite = "Lax"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "0"
+    X-Content-Type-Options = "nosniff"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' fastly.net *.fastly.net lr-ingest.io *.lr-ingest.io cloudfront.net *.cloudfront.net googletagmanager.com *.googletagmanager.com; worker-src 'self' blob: data: lr-ingest.io *.lr-ingest.io; prefetch-src 'self'; connect-src 'self' r.lr-in.com lr-ingest.io *.lr-ingest.io google-analytics.com *.google-analytics.com; img-src 'self' *.fastly.net fastly.net data: cloudfront.net *.cloudfront.net cloudinary.com *.cloudinary.com; font-src 'unsafe-inline' gstatic.com *.gstatic.com cloudfront.net *.cloudfront.net; manifest-src 'self'; style-src 'unsafe-inline' googleapis.com *.googleapis.com cloudfront.net *.cloudfront.net; frame-ancestors 'self'; form-action 'self'; script-src-elem 'self' 'unsafe-inline' cdn.lr-in.com lr-ingest.io r.lr-in.com *.lr-ingest.io cloudfront.net *.cloudfront.net googletagmanager.com *.googletagmanager.com"
