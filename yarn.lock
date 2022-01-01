@@ -10027,10 +10027,9 @@ wildcard@^2.0.0:
   resolved "https://registry.npmjs.org/wildcard/-/wildcard-2.0.0.tgz"
   integrity sha512-JcKqAHLPxcdb9KM49dufGXn2x3ssnfjbcaQdLlfZsL9rH9wgDQjUtDxbo8NE0F6SFvydeu1VhZe7hZuHsB2/pw==
 
-winbox@^0.2.1:
+"winbox@https://github.com/web3os-org/winbox.git#web3os":
   version "0.2.1"
-  resolved "https://registry.npmjs.org/winbox/-/winbox-0.2.1.tgz"
-  integrity sha512-K3PY+y+aWpkCpECGF2TqSi4w+OT+cuJHWbOKBjVerpexmdC6Is5m4y0gZ9rbxU2K+GszE1nH+d2okMAQTG05hg==
+  resolved "https://github.com/web3os-org/winbox.git#d1088d1ec744a448e71f44eb9ec61bad87f936d5"
 
 word-wrap@~1.2.3:
   version "1.2.3"

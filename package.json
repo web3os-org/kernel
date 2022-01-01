@@ -89,7 +89,7 @@
     "url": "^0.11.0",
     "web3": "^1.6.1",
     "web3modal": "^1.9.4",
-    "winbox": "^0.2.1",
+    "winbox": "https://github.com/web3os-org/winbox.git#web3os",
     "xterm": "^4.15.0",
     "xterm-addon-attach": "^0.6.0",
     "xterm-addon-fit": "^0.6.0-beta.6",

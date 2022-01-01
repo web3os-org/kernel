@@ -9,7 +9,7 @@ import { create as createTerminal } from '../../terminal'
 
 export const name = 'desktop'
 export const version = '1.0.0'
-export const description = 'W3OS Desktop'
+export const description = 'Web3OS Desktop'
 export const help = `
   Usage:
     desktop <options>       Start the Crypotoba.sh Desktop

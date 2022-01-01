@@ -10,13 +10,21 @@
 [![GitHub license](https://img.shields.io/github/license/web3os-org/kernel.svg?color=blue)](https://github.com/web3os-org/kernel/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](https://github.com/web3os-org/kernel/compare)
 [![Contributors](https://img.shields.io/github/contributors/web3os-org/kernel)](https://github.com/web3os-org/kernel/graphs/contributors)
-[![Known Vulnerabilities](https://snyk.io/test/github/web3os-org/kernel/badge.svg?targetFile=package.json)](https://snyk.io/test/github/web3os-org/kernel?targetFile=package.json)
+[![Discord](https://img.shields.io/discord/926916877689700373)](https://discord.gg/yA4M83fXn9)
 [![Observatory Grade](https://img.shields.io/mozilla-observatory/grade/web3os.sh?publish)](https://observatory.mozilla.org/analyze/web3os.sh)
 
+[![Twitter](https://img.shields.io/twitter/follow/web3os?style=social)](https://twitter.com/web3os)
+[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/web3os?style=social)](https://reddit.com/r/web3os)
+[![Facebook](https://img.shields.io/badge/Facebook-web3os-blue?style=social)](https://www.facebook.com/Web3os-111014368120117)
+[![Followers](https://img.shields.io/github/followers/web3os-org?style=social)](https://github.com/web3os-org)
+[![Watchers](https://img.shields.io/github/watchers/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
+[![Stars](https://img.shields.io/github/stars/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
 
 A developer-friendly ecosystem of apps designed to build a crypto-focused web-based operating system. The goal is for the entire system to run within any modern browser, while having the capability to connect to backend systems for more features.
 
 The project is still very young, and proper documentation is Coming Soon™.
+
+---
 
 ## Features
 
@@ -27,7 +35,7 @@ The project is still very young, and proper documentation is Coming Soon™.
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Developer-friendly: apps are just HTML/CSS/JS
 
-## Alpha Footage
+## Alpha Footage [![Watchers](https://img.shields.io/youtube/views/JsyJ8mbWMxc?style=social)](https://github.com/web3os-org/kernel)
 
 Here's a quick video showcasing a few of the features: [web3os alpha demo](https://youtu.be/JsyJ8mbWMxc)
 
@@ -49,7 +57,7 @@ Do not rely on it to keep anything safe, and never paste commands you don't unde
 - Show your ETH address: `account`
 - Check native coin balance: `account balance`
 - Check token balance: `account balance USDC`
-- Learn more about commands: `help account`
+- Learn more about commands: `help command`
 - Run the screensaver: `screensaver`
 - Fire the Confetti Gun: `confetti`
 
@@ -75,6 +83,8 @@ To run a Javascript script: `eval /path/to/script.js`
 Or `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
 
 ## w3 Packages
+
+**The packaging system is not yet usable**
 
 Packages are installed using `wpm`, the web3os package manager.
 

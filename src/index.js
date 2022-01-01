@@ -186,7 +186,7 @@ export async function executeScript (filename, options = {}) {
 
 export async function autostart () {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'account connect\ndesktop\n') // Setup default autostart.sh
+    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'md docs/README.md\naccount connect\ndesktop\n') // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)

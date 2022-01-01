@@ -25,6 +25,8 @@ export async function run (term, filename) {
 
   kernel.appWindow({
     title: filename,
-    mount: wrapper
+    mount: wrapper,
+    width: '70%',
+    height: '70%'
   })
 }

@@ -65,6 +65,10 @@ a:visited {
   height: 100vh !important;
 }
 
+.wb-title {
+  text-transform: none !important;
+}
+
 .ctxmenu {
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
