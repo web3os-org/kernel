@@ -16,6 +16,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/web3os?style=social)](https://twitter.com/web3os)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/web3os?style=social)](https://reddit.com/r/web3os)
 [![Facebook](https://img.shields.io/badge/Facebook-web3os-blue?style=social)](https://www.facebook.com/Web3os-111014368120117)
+
 [![Followers](https://img.shields.io/github/followers/web3os-org?style=social)](https://github.com/web3os-org)
 [![Watchers](https://img.shields.io/github/watchers/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
 [![Stars](https://img.shields.io/github/stars/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
