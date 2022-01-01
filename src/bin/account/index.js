@@ -54,7 +54,7 @@ export const tokenLists = {
 
 export function setPrompt (terminal) {
   terminal = terminal || term || window.terminal
-  const displayAddress = `${colors.gray('0x')}${colors.primary(account.address.substr(2, 4))}${colors.gray('..')}${colors.primary(account.address.substr(-4, 4))}`
+  const displayAddress = `${colors.gray('0x')}${colors.primary(account.address?.substr(2, 4))}${colors.gray('..')}${colors.primary(account.address?.substr(-4, 4))}`
   terminal.promptFormat = `(${colors.warning(account.chain.chain)})[${colors.info(`0x${account.chainId.toString(16)}`)}]<${displayAddress}>:{cwd}${colors.green('#')} `
 }
 
