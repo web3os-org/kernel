@@ -1,11 +1,12 @@
 import arg from 'arg'
 import colors from 'ansi-colors'
 
-import { default as appIcon } from './icon.svg'
+// Rethinking how to approach the icon situation
+// import { default as appIcon } from './icon.svg'
 
 export const name = 'screensaver'
 export const version = '1.0.0'
-export const icon = appIcon
+// export const icon = appIcon
 export const description = 'web3os Screensaver'
 export const screensavers = ['blank', 'matrix']
 export const help = `

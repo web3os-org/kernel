@@ -158,7 +158,7 @@ export async function start (args) {
       const extension = fileParts.ext
 
       if (stat.isDirectory()) {
-        return alert('explorer!')
+        return kernel.execute(`files ${data.location}`)
       }
 
       switch (extension) {
@@ -291,6 +291,7 @@ export async function toggleLauncher () {
     return
   }
 
+  // TODO: Load this from somewhere
   const launcherApps = [
     { name: 'Files', icon: kernel.bin.files?.icon, description: kernel.bin.files?.description, run: () => kernel.execute('files /desktop')},
     { name: 'Screensaver', icon: kernel.bin.screensaver?.icon, description: kernel.bin.screensaver?.description, run: () => kernel.execute('screensaver') },
