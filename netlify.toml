@@ -8,6 +8,6 @@
     SameSite = "Lax"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "SAMEORIGIN"
-    X-XSS-Protection = "0"
+    X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Content-Security-Policy = "script-src 'self' 'unsafe-eval'; object-src 'self'"
