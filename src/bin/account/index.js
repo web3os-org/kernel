@@ -26,6 +26,8 @@ export const help = `
 
 `
 
+export const spec = {}
+
 export let web3
 export let term
 export let ethers
@@ -33,10 +35,6 @@ export let signer
 export let provider
 export let tokens = {}
 export const allChains = chains
-
-export const spec = {
-  
-}
 
 export const tokenLists = {
   1: 'https://tokens.coingecko.com/uniswap/all.json',
