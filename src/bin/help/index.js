@@ -16,7 +16,7 @@ export async function run (term, context) {
   if (context !== '') return term.log(showHelp(term, context))
 
   log('')
-  log(colors.underline.info('web3os BIOS Help:'))
+  log(colors.underline.info('Web3os Help:'))
   log('')
   log(`web3os has many commands, which you can list by typing ${colors.green('ls /bin')}`)
   log(colors.muted('Learn more about web3os at https://docs.web3os.sh'))

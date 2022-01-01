@@ -8,8 +8,11 @@ import Web3Modal from 'web3modal'
 
 import chains from './chains.json'
 
+// import ethIcon from '@fusion-icons/core/icons/coins/ETH_1027.svg'
+
 export const name = 'account'
 export const version = '0.1.1'
+// export const icon = ethIcon
 export const description = 'Manage everything related to your web3 wallet'
 export const help = `
   Usage:
@@ -219,7 +222,8 @@ export async function checkBalance (args) {
 }
 
 export async function sign (args) {
-  const message = args._[1]
+  let message = args._[1]
+  message = message.replace(/\\n/g, '\n')
   const result = await signer.signMessage(message)
   term.log(result)
   return result
@@ -244,7 +248,7 @@ export async function run (terminal, context) {
       return checkBalance(args)
     case 'sign':
       return sign(args)
-    case '':
+    case undefined:
       return displayOrConnect(args)
     default:
       throw new Error('account: invalid command')

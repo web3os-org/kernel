@@ -1,4 +1,4 @@
-import path from 'path-browserify'
+import path from 'path'
 import colors from 'ansi-colors'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'

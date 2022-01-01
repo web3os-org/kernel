@@ -1,4 +1,4 @@
-import path from 'path-browserify'
+import path from 'path'
 import colors from 'ansi-colors'
 import CodeMirror from 'codemirror'
 
@@ -94,7 +94,7 @@ export async function run (terminal, filename) {
     } catch (err) {
       console.error(err)
       log(colors.danger(err.message))
-      kernel.dialog({ heading: 'Error Saving File', content: err.message })
+      kernel.dialog({ title: 'Error Saving File', text: err.message })
     }
   }
 
@@ -108,11 +108,11 @@ export async function run (terminal, filename) {
       component: `<mwc-button icon="help_outline">Help</mwc-button>`,
       action: () => {
         kernel.dialog({
-          heading: 'Editor Documentation',
-          content: `
+          title: 'Editor Documentation',
+          html: `
             <p>
               <strong>Keyboard Shortcuts:</strong>
-              <ul>
+              <ul style='text-align:left'>
                 <li>Ctrl+Q: Quit editor</li>
                 <li>Ctrl+S: Save file</li>
                 <li>Ctrl+F: Search</li>

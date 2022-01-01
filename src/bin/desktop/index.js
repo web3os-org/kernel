@@ -1,5 +1,7 @@
 import arg from 'arg'
+import path from 'path'
 import colors from 'ansi-colors'
+import { ctxmenu } from 'ctxmenu'
 
 import './index.css'
 import { default as defaultAppIcon } from '../../assets/default-app-icon.svg'
@@ -69,11 +71,9 @@ export async function launchTerminal (options = {}) {
 
 export async function start (args) {
   terminal.log('Starting web3os.sh Desktop..')
-  console.log(args)
 
   desktop = document.createElement('div')
   desktop.id = 'web3os-desktop'
-  // desktop.style.background = `url(${wallpaper}) no-repeat`
 
   const wallpaper = document.createElement('img')
   wallpaper.id = 'web3os-desktop-wallpaper'
@@ -86,13 +86,104 @@ export async function start (args) {
     wallpaper.addEventListener('load', () => { wallpaper.style.opacity = 1 })
   }
 
+  const fileLayer = document.createElement('div')
+  fileLayer.id = 'web3os-desktop-file-layer'
+
+  const files = kernel.fs.readdirSync('/desktop')
+
+  files.forEach(filename => {
+    const file = {
+      name: filename,
+      location: path.resolve('/desktop', filename),
+      type: kernel.fs.statSync(path.resolve('/desktop', filename)).isDirectory() ? 'dir' : 'file'
+    }
+  
+    const entry = document.createElement('div')
+    const icon = document.createElement('mwc-icon')
+    const title = document.createElement('h1')
+    
+    let fileIcon
+    switch (file.type) {
+      case 'dir':
+        fileIcon = 'folder'
+        break
+      default:
+        fileIcon = 'text_snippet'
+    }
+
+    entry.classList.add('web3os-desktop-entry')
+
+    icon.textContent = fileIcon
+    title.textContent = file.name
+    entry.dataset.file = JSON.stringify(file)
+    icon.dataset.file = entry.dataset.file
+    title.dataset.file = entry.dataset.file
+
+    entry.appendChild(icon)
+    entry.appendChild(title)
+    fileLayer.appendChild(entry)
+    
+    entry.draggable = true
+    entry.addEventListener('dragend', e => {
+      // console.log('dragend', e)
+      e.target.style.position = 'absolute'
+      e.target.style.left = e.x + 'px'
+      e.target.style.top = e.y + 'px'
+    })
+
+    const entryContextMenu = [
+      {
+        text: 'Edit',
+        action: () => kernel.execute(`edit ${file.location}`)
+      },
+      { isDivider: true },
+      {
+        text: 'Anchor',
+        href: '#',
+        disabled: true
+      }
+    ]
+
+    entry.addEventListener('contextmenu', e => {
+      e.preventDefault()
+      e.stopPropagation()
+      ctxmenu.show(entryContextMenu, e.target)
+    })
+
+    entry.addEventListener('click', e => {
+      const { file } = e.target.dataset
+      const data = JSON.parse(file)
+      const stat = kernel.fs.statSync(data.location)
+      const fileParts = path.parse(data.name)
+      const extension = fileParts.ext
+
+      if (stat.isDirectory()) {
+        return alert('explorer!')
+      }
+
+      switch (extension) {
+        case '.sh':
+          return kernel.executeScript(data.location)
+        case '.js':
+          return kernel.execute(`eval ${data.location}`)
+        case '.txt':
+          return kernel.execute(`edit ${data.location}`)
+        case '.md':
+          return kernel.execute(`md ${data.location}`)
+        default:
+          kernel.execute(`alert I'm not sure how to handle this file!`)
+      }
+    })
+  })
+
   desktop.appendChild(wallpaper)
+  desktop.appendChild(fileLayer)
 
   const menuButton = document.createElement('mwc-icon')
   menuButton.id = 'web3os-desktop-menu-button'
   menuButton.ariaLabel = 'Open the Launcher'
   menuButton.textContent = 'widgets'
-  menuButton.classList.add('animate__animated', 'animate__bounce', 'animate__slow', 'animate__repeat-2')
+  menuButton.classList.add('animate__animated', 'animate__bounce', 'animate__slow')
   menuButton.classList.add('hint--left', 'hint--success')
   
   menuButton.addEventListener('animationend', () => menuButton.classList.remove('animate__animated', 'animate__bounce', 'animate__slow'))
@@ -153,7 +244,19 @@ export async function start (args) {
   document.querySelector('#terminal').style.display = 'none'
   document.body.appendChild(desktop)
 
-  // launchTerminal()
+  const desktopContextMenu = [
+    {
+      text: 'New File',
+      action: () => {}
+    }
+  ]
+
+  desktop.addEventListener('contextmenu', e => {
+    e.preventDefault()
+    e.stopPropagation()
+    // console.log(e)
+    ctxmenu.show(desktopContextMenu, e)
+  })
 }
 
 export async function toggleRunner () {
@@ -189,11 +292,13 @@ export async function toggleLauncher () {
   }
 
   const launcherApps = [
+    { name: 'Files', icon: kernel.bin.files?.icon, description: kernel.bin.files?.description, run: () => kernel.execute('files /desktop')},
     { name: 'Screensaver', icon: kernel.bin.screensaver?.icon, description: kernel.bin.screensaver?.description, run: () => kernel.execute('screensaver') },
     { name: 'Browser', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www about:blank')},
     { name: 'Instacalc', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://instacalc.com') },
     { name: 'Thesaurus', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://thesaurus.com') },
-    { name: 'Dictionary', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://dictionary.com') }
+    { name: 'Dictionary', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://dictionary.com') },
+    { name: 'Scrolller', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://scrolller.com') }
   ]
 
   const template = document.createElement('div')
@@ -223,7 +328,7 @@ export async function toggleLauncher () {
         run()
       } catch (err) {
         kernel.log(err.message)
-        kernel.dialog({ content: colors.unstyle(err.message) })
+        kernel.dialog({ icon: 'error', title: 'Error', text: colors.unstyle(err.message) })
       } finally {
         launcher.window.close()
       }

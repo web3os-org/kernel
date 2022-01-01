@@ -8,22 +8,24 @@
   Entry-point of the web3os kernel
 */
 
-import path from 'path-browserify'
+import path from 'path'
 import bytes from 'bytes'
 import colors from 'ansi-colors'
 import figlet from 'figlet'
 import figletFont from 'figlet/importable-fonts/Graffiti'
 import columnify from 'columnify'
 import { AttachAddon } from 'xterm-addon-attach'
+import sweetalert from 'sweetalert2'
 
 import 'animate.css'
+import './themes/default/sweetalert2.css'
 import './css/index.css'
 
+import README from '../README.md'
 import AppWindow from './app-window'
 import pkg from '../package.json'
 import theme from './themes/default/index.js'
 
-import '@material/mwc-dialog'
 import '@material/mwc-button'
 import '@material/mwc-icon-button'
 import '@material/mwc-snackbar'
@@ -32,7 +34,7 @@ const figletFontName = 'Graffiti'
 
 // May be overridden by BUILTIN_APPS env variable using CSV
 const builtinApps = [
-  'account', 'confetti', 'desktop', 'edit', 'gibson', 'help', 'ipfs', 'screensaver', 'view', 'wpm', 'www'
+  'account', 'confetti', 'desktop', 'edit', 'files', 'gibson', 'help', 'ipfs', 'md', 'screensaver', 'view', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
@@ -51,14 +53,15 @@ let gibsonSocket
 colors.theme(theme)
 
 const showBootIntro = () => {
-  log(colors.info(`Made with ${colors.red('♥')} by Jay Mathis`))
-  log(colors.heading.success.bold(`\n\n      web3os kernel v${pkg.version}    `))
+  log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
+  log(colors.heading.success.bold(`\n\n     web3os kernel v${pkg.version}     `))
   log(colors.warning('⚠            ALPHA           ⚠\n'))
   log(colors.warning('If things get wacky, just reload!'))
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
-  log(colors.primary(`Type ${colors.bold('help')} for help`))
+  log(colors.danger(`Type ${colors.bold('help')} for help`))
   log(colors.info(`Type ${colors.bold('desktop')} to launch the desktop`))
+  log(colors.primary(`Type ${colors.bold('account balance')} to view your account balance`))
   log(colors.success(`Type ${colors.bold('ls /bin')} to see all commands`))
   log(colors.magenta(`Type ${colors.bold('confetti')} to fire the confetti gun`))
 
@@ -126,62 +129,18 @@ export function appWindow (options) {
   return new AppWindow(options)
 }
 
-export async function dialog ({ id, heading = '', content = '', buttons, disableEscape = false, disableScrimClick = false, fullWidth = false, onOpen = () => {}, onClose = () => {} }) {
-  buttons = buttons || [
-    { component: `<mwc-button class="dialogButton" slot="primaryAction" dialogAction="ok" raised>OK</mwc-button>` }
-  ]
-
-  const dialog = document.createElement('mwc-dialog')
-  if (id) dialog.setAttribute('id', id)
-  dialog.setAttribute('open', true)
-  dialog.setAttribute('heading', heading)
-  if (disableEscape) dialog.setAttribute('escapeKeyAction', '')
-  if (disableScrimClick) dialog.setAttribute('scrimClickAction', '')
-
-  const container = document.createElement('div')
-  if (typeof content === 'string') container.innerHTML = content
-  else container.appendChild(content)
-  dialog.append(container)
-
-  document.body.appendChild(dialog)
-
-  const addonButtons = []
-
-  buttons.forEach(btn => {
-    const component = document.createElement('div')
-    component.innerHTML = btn.component
-
-    if (btn.action) component.firstChild.addEventListener('click', e => btn.action(dialog, e))
-    if (btn.style) component.firstChild.style = btn.style
-
-    const slot = component.firstChild.getAttribute('slot')
-    if (!slot) {
-      addonButtons.push(component.firstChild)
-    } else {
-      dialog.appendChild(component.firstChild)
-    }
+export async function dialog (options = {}) {
+  return sweetalert.fire({
+    heightAuto: false,
+    denyButtonColor: 'red',
+    confirmButtonColor: 'green',
+    customClass: { container: 'web3os-kernel-dialog-container' },
+    ...options
   })
-
-  dialog.addEventListener('opened', () => {
-    const footer = dialog.shadowRoot.querySelector('footer#actions')
-    addonButtons.forEach(btn => footer.prepend(btn))
-    onOpen()
-  })
-
-  dialog.addEventListener('closed', () => {
-    onClose()
-    dialog.remove()
-    terminal.focus()
-  })
-
-  if (fullWidth) {
-    const shadowStyles = document.createElement('style')
-    shadowStyles.innerHTML = '.mdc-dialog__container, .mdc-dialog__surface { width: 100%; }'
-    dialog.shadowRoot.appendChild(shadowStyles)
-  }
 }
 
 export async function execute (cmd, options = {}) {
+  console.log({ cmd, options })
   options.doPrompt = options.doPrompt || false
   let command = bin[cmd.split(' ')[0]]
   const term = options.terminal || window.terminal
@@ -228,7 +187,7 @@ export async function executeScript (filename, options = {}) {
 
 export async function autostart () {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'account connect\n\n') // Setup default autostart.sh
+    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'account connect\ndesktop\n') // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)
@@ -242,9 +201,10 @@ export async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export async function download (filename) {
+export async function download (term, context) {
+  const filename = context
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
-  filename = path.resolve(window.terminal.cwd, filename)
+  filename = path.resolve(term.cwd, filename)
   const data = fs.readFileSync(filename)
   const file = new File([data], path.parse(filename).base, { type: 'application/octet-stream' })
   const url = URL.createObjectURL(file)
@@ -254,7 +214,7 @@ export async function download (filename) {
   link.click()
 }
 
-export async function upload () {
+export async function upload (term, context) {
   const input = document.createElement('input')
   input.setAttribute('type', 'file')
   input.setAttribute('multiple', true)
@@ -266,7 +226,7 @@ export async function upload () {
       reader.readAsArrayBuffer(file)
       reader.onload = () => {
         const buffer = BrowserFS.Buffer.from(reader.result)
-        const filepath = path.resolve(terminal.cwd, file.name)
+        const filepath = path.resolve(term.cwd, file.name)
         fs.writeFileSync(filepath, buffer)
         kernel.snackbar({ labelText: `Uploaded ${filepath}` })
       }
@@ -306,7 +266,8 @@ async function setupFilesystem () {
     options: {
       '/': { fs: 'LocalStorage' },
       '/bin': { fs: 'InMemory' },
-      '/tmp': { fs: 'InMemory' }
+      '/tmp': { fs: 'InMemory' },
+      '/docs': { fs: 'InMemory' }
     }
   }, err => {
     if (err) {
@@ -321,6 +282,10 @@ async function setupFilesystem () {
       if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
       if (!fs.existsSync('/config')) fs.mkdirSync('/config')
       if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', '[]')
+
+      // Populate /docs
+      const docs = fs.readdirSync('/docs')
+      if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
 
       const dragenter = e => { e.stopPropagation(); e.preventDefault() }
       const dragover = e => { e.stopPropagation(); e.preventDefault() }
@@ -363,11 +328,7 @@ async function setupFilesystem () {
       }}
 
       bin.upload = { description: 'Upload files', run: upload }
-      bin.download = { args: ['filename'], description: 'Download a file', run: (term, context) => {
-        const filename = path.resolve(term.cwd, context)
-        if (!fs.existsSync(filename)) throw new Error(`download: ${filename}: No such file`)
-        kernel.download(filename)
-      }}
+      bin.download = { args: ['filename'], description: 'Download a file', run: download }
 
       bin.mkdir = { args: ['path'], description: 'Create a directory', run: (term, context) => {
         if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
@@ -461,7 +422,7 @@ async function registerKernelBins () {
   bin.dump = { description: 'Dump the shell state', run: term => term.log(dump()) }
   bin.restore = { args: ['json'], description: 'Restore the shell state', run: (term, context) => restore(context) }
   bin.echo = { args: ['text'], description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }
-  bin.alert = { args: ['message'], description: 'Show an alert', run: (term, context) => dialog({ content: context }) }
+  bin.alert = { args: ['message'], description: 'Show an alert', run: (term, context) => dialog({ text: context }) }
   bin.notify = { args: ['title', 'body'], description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   bin.snackbar = { args: ['message'], description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
   bin.man = { args: ['command'], description: 'Alias of help', run: (term, context) => bin.help.run(term, context) }
@@ -514,8 +475,8 @@ async function registerKernelBins () {
     description: `Load and evaluate a Javascript file; ${colors.danger.bold('be very careful!')}`,
     run: (term, filename) => {
       if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
-      filename = path.resolve(window.terminal.cwd, filename)
-      const code = fs.readFileSync(filename, 'utf8')
+      filename = path.resolve(term.cwd, filename)
+      const code = fs.readFileSync(filename, 'utf-8')
       eval(code)
     }
   }
@@ -767,3 +728,16 @@ const kernelWallet = {
 }
 
 export const wallet = kernelWallet
+
+// Provide crypto icons from scco's fusion library
+// export function icon (options = {}) {
+//   const library = options.library || 'coins'
+//   const name = options.name || 'BTC_1'
+//   const svg = document.createElement('svg')
+//   const use = document.createElement('use')
+//   svg.classList.add('web3os-icon-fusion')
+//   use.setAttribute('xlink:href', `sprites/fusion-${library}.svg#${name}`)
+//   svg.appendChild(use)
+//   return svg
+// }
+

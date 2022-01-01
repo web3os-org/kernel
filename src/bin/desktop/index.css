@@ -129,3 +129,47 @@
   -webkit-user-select: none;
   user-select: none;
 }
+
+#web3os-desktop-file-layer {
+  position: absolute;
+  display: flex;
+  gap: 1rem;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 1rem;
+}
+
+.web3os-desktop-entry {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  max-width: 80px;
+  max-height: 80px;
+  padding: 1rem;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 0.5s;
+}
+
+.web3os-desktop-entry:hover {
+  transform: scale(1.1);
+}
+
+.web3os-desktop-entry mwc-icon {
+  margin-top: 0.25rem;
+  color: white;
+  font-size: 2rem;
+}
+
+.web3os-desktop-entry h1 {
+  color: white;
+  font-size: 1rem;
+  word-break: break-all;
+}

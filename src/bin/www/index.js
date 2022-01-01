@@ -1,4 +1,4 @@
-import path from 'path-browserify'
+import path from 'path'
 import colors, { blue } from 'ansi-colors'
 
 import './www.css'

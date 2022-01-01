@@ -1,4 +1,4 @@
-import path from 'path-browserify'
+import path from 'path'
 import colors from 'ansi-colors'
 
 export const name = 'view'

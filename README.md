@@ -1,12 +1,27 @@
-# ![Web3OS.sh](.github/logo.png) <!-- omit in toc -->
+# ![Web3OS.sh](https://github.com/web3os-org/.github/raw/main/logo.png) <!-- omit in toc -->
 
 A developer-friendly ecosystem of apps designed to build a crypto-focused web-based operating system. The goal is for the entire system to run within any modern browser, while having the capability to connect to backend systems for more features.
 
 The project is still very young, and proper documentation is Coming Soon™.
 
+## Features
+
+- Web-based crypto console with [xterm.js](https://github.com/xtermjs/xterm.js)
+- Web3 Wallet Integration with [web3](https://github.com/ChainSafe/web3.js)
+- Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
+- Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
+- Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
+- Developer-friendly: apps are just HTML/CSS/JS
+
+## Alpha Footage
+
+Here's a quick video showcasing a few of the features: [web3os alpha demo](https://youtu.be/JsyJ8mbWMxc)
+
 ## Disclaimer
 
-This project is still considered to be in an alpha state. Do not rely on it to keep anything safe, and never paste commands you don't understand. Anywhere, ever.
+This project is still considered to be in an alpha state. All apps run in the same context and can access every other app, as well as the entire browserfs.
+
+Do not rely on it to keep anything safe, and never paste commands you don't understand. Anywhere, ever.
 
 ## User Quickstart
 
@@ -15,9 +30,11 @@ This project is still considered to be in an alpha state. Do not rely on it to k
 - Type `ls /bin`
 - Edit a file: `edit /tmp/test.txt`
 - Launch the desktop: `desktop`
+- Launch the file explorer: `files`
 - Launch a browser: `www https://instacalc.com`
-- Connect to MetaMask: `account connect`
-- Check native token balance: `account balance`
+- Show your ETH address: `account`
+- Check native coin balance: `account balance`
+- Check token balance: `account balance USDC`
 - Learn more about commands: `help account`
 - Run the screensaver: `screensaver`
 - Fire the Confetti Gun: `confetti`
@@ -27,8 +44,8 @@ This project is still considered to be in an alpha state. Do not rely on it to k
 ```sh
 git clone git@github.com:web3os-org/kernel.git
 cd kernel
-npm install
-npm start
+yarn # or npm install
+yarn start # or npm start
 ```
 
 From here, simply connect to [https://localhost:8080](https://localhost:8080) and accept the self-signed certificate warning.
@@ -38,8 +55,10 @@ From here, simply connect to [https://localhost:8080](https://localhost:8080) an
 Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js) offers far more power.
 
 To run a web3os script: `sh /path/to/script.sh`
+Or `window.kernel.executeScript('/path/to/script.sh')`
 
 To run a Javascript script: `eval /path/to/script.js`
+Or `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
 
 ## w3 Packages
 
@@ -71,4 +90,4 @@ See [@web3os-org/demo-app](https://github.com/web3os-org/demo-app) for a complet
 
 ## Further Documentation
 
-Further documentation will soon be available at [https://docs.web3os.sh](https://docs.web3os.sh).
+Further documentation will soon be available at [https://docs.web3os.sh](https://docs.web3os.sh)

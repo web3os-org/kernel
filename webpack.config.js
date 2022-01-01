@@ -37,6 +37,7 @@ module.exports = {
       buffer: require.resolve('buffer'),
       os: require.resolve('os-browserify/browser'),
       url: require.resolve('url/'),
+      path: require.resolve('path-browserify'),
       http: require.resolve('stream-http'),
       https: require.resolve('https-browserify'),
       crypto: require.resolve('crypto-browserify'),
@@ -58,6 +59,10 @@ module.exports = {
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.(md|txt)$/i,
+        use: 'raw-loader'
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif|mp3|wav|mp4|ogg)$/i,
