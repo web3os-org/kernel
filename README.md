@@ -5,6 +5,8 @@
 *"The computer can be used as a tool to liberate and protect people, rather than to control them."*
 -Hal Finney
 
+[![Launch web3os.sh](https://img.shields.io/badge/launch-web3os-blue)](https://web3os.sh)
+
 ---
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/29125922-6ff4-43bd-8771-37dab6138567/deploy-status)](https://web3os.sh)
