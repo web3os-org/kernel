@@ -32,7 +32,6 @@ import '@material/mwc-snackbar'
 
 const figletFontName = 'Graffiti'
 
-// May be overridden by BUILTIN_APPS env variable using CSV
 const builtinApps = [
   'account', 'confetti', 'desktop', 'edit', 'files', 'help', 'ipfs', 'md', 'screensaver', 'view', 'wpm', 'www'
 ]
