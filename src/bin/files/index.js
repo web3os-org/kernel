@@ -30,7 +30,7 @@ async function loadFolder (browser, url) {
     const files = kernel.fs.readdirSync(url)
     explorer.textContent = ''
 
-    files.forEach(file => {
+    files.sort().forEach(file => {
       const fileData = { name: file }
       const location = path.resolve(url, file)
       const stat = kernel.fs.statSync(location)
@@ -150,14 +150,18 @@ async function loadFolder (browser, url) {
         }
 
         const promptExecute = async allow => {
-          const result = await sweetalert({
+          const { isConfirmed } = await kernel.dialog({
             title: `Execute Script: ${location}`,
             text: `Executing scripts can be dangerous. Are you sure?`,
             icon: 'warning',
-            buttons: ['Cancel', 'Run']
+            showDenyButton: true,
+            denyButtonColor: 'green',
+            denyButtonText: 'Cancel',
+            confirmButtonColor: 'red',
+            confirmButtonText: 'Run'
           })
 
-          if (result) allow()
+          if (isConfirmed) allow()
         }
   
         switch (extension) {

@@ -135,12 +135,6 @@ export async function start (args) {
       {
         text: 'Edit',
         action: () => kernel.execute(`edit ${file.location}`)
-      },
-      { isDivider: true },
-      {
-        text: 'Anchor',
-        href: '#',
-        disabled: true
       }
     ]
 
