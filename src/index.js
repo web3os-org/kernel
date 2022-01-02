@@ -60,6 +60,7 @@ const showBootIntro = () => {
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
   log(colors.danger(`Type ${colors.bold('help')} for help`))
+  log(colors.gray(`Type ${colors.bold('md docs/README.md')} to view the README`))
   log(colors.info(`Type ${colors.bold('desktop')} to launch the desktop`))
   log(colors.primary(`Type ${colors.bold('account balance')} to view your account balance`))
   log(colors.success(`Type ${colors.bold('ls /bin')} to see all commands`))
@@ -186,7 +187,7 @@ export async function executeScript (filename, options = {}) {
 
 export async function autostart () {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'md docs/README.md\naccount connect\ndesktop\n') // Setup default autostart.sh
+    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'account connect\n#desktop\n#md docs/README.md\n') // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)
@@ -555,10 +556,10 @@ export async function showSplash (msg, options = {}) {
 
   const title = document.createElement('h1')
   title.id = 'web3os-splash-title'
-  title.innerHTML = options.title || 'web3os.sh'
+  title.innerHTML = options.title || 'web3os'
   title.style.color = options.titleColor || 'white'
   title.style.margin = 0
-  title.style.fontSize = options.titleFontSize || 'clamp(0.5rem, 4rem, 5rem)'
+  title.style.fontSize = options.titleFontSize || 'clamp(0.5rem, 6rem, 7rem)'
   title.style.fontVariant = 'small-caps'
   title.style.textShadow = '4px 4px 4px #888'
   if (!options.disableAnimation) title.classList.add('animate__animated', 'animate__zoomIn')
@@ -664,16 +665,17 @@ export async function boot () {
   // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
     const closeSplash = await showSplash()
-    setTimeout(closeSplash, 2000) // The splash is pretty and needs to be seen and validated.
-    execute('confetti --startVelocity 90 --particleCount 150')
+    await execute('confetti --startVelocity 90 --particleCount 150')
 
     // Automatically start the desktop on small screens
+    // TODO: Fix everything on small screens
     if (window.innerWidth < 768) {
-      document.querySelector('#terminal').style.display = 'none'
-      execute('desktop')
+      // document.querySelector('#terminal').style.display = 'none'
+      // execute('desktop')
     } else {
       document.querySelector('#terminal').style.display = 'block'
       setTimeout(terminal.fit, 50)
+      setTimeout(closeSplash, 2000) // The splash is pretty and needs to be seen and validated.
       terminal.focus()
     }
   } else {
