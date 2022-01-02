@@ -34,6 +34,8 @@ A developer-friendly ecosystem of apps designed to build a crypto-focused web-ba
 
 The project is still very young, and proper documentation and organization is Coming Soon™.
 
+Things aren't super optimized yet so it gets a bit bulky in the middle; we'll get there.
+
 ---
 
 ## Features
