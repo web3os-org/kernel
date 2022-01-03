@@ -104,36 +104,6 @@ To run a Javascript script: `eval /path/to/script.js`
 - Decoupling of built-in apps into their own packages
 - Some apps are really just placeholders and don't yet have full functionality
 
-## w3 Packages
-
-**The packaging system is not yet usable**
-
-Packages are installed using `wpm`, the web3os package manager.
-
-`wpm install http://localhost:5500/dist`
-`wpm update demo-app`
-`wpm uninstall demo-app`
-
-Currently, a package url must provide `index.js` and `package.json` files.
-
-The `package.json` should have an additional field `"exe": "cmd-to-run-app"`.
-
-To see examples of how to write apps, check the `src/bin` folder. The [src/bin/confetti/index.js](src/bin/confetti/index.js) file gives a good introduction of a solid app structure without too much other code.
-
-Apps should export the following:
-
-`name` - Required: the executable name of your app
-`run(term, context)` - Required: this function will be called when your app is executed
-`help` - this text will be displayed when the user types `help yourcommand`
-`description`
-`version`
-
-`context` is a string of arguments; e.g. subcommand --order 66 --text "quoted text with spaces"
-
-Work is still being done on the packaging system - it is not ready for real usage.
-
-See [@web3os-org/demo-app](https://github.com/web3os-org/demo-app) for a complete app boilerplate that uses webpack.
-
 ## Further Documentation
 
 Further documentation will soon be available at [https://docs.web3os.sh](https://docs.web3os.sh)
