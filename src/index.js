@@ -18,17 +18,18 @@ import { AttachAddon } from 'xterm-addon-attach'
 import sweetalert from 'sweetalert2'
 
 import 'animate.css'
-import './themes/default/sweetalert2.css'
 import './css/index.css'
+import './themes/default/index.css'
+import './themes/default/sweetalert2.css'
+
+import '@material/mwc-button'
+import '@material/mwc-icon-button'
+import '@material/mwc-snackbar'
 
 import README from '../README.md'
 import AppWindow from './app-window'
 import pkg from '../package.json'
 import theme from './themes/default/index.js'
-
-import '@material/mwc-button'
-import '@material/mwc-icon-button'
-import '@material/mwc-snackbar'
 
 const figletFontName = 'Graffiti'
 

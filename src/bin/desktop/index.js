@@ -4,6 +4,7 @@ import colors from 'ansi-colors'
 import { ctxmenu } from 'ctxmenu'
 
 import './index.css'
+import defaultWallpaperURL from './default_wallpaper.png'
 import { default as defaultAppIcon } from '../../assets/default-app-icon.svg'
 import { create as createTerminal } from '../../terminal'
 
@@ -29,7 +30,7 @@ let kernel
 let desktop
 let terminal
 let launcher
-let defaultWallpaperURL = 'https://placeimg.com/800/800/tech'
+// let defaultWallpaperURL = 'https://placeimg.com/800/800/tech'
 
 export async function launchTerminal (options = {}) {
   let win
@@ -285,7 +286,7 @@ export async function toggleLauncher () {
     return
   }
 
-  // TODO: Load this from somewhere
+  // TODO: Load this from somewhere configurable
   const launcherApps = [
     { name: 'Files', icon: kernel.bin.files?.icon, description: kernel.bin.files?.description, run: () => kernel.execute('files /desktop')},
     { name: 'Screensaver', icon: kernel.bin.screensaver?.icon, description: kernel.bin.screensaver?.description, run: () => kernel.execute('screensaver') },
@@ -358,6 +359,7 @@ export async function run (term, context) {
 
   if (args['--version']) return terminal.log(version)
   if (!kernel.fs.existsSync('/desktop')) kernel.fs.mkdirSync('/desktop')
+  if (!kernel.fs.existsSync('/desktop/Documents')) kernel.fs.mkdirSync('/desktop/Documents')
 
   switch (cmd) {
     case 'start':

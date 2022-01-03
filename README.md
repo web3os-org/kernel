@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD036 -->
 
-# ![Web3OS.sh](https://github.com/web3os-org/.github/raw/main/logo.png) <!-- omit in toc -->
+# ![Web3OS](https://github.com/web3os-org/kernel/raw/master/.github/iconlogo.png) <!-- omit in toc -->
 
 *"The computer can be used as a tool to liberate and protect people, rather than to control them."*
 -Hal Finney
@@ -88,7 +88,7 @@ From here, simply connect to [https://localhost:8080](https://localhost:8080) an
 
 ## Scripting
 
-Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js) offers far more power.
+Web3os scripts (.w3) are a simple line-by-line execution, while Javascript (.js) offers far more power.
 
 To run a web3os script: `sh /path/to/script.sh`
 
@@ -97,6 +97,12 @@ To run a web3os script: `sh /path/to/script.sh`
 To run a Javascript script: `eval /path/to/script.js`
 
 - Or `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
+
+## TODO
+
+- There's a lot to do 😅
+- Decoupling of built-in apps into their own packages
+- Some apps are really just placeholders and don't yet have full functionality
 
 ## w3 Packages
 

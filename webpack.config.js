@@ -12,13 +12,15 @@ module.exports = {
   experiments: { topLevelAwait: true },
   plugins: [
     // new WebpackBundleAnalyzer(),
-    new webpack.ProvidePlugin({ process: 'process/browser' }),
-    new HtmlWebpackPlugin({ template: './src/index.html', chunks: ['_loader'] }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser'
     }),
-    new webpack.ProvidePlugin({
-      process: 'process/browser',
+
+    new HtmlWebpackPlugin({
+      favicon: 'src/assets/favicon.ico',
+      template: './src/index.html',
+      chunks: ['_loader']
     })
   ],
   entry: {
