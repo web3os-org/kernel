@@ -164,7 +164,7 @@ export async function start (args) {
         case '.txt':
           return kernel.execute(`edit ${data.location}`)
         case '.md':
-          return kernel.execute(`md ${data.location}`)
+          return kernel.execute(`markdown ${data.location}`)
         default:
           kernel.execute(`alert I'm not sure how to handle this file!`)
       }

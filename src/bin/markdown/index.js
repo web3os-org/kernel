@@ -1,7 +1,7 @@
 import path from 'path'
 import MarkdownIt from 'markdown-it'
 
-export const name = 'md'
+export const name = 'markdown'
 export const version = '0.1.0'
 export const description = 'Markdown Viewer'
 
@@ -13,7 +13,7 @@ export async function run (term, filename) {
   filename = path.resolve(term.cwd, filename)
   if (!kernel.fs.existsSync(filename)) throw new Error(colors.danger('Invalid filename') + '\n' + help)
 
-  markdown = new MarkdownIt()
+  markdown = new MarkdownIt({ html: true, linkify: true })
 
   const data = kernel.fs.readFileSync(filename, 'utf-8')
   let html = markdown.render(data.replace(/<!--[\s\S]*?-->/g, ''))

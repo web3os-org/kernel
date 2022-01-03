@@ -1,3 +1,32 @@
+html {
+  --mdc-theme-background: #121212;
+  --mdc-theme-surface: #121212;
+  --mdc-theme-primary: #028550;
+  --mdc-theme-secondary: #22f;
+  --mdc-theme-on-primary: #eee;
+  --mdc-dialog-heading-ink-color: #eee;
+  --mdc-dialog-content-ink-color: #eee;
+  --color-danger: #c91d12;
+  --mdc-dialog-z-index: 10000;
+}
+
+
+a {
+  color: rgb(94, 94, 216);
+}
+
+a:visited {
+  color: rgb(94, 94, 216);
+}
+
+.bg-light {
+  background-color: white;
+}
+
+.bg-dark {
+  background-color: #121212;
+}
+
 .xterm-viewport {
   overflow-y: auto !important;
 }

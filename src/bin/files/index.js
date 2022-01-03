@@ -172,7 +172,7 @@ async function loadFolder (browser, url) {
           case '.txt':
             return kernel.execute(`edit ${location}`)
           case '.md':
-            return kernel.execute(`md ${location}`)
+            return kernel.execute(`markdown ${location}`)
           case '.jpg':
           case '.png':
           case '.webp':

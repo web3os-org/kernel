@@ -34,7 +34,7 @@ import theme from './themes/default/index.js'
 const figletFontName = 'Graffiti'
 
 const builtinApps = [
-  'account', 'confetti', 'desktop', 'edit', 'files', 'help', 'ipfs', 'md', 'screensaver', 'view', 'wpm', 'www'
+  'account', 'confetti', 'desktop', 'edit', 'files', 'help', 'ipfs', 'markdown', 'screensaver', 'view', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
@@ -60,7 +60,7 @@ const showBootIntro = () => {
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
   log(colors.danger(`Type ${colors.bold('help')} for help`))
-  log(colors.gray(`Type ${colors.bold('md docs/README.md')} to view the README`))
+  log(colors.gray(`Type ${colors.bold('markdown docs/README.md')} to view the README`))
   log(colors.info(`Type ${colors.bold('desktop')} to launch the desktop`))
   log(colors.primary(`Type ${colors.bold('account balance')} to view your account balance`))
   log(colors.success(`Type ${colors.bold('ls /bin')} to see all commands`))
@@ -187,7 +187,7 @@ export async function executeScript (filename, options = {}) {
 
 export async function autostart () {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'account connect\n#desktop\n#md docs/README.md\n') // Setup default autostart.sh
+    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'account connect\n#desktop\n#markdown docs/README.md\n') // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)

@@ -7,7 +7,7 @@ export const name = 'www'
 export const args = ['url']
 export const description = 'WWW Browser'
 export const help = `
-  ${colors.danger.bold('NOTICE:')} This app is not designed to be a full-featured browser,
+  ${colors.danger.bold('NOTE:')} This app is not designed to be a full-featured browser,
   but rather a shell to load url-based apps within web3os.
   
   Insecure HTTP urls are not supported. Many sites such as Google will simply refuse to load in an iframe, as they should.

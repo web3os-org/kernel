@@ -1,11 +1,11 @@
-<!-- markdownlint-disable MD036 -->
+<!-- markdownlint-disable MD033 MD036 MD041 -->
 
-# ![Web3OS](https://github.com/web3os-org/kernel/raw/master/.github/iconlogo.png) <!-- omit in toc -->
+<img alt="Web3OS" src="http://github.com/web3os-org/kernel/raw/master/.github/iconlogo.png" style="width:100%">
 
 *"The computer can be used as a tool to liberate and protect people, rather than to control them."*
 -Hal Finney
 
-[![Launch web3os.sh](https://img.shields.io/badge/launch-web3os-blue)](https://web3os.sh)
+[![Launch web3os.sh](https://img.shields.io/badge/launch-web3os-blue?style=for-the-badge)](https://web3os.sh)
 
 ---
 
@@ -25,6 +25,7 @@
 
 [![Twitter](https://img.shields.io/twitter/follow/web3os?style=social)](https://twitter.com/web3os)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/web3os?style=social)](https://reddit.com/r/web3os)
+[![Medium](https://img.shields.io/badge/Medium-@web3os-blue?style=social&logo=medium)](https://web3os.medium.com)
 [![Facebook](https://img.shields.io/badge/Facebook-web3os-blue?style=social&logo=facebook)](https://www.facebook.com/Web3os-111014368120117)
 [![Youtube](https://img.shields.io/badge/Youtube-web3os-blue?style=social&logo=youtube)](https://www.youtube.com/channel/UC2EqcpVYpyB6RSopi1GaLSg)
 
@@ -40,6 +41,19 @@ Things aren't super optimized yet so it gets a bit bulky in the middle; we'll ge
 
 ---
 
+- [Features](#features)
+- [Alpha Footage](#alpha-footage)
+- [Disclaimer](#disclaimer)
+- [User Quickstart](#user-quickstart)
+- [Developer Quickstart](#developer-quickstart)
+- [Scripting](#scripting)
+- [Kernel Interface](#kernel-interface)
+- [App Structure](#app-structure)
+- [TODO](#todo)
+- [Further Documentation](#further-documentation)
+
+---
+
 ## Features
 
 - Web-based crypto console with [xterm.js](https://github.com/xtermjs/xterm.js)
@@ -49,9 +63,9 @@ Things aren't super optimized yet so it gets a bit bulky in the middle; we'll ge
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Developer-friendly: apps are just HTML/CSS/JS
 
-## Alpha Footage [![Watchers](https://img.shields.io/youtube/views/JsyJ8mbWMxc?style=social)](https://youtu.be/JsyJ8mbWMxc)
+## Alpha Footage
 
-Here's a quick video showcasing a few of the features: [web3os alpha demo](https://youtu.be/JsyJ8mbWMxc)
+Here's a quick video showcasing a few of the features: [web3os alpha demo](https://youtu.be/JsyJ8mbWMxc) [![Watchers](https://img.shields.io/youtube/views/JsyJ8mbWMxc?style=social)](https://youtu.be/JsyJ8mbWMxc)
 
 ## Disclaimer
 
@@ -88,21 +102,86 @@ From here, simply connect to [https://localhost:8080](https://localhost:8080) an
 
 ## Scripting
 
-Web3os scripts (.w3) are a simple line-by-line execution, while Javascript (.js) offers far more power.
+Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js) offers far more power.
 
 To run a web3os script: `sh /path/to/script.sh`
 
-- Or `window.kernel.executeScript('/path/to/script.sh')`
+- Or from an app: `window.kernel.executeScript('/path/to/script.sh')`
 
 To run a Javascript script: `eval /path/to/script.js`
 
-- Or `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
+- Or from an app: `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
+
+## Kernel Interface
+
+This (and everything else) is subject to change before version 1.0.
+
+Also, expect undocumented methods.
+
+`window.kernel.bin` { name: app }
+
+- Contains all apps registered in the kernel
+- e.g., `window.kernel.bin.desktop.run()`
+
+`window.kernel.wallet.web3` :Web3Provider
+
+- The web3 provider setup with the `account` command
+
+`window.kernel.wallet.account` { address: '0x..', chainId: 1 }
+
+- You may also interact directly with the account app.
+  - e.g., `window.kernel.bin.account.connect()`
+
+`window.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) })
+
+- Convenience method to create a sweetalert2 dialog with appropriate defaults
+- e.g., `window.kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
+
+`window.kernel.set` ('namespace', 'key', :any)
+
+- Sets a value in the kernel "memory" - persists in localStorage
+- e.g., `window.kernel.set('user', 'name', 'hosk')`
+- e.g., `window.kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
+
+`window.kernel.get` ('namespace', 'key')
+
+- Gets a value from the kernel "memory" - loaded from localStorage
+- e.g., `window.kernel.get('user', 'name')`
+- e.g., `const { color } = window.kernel.get('myapp', 'theme')`
+
+## App Structure
+
+Developers should be able to create apps in any way they like, with as few requirements as possible. Remember, your app is simply running in a browser - you have access to everything that any other script does.
+
+Here is the structure of a very minimal app:
+
+```js
+export const name = 'myapp'
+export const version = '0.1.0'
+export const description = 'My application'
+export const help = `
+  Myapp enables developers to Do An App!
+
+  Usage: myapp <options>        Run myapp with some options!
+`
+
+export async function run (terminal, context) {
+  console.log(terminal) // the xterm.js terminal in which your app is running
+  console.log(context) // the plain string of arguments passed to your app
+  terminal.log('Thanks for checking out myapp!')
+  terminal.log(context)
+}
+```
+
+A good example of a more full-featured app can be found in [src/bin/confetti/index.js](src/bin/confetti/index.js).
 
 ## TODO
 
 - There's a lot to do 😅
 - Decoupling of built-in apps into their own packages
+- Finish the packaging system to be able to install apps
 - Some apps are really just placeholders and don't yet have full functionality
+- Adding more things to this list
 
 ## Further Documentation
 
