@@ -37,8 +37,6 @@ A developer-friendly ecosystem of apps designed to build a crypto-focused web-ba
 
 The project is still very young, and proper documentation and organization is Coming Soon™.
 
-Things aren't super optimized yet so it gets a bit bulky in the middle; we'll get there.
-
 ---
 
 - [Features](#features)
@@ -56,12 +54,13 @@ Things aren't super optimized yet so it gets a bit bulky in the middle; we'll ge
 
 ## Features
 
-- Web-based crypto console with [xterm.js](https://github.com/xtermjs/xterm.js)
+- Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
 - Web3 Wallet Integration with [web3](https://github.com/ChainSafe/web3.js)
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Developer-friendly: apps are just HTML/CSS/JS
+- Optional desktop environment
 
 ## Alpha Footage
 
@@ -87,7 +86,7 @@ Do not rely on it to keep anything safe, and never paste commands you don't unde
 - Check token balance: `account balance USDC`
 - Learn more about commands: `help command`
 - Run the screensaver: `screensaver`
-- Fire the Confetti Gun: `confetti`
+- 🎉 Fire the Confetti Gun: `confetti`
 
 ## Developer Quickstart
 
@@ -110,7 +109,7 @@ To run a web3os script: `sh /path/to/script.sh`
 
 To run a Javascript script: `eval /path/to/script.js`
 
-- Or from an app: `window.kernel.bin.eval.run(window.terminal, '/path/to/script.js')`
+- Or from an app: `window.kernel.execute('eval /path/to/script.js')`
 
 ## Kernel Interface
 
@@ -173,7 +172,7 @@ export async function run (terminal, context) {
 }
 ```
 
-A good example of a more full-featured app can be found in [src/bin/confetti/index.js](src/bin/confetti/index.js).
+A good example of a more full-featured app can be found in [src/bin/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/bin/confetti/index.js).
 
 ## TODO
 

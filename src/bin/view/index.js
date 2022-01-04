@@ -15,20 +15,29 @@ export async function run (terminal, filename) {
 
   if (!filename || filename === '') return log(colors.danger('Invalid filename') + '\n' + help)
   filename = path.resolve(terminal.cwd, filename)
-  const fileParts = path.parse(filename)
-  const extension = fileParts.ext
+
+  let appWindow
 
   const data = new Blob([fs.readFileSync(filename)])
   const url = URL.createObjectURL(data)
 
-  const content = document.createElement('img')
-  content.style.width = '100%'
-  content.style.height = '100%'
-  content.src = url
+  const wrapper = document.createElement('div')
+  wrapper.style.display = 'flex'
+  wrapper.style.justifyContent = 'center'
+  wrapper.style.alignItems = 'center'
 
-  const appWindow = kernel.appWindow({
+  const content = new Image()
+  content.src = url
+  content.style.maxWidth = '100%'
+  content.onload = () => {
+    appWindow.window.resize(content.width, content.height + 35)
+  }
+
+  wrapper.appendChild(content)
+
+  appWindow = kernel.appWindow({
     title: `Image: ${filename}`,
-    mount: content,
+    mount: wrapper,
     right: '2%',
     width: '60%',
     height: '60%'

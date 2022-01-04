@@ -19,6 +19,8 @@ let history = []
 let historyPosition = 0
 
 async function loadFolder (browser, url) {
+  browser.cloneNode(true)
+
   const explorer = browser.querySelector('.web3os-files-explorer')
   const addressBar = browser.querySelector('.web3os-files-explorer-toolbar-addressbar-input')
 
@@ -98,6 +100,34 @@ async function loadFolder (browser, url) {
       entry.dataset.file = file
       icon.dataset.file = entry.dataset.file
       title.dataset.file = entry.dataset.file
+
+      const dragenter = e => { e.stopPropagation(); e.preventDefault() }
+      const dragover = e => { e.stopPropagation(); e.preventDefault() }
+      const drop = e => {
+        e.stopPropagation()
+        e.preventDefault()
+        const dt = e.dataTransfer
+        const files = dt.files
+
+        for (const file of files) {
+          const reader = new FileReader()
+
+          reader.readAsArrayBuffer(file)
+          reader.onload = () => {
+            const buffer = kernel.BrowserFS.Buffer.from(reader.result)
+            const filepath = path.resolve(addressBar.value, file.name)
+            kernel.fs.writeFileSync(filepath, buffer)
+            kernel.snackbar({ labelText: `Uploaded ${filepath}` })
+            console.log({ filepath })
+
+            loadFolder(browser, url)
+          }
+        }
+      }
+
+      browser.addEventListener('dragenter', dragenter)
+      browser.addEventListener('dragover', dragover)
+      browser.addEventListener('drop', drop)
 
       const entryContextMenu = [
         {

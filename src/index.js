@@ -46,7 +46,7 @@ const configDescriptions = {
 export const bin = {}
 export let fs
 export let term
-let BrowserFS
+export let BrowserFS
 let memory
 let gibsonSocket
 
@@ -60,13 +60,13 @@ const showBootIntro = () => {
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
   log(colors.danger(`Type ${colors.bold('help')} for help`))
-  log(colors.gray(`Type ${colors.bold('markdown docs/README.md')} to view the README`))
+  log(colors.gray(`Type ${colors.bold('markdown /docs/README.md')} to view the README`))
   log(colors.info(`Type ${colors.bold('desktop')} to launch the desktop`))
   log(colors.primary(`Type ${colors.bold('account balance')} to view your account balance`))
   log(colors.success(`Type ${colors.bold('ls /bin')} to see all commands`))
-  log(colors.magenta(`Type ${colors.bold('confetti')} to fire the confetti gun`))
+  log(colors.magenta(`Type ${colors.bold('confetti')} to fire the confetti gun\n`))
 
-  log('\nhttps://docs.web3os.sh')
+  // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
   log(colors.muted('\nBooting...'))
 }
@@ -120,6 +120,7 @@ export function getGibson () { return gibsonSocket }
 export function setGibson (socket) { gibsonSocket = socket }
 
 export function log (msg, options = {}) {
+  if (!msg) return
   msg = msg.replace(/\\n/gm, '\n')
   if (options.console) console.log(msg)
   const term = options.terminal || window.terminal
@@ -287,30 +288,30 @@ async function setupFilesystem () {
       const docs = fs.readdirSync('/docs')
       if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
 
-      const dragenter = e => { e.stopPropagation(); e.preventDefault() }
-      const dragover = e => { e.stopPropagation(); e.preventDefault() }
-      const drop = e => {
-        e.stopPropagation()
-        e.preventDefault()
-        const dt = e.dataTransfer
-        const files = dt.files
+      // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
+      // const dragover = e => { e.stopPropagation(); e.preventDefault() }
+      // const drop = e => {
+      //   e.stopPropagation()
+      //   e.preventDefault()
+      //   const dt = e.dataTransfer
+      //   const files = dt.files
 
-        for (const file of files) {
-          const reader = new FileReader()
+      //   for (const file of files) {
+      //     const reader = new FileReader()
 
-          reader.readAsArrayBuffer(file)
-          reader.onload = () => {
-            const buffer = BrowserFS.Buffer.from(reader.result)
-            const filepath = path.resolve(terminal.cwd, file.name)
-            fs.writeFileSync(filepath, buffer)
-            kernel.snackbar({ labelText: `Uploaded ${filepath}` })
-          }
-        }
-      }
+      //     reader.readAsArrayBuffer(file)
+      //     reader.onload = () => {
+      //       const buffer = BrowserFS.Buffer.from(reader.result)
+      //       const filepath = path.resolve(terminal.cwd, file.name)
+      //       fs.writeFileSync(filepath, buffer)
+      //       kernel.snackbar({ labelText: `Uploaded ${filepath}` })
+      //     }
+      //   }
+      // }
 
-      document.body.addEventListener('dragenter', dragenter)
-      document.body.addEventListener('dragover', dragover)
-      document.body.addEventListener('drop', drop)
+      // document.body.addEventListener('dragenter', dragenter)
+      // document.body.addEventListener('dragover', dragover)
+      // document.body.addEventListener('drop', drop)
 
       // Setup FS commands
       bin.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
@@ -375,7 +376,6 @@ async function setupFilesystem () {
               case '/bin':
                 data.push({
                   name: colors.cyanBright(entry),
-                  size: colors.muted(bytes(stat.size).toLowerCase()),
                   description: colors.muted(kernel.bin[entry]?.description || '')
                 })
 
@@ -429,7 +429,7 @@ async function registerKernelBins () {
 
   bin.set = {
     args: ['namespace', 'key', 'value'],
-    description: `Set a kernel value: ${colors.info('set namespace key value')}, eg. ${colors.muted('set user name hosk')}`,
+    description: `Set a kernel value`, //: ${colors.info('set namespace key value')}, eg. ${colors.muted('set user name hosk')}`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -441,7 +441,7 @@ async function registerKernelBins () {
 
   bin.get = {
     args: ['namespace', 'key'],
-    description: `Get a kernel value: ${colors.info('get namespace key')} or ${colors.info('get namespace')}, eg. ${colors.info('get user name')} or ${colors.info('get user')}`,
+    description: `Get a kernel value`, //: ${colors.info('get namespace key')} or ${colors.info('get namespace')}, eg. ${colors.info('get user name')} or ${colors.info('get user')}`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]

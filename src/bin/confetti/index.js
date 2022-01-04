@@ -1,6 +1,7 @@
 import arg from 'arg'
 import colors from 'ansi-colors'
 import confetti from 'canvas-confetti'
+import { parse as cliParse } from 'shell-quote'
 
 export const name = 'confetti'
 export const version = '0.1.0'
@@ -48,7 +49,7 @@ export const spec = {
   '-z': '--zIndex'
 }
 
-export async function execute (args) {
+export function execute (args) {
   confetti({
     disableForReducedMotion: true,
     angle: args['--angle'] || 90,
@@ -66,8 +67,7 @@ export async function execute (args) {
 }
 
 export async function run (term, context = '') {
-  const argv = context.split(' ')
-  const args = arg(spec, { argv })
+  const args = arg(spec, { argv: cliParse(context) })
   if (args['--version']) return term.log(version)
   if (args['--help']) return term.log(help)
   return execute(args)

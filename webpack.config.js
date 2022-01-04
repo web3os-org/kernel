@@ -23,16 +23,19 @@ module.exports = {
       chunks: ['_loader']
     })
   ],
+
   entry: {
     _loader: './src/_loader.js',
     kernel: './src/index.js',
     ...glob.sync('./src/bin/**/*.js').reduce((obj, el) => { obj['bin/' + path.parse(el).dir.split('/').at(-1)] = el; return obj }, {})
   },
+
   output: {
     clean: true,
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist')
   },
+
   resolve: {
     fallback: {
       assert: false,
@@ -46,6 +49,7 @@ module.exports = {
       stream: require.resolve('stream-browserify')
     }
   },
+
   module: {
     rules: [
       {
@@ -67,12 +71,26 @@ module.exports = {
         use: 'raw-loader'
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif|mp3|wav|mp4|ogg)$/i,
+        test: /\.(gif|mp3|wav|mp4|ogg)$/i,
         type: 'asset/resource'
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: 'asset/resource'
+      },
+      {
+        test: /\.(png|jpe?g|webp|svg|)$/i,
+        use: [
+          {
+            loader: `img-optimize-loader`,
+            options: {
+              compress: {
+                mode: 'lossless',
+                disableOnDevelopment: true,
+              }
+            }
+          }
+        ]
       }
     ]
   }
