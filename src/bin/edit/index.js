@@ -66,7 +66,6 @@ export async function run (terminal, filename) {
   const appWindow = kernel.appWindow({
     title: `Edit: ${filename}`,
     mount: content,
-    right: '2%',
     minheight: '445px',
     minwidth: '310px'
   })

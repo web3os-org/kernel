@@ -102,7 +102,6 @@ export async function run (terminal, url) {
     mount: browser,
     title: `WWW: ${url}`,
     class: ['modern', 'web3os-www-browser'],
-    right: '2%',
     width: '60%',
     height: '60%'
   })

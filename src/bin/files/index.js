@@ -19,7 +19,7 @@ let history = []
 let historyPosition = 0
 
 async function loadFolder (browser, url) {
-  browser.cloneNode(true)
+  browser.cloneNode(true) // Remove all event listeners
 
   const explorer = browser.querySelector('.web3os-files-explorer')
   const addressBar = browser.querySelector('.web3os-files-explorer-toolbar-addressbar-input')
@@ -327,7 +327,6 @@ export async function run (terminal, url) {
     mount: browser,
     title: url,
     class: ['modern', 'web3os-files-explorer'],
-    right: '2%',
     height: '60%',
     minwidth: '60%',
     x: 'center',

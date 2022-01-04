@@ -25,6 +25,7 @@ export async function run (terminal, filename) {
   wrapper.style.display = 'flex'
   wrapper.style.justifyContent = 'center'
   wrapper.style.alignItems = 'center'
+  wrapper.style.height = '100%'
 
   const content = new Image()
   content.src = url
@@ -38,7 +39,6 @@ export async function run (terminal, filename) {
   appWindow = kernel.appWindow({
     title: `Image: ${filename}`,
     mount: wrapper,
-    right: '2%',
     width: '60%',
     height: '60%'
   })

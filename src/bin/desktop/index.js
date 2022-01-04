@@ -59,7 +59,7 @@ export async function launchTerminal (options = {}) {
   })
 
   win.term = newTerm
-  kernel.bin.account.setPrompt(newTerm)
+  kernel.bin.account?.setPrompt(newTerm)
   newTerm.prompt()
   newTerm.focus()
 
