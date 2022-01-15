@@ -67,7 +67,7 @@
     "@material/mwc-snackbar": "^0.25.3",
     "@metamask/detect-provider": "^1.2.0",
     "@sweetalert2/theme-dark": "^5.0.8",
-    "@web3os/openocean-api": "C:/ode/web3os/openocean-api",
+    "@web3os/openocean-api": "https://github.com/web3os-org/openocean-api.git",
     "abort-controller": "^3.0.0",
     "animate.css": "^4.1.1",
     "ansi-colors": "^4.1.1",

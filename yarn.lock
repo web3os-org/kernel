@@ -2233,8 +2233,9 @@
   resolved "https://registry.npmjs.org/@vascosantos/moving-average/-/moving-average-1.1.0.tgz"
   integrity sha512-MVEJ4vWAPNbrGLjz7ITnHYg+YXZ6ijAqtH5/cHwSoCpbvuJ98aLXwFfPKAUfZpJMQR5uXB58UJajbY130IRF/w==
 
-"@web3os/openocean-api@file:../openocean-api":
+"@web3os/openocean-api@https://github.com/web3os-org/openocean-api.git":
   version "0.1.0"
+  resolved "https://github.com/web3os-org/openocean-api.git#1182ec93175afe2bc1bae504bb4b79485811a0c7"
 
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
