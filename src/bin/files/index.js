@@ -66,6 +66,9 @@ async function loadFolder (browser, url) {
         case '.md':
           fileIcon = 'assignment'
           break
+        case '.link':
+          fileIcon = 'link'
+          break
         case '.jpg':
         case '.png':
         case '.webp':
@@ -129,12 +132,62 @@ async function loadFolder (browser, url) {
       browser.addEventListener('dragover', dragover)
       browser.addEventListener('drop', drop)
 
-      const entryContextMenu = [
+      let divider = false
+      const entryContextMenu = []
+      const setAriaLabel = label => [icon, title].forEach(el => { el.ariaLabel = label })
+
+      switch (extension) {
+        case '.js':
+          divider = true
+          setAriaLabel('Run script')
+          entryContextMenu.push({ text: 'Run', action: () => kernel.execute(`eval ${location}`)})
+          break
+        case '.sh':
+          divider = true
+          setAriaLabel('Run script')
+          entryContextMenu.push({ text: 'Run', action: () => kernel.execute(`sh ${location}`)})
+          break
+        case '.md':
+          divider = true
+          setAriaLabel('View Markdown')
+          entryContextMenu.push({ text: 'View', action: () => kernel.execute(`markdown ${location}`)})
+          break
+        case '.link':
+          divider = true
+          setAriaLabel('Open link in new tab')
+          entryContextMenu.push({ text: 'Open', action: () => {
+            try {
+              const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
+              window.open(url, '_blank')
+            } catch (err) {
+              console.error(err)
+              kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
+            }
+          }})
+          break
+        case '.jpg':
+        case '.png':
+        case '.webp':
+        case '.svg':
+        case '.gif':
+          divider = true
+          setAriaLabel('View image')
+          entryContextMenu.push({ text: 'View', action: () => kernel.execute(`view ${location}`)})
+          break
+      }
+
+      if (icon.ariaLabel) icon.classList.add('hint--right', 'hint--info')
+      if (title.ariaLabel) title.classList.add('hint--right', 'hint--info')
+      if (divider) entryContextMenu.push({ isDivider: true })
+
+      if (fileData.type !== 'dir') entryContextMenu.push(
         {
           text: 'Edit',
           action: () => kernel.execute(`edit ${location}`)
-        },
-        { isDivider: true },
+        }
+      )
+
+      entryContextMenu.push(
         {
           text: 'Delete',
           action: async () => {
@@ -156,12 +209,13 @@ async function loadFolder (browser, url) {
             }
           }
         }
-      ]
+      )
   
       entry.addEventListener('contextmenu', e => {
         e.preventDefault()
         e.stopPropagation()
-        ctxmenu.show(entryContextMenu, e.target)
+        console.log(e.target.closest('.web3os-files-explorer-entry').querySelector('mwc-icon'))
+        ctxmenu.show(entryContextMenu, e.target.closest('.web3os-files-explorer-entry').querySelector('mwc-icon'))
       })
   
       entry.addEventListener('click', e => {
@@ -203,6 +257,15 @@ async function loadFolder (browser, url) {
             return kernel.execute(`edit ${location}`)
           case '.md':
             return kernel.execute(`markdown ${location}`)
+          case '.link':
+            try {
+              const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
+              window.open(url, '_blank')
+            } catch (err) {
+              console.error(err)
+              kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
+            }
+            break
           case '.jpg':
           case '.png':
           case '.webp':

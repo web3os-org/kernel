@@ -34,7 +34,7 @@ import theme from './themes/default/index.js'
 const figletFontName = 'Graffiti'
 
 const builtinApps = [
-  'account', 'confetti', 'desktop', 'edit', 'files', 'help', 'ipfs', 'markdown', 'screensaver', 'view', 'wpm', 'www'
+  'account', 'confetti', 'desktop', 'doom', 'edit', 'files', 'help', 'ipfs', 'markdown', 'screensaver', 'view', 'wolfenstein', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
@@ -59,16 +59,17 @@ const showBootIntro = () => {
   log(colors.warning('If things get wacky, just reload!'))
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
-  log(colors.danger(`Type ${colors.bold('help')} for help`))
-  log(colors.gray(`Type ${colors.bold('markdown /docs/README.md')} to view the README`))
-  log(colors.info(`Type ${colors.bold('desktop')} to launch the desktop`))
-  log(colors.primary(`Type ${colors.bold('account balance')} to view your account balance`))
-  log(colors.success(`Type ${colors.bold('ls /bin')} to see all commands`))
-  log(colors.magenta(`Type ${colors.bold('confetti')} to fire the confetti gun\n`))
+  log(colors.danger(`Type ${colors.bold.underline('help')} for help`))
+  log(colors.gray(`Type ${colors.bold.underline('markdown /docs/README.md')} to view the README`))
+  log(colors.info(`Type ${colors.bold.underline('desktop')} to launch the desktop`))
+  log(colors.primary(`Type ${colors.bold.underline('account balance')} to view your account balance`))
+  log(colors.success(`Type ${colors.bold.underline('ls /bin')} to see all commands`))
+  log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun\n`))
 
   // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
   log(colors.muted('\nBooting...'))
+  log(`${colors.danger('NOTE:')} ${colors.muted('The first boot will take the longest')}  😅`)
 }
 
 export function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }
@@ -85,6 +86,8 @@ export function loadLocalStorage () {
 }
 
 export function set (namespace, key, value) {
+  if (!namespace || namespace === '') throw new Error('Invalid namespace')
+  if (!key || key === '') throw new Error('Invalid key')
   memory[namespace] = memory[namespace] || {}
   memory[namespace][key] = value
   updateLocalStorage()

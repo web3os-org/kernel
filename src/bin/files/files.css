@@ -1,5 +1,6 @@
 .web3os-files-explorer {
   height: 100%;
+  padding-top: 1rem;
 }
 
 @media screen and (min-width: 40em) {  
@@ -29,16 +30,6 @@
     flex: 0 1 calc(33% - 0.5em);
     /* width: calc(33% - 1em); */
   }
-}
-
-.web3os-files-explorerxxxx {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 2rem;
-  padding: 1rem;
-  padding-bottom: 5rem;
-  height: 100%;
 }
 
 .web3os-files-explorer * {
@@ -86,8 +77,11 @@
 
 .web3os-files-explorer-entry mwc-icon {
   font-size: 4rem;
+  margin: auto;
+  max-width: 64px;
 }
 
 .web3os-files-explorer-entry h1 {
   font-size: 1.5rem;
+  margin: auto;
 }

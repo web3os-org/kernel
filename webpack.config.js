@@ -2,16 +2,20 @@ const glob = require('glob')
 const path = require('path')
 const webpack = require('webpack')
 
+const CopyPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WebpackBundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
   mode: process.env.NODE_ENV || 'production',
   devtool: 'eval-source-map',
-  devServer: { static: './dist', https: true },
-  experiments: { topLevelAwait: true },
+  devServer: { static: './dist', https: true, devMiddleware: { writeToDisk: true } },
+  experiments: {
+    topLevelAwait: true
+  },
   plugins: [
     // new WebpackBundleAnalyzer(),
+
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
       process: 'process/browser'
@@ -21,6 +25,13 @@ module.exports = {
       favicon: 'src/assets/favicon.ico',
       template: './src/index.html',
       chunks: ['_loader']
+    }),
+
+    new CopyPlugin({
+      patterns: [
+        { from: 'node_modules/js-dos/dist/wdosbox.wasm' },
+        { from: 'node_modules/js-dos/dist/wdosbox.js' }
+      ]
     })
   ],
 
@@ -71,7 +82,7 @@ module.exports = {
         use: 'raw-loader'
       },
       {
-        test: /\.(gif|mp3|wav|mp4|ogg)$/i,
+        test: /\.(gif|mp3|wav|mp4|ogg|jsdos)$/i,
         type: 'asset/resource'
       },
       {

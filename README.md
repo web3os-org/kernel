@@ -55,7 +55,7 @@ The project is still very young, and proper documentation and organization is Co
 ## Features
 
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
-- Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js)
+- Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js) and [ethers.js](https://github.com/ethers-io/ethers.js)
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)

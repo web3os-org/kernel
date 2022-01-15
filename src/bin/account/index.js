@@ -2,27 +2,27 @@ import arg from 'arg'
 import colors from 'ansi-colors'
 import { ethers as Ethers } from 'ethers'
 import { parse as cliParse } from 'shell-quote'
+import * as Ocean from '@web3os/openocean-api'
 
 import Web3 from 'web3'
-// import Web3Modal from 'web3modal'
-
 import chains from './chains.json'
 
 export const name = 'account'
-export const version = '0.1.1'
+export const version = '0.1.2'
 export const description = 'Manage everything related to your web3 wallet'
 export const help = `
   Usage:
-    account                ${colors.gray('Display your wallet address, or connects if none')}
-    account <command>      ${colors.gray('Perform an account action')}
+    account                          ${colors.gray('Display your wallet address, or connects if none')}
+    account <command>                ${colors.gray('Perform an account action')}
 
   Commands:
-    connect                ${colors.gray('Connect to your wallet')}
-    chain                  ${colors.gray('Display information about the current chain')}
-    chain <id>             ${colors.gray('Switch to chain id; may be hex, decimal, or name')}
-    balance                ${colors.gray(`Display the account balance of the chain's native currency`)}
-    balance <token>        ${colors.gray('Displays the account balance of the ERC20 token, eg. USDC')}
-    sign <message>         ${colors.gray('Sign a message using your wallet')}
+    connect                          ${colors.gray('Connect to your wallet')}
+    chain                            ${colors.gray('Display information about the current chain')}
+    chain <id>                       ${colors.gray('Switch to chain id; may be hex, decimal, or name')}
+    balance                          ${colors.gray(`Display the account balance of the chain's native currency`)}
+    balance <token>                  ${colors.gray('Displays the account balance of the ERC20 token, eg. USDC')}
+    sign <message>                   ${colors.gray('Sign a message using your wallet')}
+    send <amount> <address>          ${colors.gray('Send <amount> of native coin to <address>')}
 
 `
 
@@ -36,21 +36,22 @@ export let provider
 export let tokens = {}
 export const allChains = chains
 
-export const tokenLists = {
-  1: 'https://tokens.coingecko.com/uniswap/all.json',
-  10: 'https://raw.githubusercontent.com/ethereum-optimism/ethereum-optimism.github.io/master/optimism.tokenlist.json',
-  56: 'https://raw.githubusercontent.com/ApeSwapFinance/apeswap-token-lists/main/lists/apeswap.json',
-  137: 'https://raw.githubusercontent.com/sameepsi/quickswap-default-token-list/master/src/tokens/mainnet.json',
+// Move to OpenOcean API
+// export const tokenLists = {
+//   1: 'https://tokens.coingecko.com/uniswap/all.json',
+//   10: 'https://raw.githubusercontent.com/ethereum-optimism/ethereum-optimism.github.io/master/optimism.tokenlist.json',
+//   56: 'https://raw.githubusercontent.com/ApeSwapFinance/apeswap-token-lists/main/lists/apeswap.json',
+//   137: 'https://raw.githubusercontent.com/sameepsi/quickswap-default-token-list/master/src/tokens/mainnet.json',
 
-  parser: (chain, response) => {
-    switch (chain) {      
-      case 137:
-        return response
-      default:
-        return response.tokens
-    }
-  }
-}
+//   parser: (chain, response) => {
+//     switch (chain) {      
+//       case 137:
+//         return response
+//       default:
+//         return response.tokens
+//     }
+//   }
+// }
 
 export function setPrompt (terminal) {
   terminal = terminal || term || window.terminal
@@ -68,16 +69,21 @@ export const account = {
   get chainId () { return this._chainId },
   set chainId (newChainId) {
     this._chainId = Number(newChainId)
+    updateTokenList()
     setPrompt()
   }
 }
 
-export async function connect (args) {
-  // Not ready to implement this yet
-  // const modal = new Web3Modal({
-  //   cacheProvider: true
-  // })
+async function updateTokenList () {
+  try {
+    tokens = await Ocean.tokenList(account.chainId)
+  } catch (err) {
+    console.error(err)
+    throw err
+  }
+}
 
+export async function connect (args) {
   try {
     provider = window.web3.currentProvider
     web3 = new Web3(provider)
@@ -168,53 +174,20 @@ export async function switchChain (args) {
   }
 }
 
-export async function checkBalance (args) {
-  const queryToken = args._[1] || ''
-  let checkBalanceTimeout
+export async function getBalance (symbol) {
+  let balance = 0
 
-  if (!account?.address) {
-    checkBalanceTimeout = setTimeout(() => {
-      if (checkBalanceTimeout) clearTimeout(checkBalanceTimeout)
-      checkBalance(queryToken)
-    }, 100)
-
-    return
-  }
-
-  if (!queryToken) {
-    const balance = Ethers.utils.formatEther(await ethers.getBalance(account.address)) + ' ' + account.chain.nativeCurrency.symbol
-    term.log(balance)
+  if (!symbol) {
+    balance = Ethers.utils.formatEther(await ethers.getBalance(account.address)) + ' ' + account.chain.nativeCurrency.symbol
   } else {
-    let tokenInfo
+    const token = (symbol.substr(0, 2) === '0x') ? tokens?.find(token => token.address === symbol) : tokens?.find(token => token.symbol === symbol)
+    if (!token) throw new Error(colors.danger('Unknown token'))
 
-    if (!tokens[account.chain.chainId]) {
-      if (!tokenLists[account.chain.chainId]) {
-        tokens[account.chain.chainId] = []
-      } else {
-        const response = await fetch(tokenLists[account.chain.chainId])
-        const json = await response.json()
-        tokens[account.chain.chainId] = tokenLists.parser(account.chain.chainId, json)
-      }
-    }
-
-    if (queryToken.substr(0, 2) !== '0x') {
-      tokenInfo = tokens[account.chain.chainId]?.find(token => token.symbol === queryToken)
-      if (!tokenInfo) return term.log(colors.danger('Unknown token'))
-    } else {
-      tokenInfo = { address: queryToken }
-    }
-
-    const abi = [
-      'function name() view returns (string)',
-      'function symbol() view returns (string)',
-      'function balanceOf(address) view returns (uint)',
-      'function transfer(address to, uint amount)'
-    ]
-
-    const contract = new Ethers.Contract(tokenInfo.address, abi, signer)
-    const balance = Ethers.utils.formatEther(await contract.balanceOf(account.address)) + ' ' + await contract.symbol()
-    term.log(balance)
+    const data = await Ocean.getBalance(account.chainId, account.address, token.address)
+    balance = data[0].balance + ' ' + data[0].symbol
   }
+
+  return balance
 }
 
 export async function sign (args) {
@@ -222,6 +195,16 @@ export async function sign (args) {
   message = message.replace(/\\n/g, '\n')
   const result = await signer.signMessage(message)
   term.log(result)
+  return result
+}
+
+export async function send (args) {
+  const result = await web3.eth.sendTransaction({
+    from: account.address,
+    to: args._[2],
+    value: Ethers.utils.parseEther(args._[1])
+  })
+
   return result
 }
 
@@ -241,9 +224,11 @@ export async function run (terminal, context) {
     case 'chain':
       return switchChain(args)
     case 'balance':
-      return checkBalance(args)
+      return term.log(await getBalance(args?._[1]))
     case 'sign':
       return sign(args)
+    case 'send':
+      return term.log(await send(args))
     case undefined:
       return displayOrConnect(args)
     default:
