@@ -77,7 +77,7 @@
     "ansi-colors": "^4.1.1",
     "arg": "^5.0.1",
     "as-bind": "^0.8.2",
-    "browserfs": "C:/ode/web3os/BrowserFS",
+    "browserfs": "https://github.com/web3os-org/BrowserFS.git",
     "bytes": "^3.1.1",
     "canvas-confetti": "^1.4.0",
     "codemirror": "^5.64.0",
