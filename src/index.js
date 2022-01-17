@@ -271,7 +271,8 @@ export async function snackbar (options={}) {
 }
 
 async function setupFilesystem () {
-  const browserfs = await import('C:/ode/web3os/BrowserFS/build/browserfs.js')
+  // const browserfs = await import('C:/ode/web3os/BrowserFS/build/browserfs.js')
+  const browserfs = await import('browserfs')
   let filesystem = {}
 
   browserfs.install(filesystem)
