@@ -27,7 +27,8 @@ export async function run (term, context) {
   console.log({ args, version })
   if (args['--version']) return term.log(version)
 
-  const { create } = import('ipfs-core')
+  const { create } = await import('ipfs-core')
+  console.log({ create })
   kernel.ipfs = await create()
 
   switch (cmd) {

@@ -1,13 +1,60 @@
 import path from 'path'
+import { lookup } from 'mime-types'
 import colors from 'ansi-colors'
 
 export const name = 'view'
 export const args = ['filename']
-export const description = 'Image Viewer'
+export const description = 'File viewer for images, videos, audio, and PDF documents'
 export const help = `
   Usage:
     view <filename>
 `
+
+function createImage (mime, url, appWindow) {
+  const content = new Image()
+  content.src = url
+  content.style.maxWidth = '100%'
+  content.onload = () => {
+    appWindow.window.resize(content.width, content.height + 35)
+  }
+
+  return content
+}
+
+function createVideo (mime, url) {
+  const content = document.createElement('video')
+  content.loop = true
+  content.autoplay = true
+  content.controls = true
+  content.src = url
+  content.style.width = '100%'
+  content.style.height = '100%'
+
+  return content
+}
+
+function createObject (mime, url) {
+  const content = document.createElement('object')
+  content.data = url
+  content.type = mime
+  content.style.height = '100%'
+  content.style.width = '100%'
+
+  return content
+}
+
+function createAudio (mime, url, appWindow) {
+  const content  = document.createElement('audio')
+  content.autoplay = true
+  content.controls = true
+  content.src = url
+  content.style.width = '100%'
+  content.addEventListener('loadeddata', () => {
+    appWindow.window.resize(content.offsetWidth, content.offsetHeight + 35)
+  })
+
+  return content
+}
 
 export async function run (terminal, filename) {
   const { kernel, log } = terminal
@@ -16,28 +63,20 @@ export async function run (terminal, filename) {
   if (!filename || filename === '') return log(colors.danger('Invalid filename') + '\n' + help)
   filename = path.resolve(terminal.cwd, filename)
 
-  let appWindow
+  let type
+  let content
+  const pathInfo = path.parse(filename)
+  const mime = lookup(pathInfo.ext)
+  if (!mime) throw new Error('Unknown file type')
 
-  const data = new Blob([fs.readFileSync(filename)])
+  const data = new Blob([fs.readFileSync(filename)], { type: mime })
   const url = URL.createObjectURL(data)
 
   const wrapper = document.createElement('div')
-  wrapper.style.display = 'flex'
-  wrapper.style.justifyContent = 'center'
-  wrapper.style.alignItems = 'center'
   wrapper.style.height = '100%'
 
-  const content = new Image()
-  content.src = url
-  content.style.maxWidth = '100%'
-  content.onload = () => {
-    appWindow.window.resize(content.width, content.height + 35)
-  }
-
-  wrapper.appendChild(content)
-
-  appWindow = kernel.appWindow({
-    title: `Image: ${filename}`,
+  const appWindow = kernel.appWindow({
+    title: `${filename}`,
     mount: wrapper,
     width: '60%',
     height: '60%'
@@ -45,4 +84,17 @@ export async function run (terminal, filename) {
 
   appWindow.window.body.style.margin = '0'
   appWindow.window.body.style.overflow = 'hidden'
+
+  switch (mime) {
+    case 'application/pdf':
+      content = createObject(mime, url, appWindow)
+      break
+    default:
+      if (mime.match(/^image/)) content = createImage(mime, url, appWindow)
+      if (mime.match(/^video/)) content = createVideo(mime, url, appWindow)
+      if (mime.match(/^audio/)) content = createAudio(mime, url, appWindow)
+  }
+
+  if (!content) throw new Error('Unknown file type')
+  wrapper.append(content)
 }

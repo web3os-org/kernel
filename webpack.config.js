@@ -9,7 +9,11 @@ const WebpackBundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerP
 module.exports = {
   mode: process.env.NODE_ENV || 'production',
   devtool: 'eval-source-map',
-  devServer: { static: './dist', https: true, devMiddleware: { writeToDisk: true } },
+  devServer: {
+    static: './dist',
+    server: { type: 'https' }
+    // devMiddleware: { writeToDisk: true }
+  },
   experiments: {
     topLevelAwait: true
   },
@@ -48,6 +52,7 @@ module.exports = {
   },
 
   resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
     fallback: {
       assert: false,
       buffer: require.resolve('buffer'),
@@ -72,6 +77,11 @@ module.exports = {
             presets: ['@babel/preset-env']
           }
         }
+      },
+      { // We're gonna slowly transition to typescript..
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
       },
       {
         test: /\.css$/i,

@@ -1,5 +1,4 @@
 import 'js-dos'
-import 'js-dos/dist/js-dos.css'
 
 export const name = 'doom'
 export const version = '0.1.0'
@@ -19,9 +18,13 @@ export async function run (term) {
   const appWindow = kernel.appWindow({
     title: 'Doom',
     mount: wrapper,
-    max: true
+    width: 1036,
+    height: 657,
+    onclose: () => { game.exit() },
+    onresize: (width, height) => {
+      if (height === 0) game.pause()
+    }
   })
 
-  appWindow.window.onclose = () => { game.exit() }
   appWindow.window.body.style.color = 'black'
 }

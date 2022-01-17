@@ -36,23 +36,6 @@ export let provider
 export let tokens = {}
 export const allChains = chains
 
-// Move to OpenOcean API
-// export const tokenLists = {
-//   1: 'https://tokens.coingecko.com/uniswap/all.json',
-//   10: 'https://raw.githubusercontent.com/ethereum-optimism/ethereum-optimism.github.io/master/optimism.tokenlist.json',
-//   56: 'https://raw.githubusercontent.com/ApeSwapFinance/apeswap-token-lists/main/lists/apeswap.json',
-//   137: 'https://raw.githubusercontent.com/sameepsi/quickswap-default-token-list/master/src/tokens/mainnet.json',
-
-//   parser: (chain, response) => {
-//     switch (chain) {      
-//       case 137:
-//         return response
-//       default:
-//         return response.tokens
-//     }
-//   }
-// }
-
 export function setPrompt (terminal) {
   terminal = terminal || term || window.terminal
   const displayAddress = `${colors.gray('0x')}${colors.primary(account.address?.substr(2, 4))}${colors.gray('..')}${colors.primary(account.address?.substr(-4, 4))}`
@@ -126,7 +109,7 @@ export async function connect (args) {
 
 export async function switchChain (args) {
   if (!args._[1]) return term.log(account.chain)
-  const newChain = args._[1]
+  let newChain = args._[1]
 
   if (!newChain) return term.log(JSON.stringify(account.chain, null, 2))
 
@@ -135,8 +118,23 @@ export async function switchChain (args) {
   else if (typeof newChain === 'string') {
     if (newChain.substr(0, 2) === '0x') findBy = Number(newChain)
     else {
-      let chain = chains.find(c => c.chain.toLowerCase() === newChain.toLowerCase())
-      chain = chain || chains.find(c => c.name.toLowerCase() === newChain.toLowerCase())
+      switch (newChain) {
+        case 'ethereum':
+          newChain = 'eth'
+          break
+      }
+
+      let chain = chains.find(c => {
+        return (
+          c.chain.toLowerCase() === newChain.toLowerCase() ||
+          c.network.toLowerCase() === newChain.toLowerCase() ||
+          c.name.toLowerCase() === newChain.toLowerCase() ||
+          c.infoURL.toLowerCase() === newChain.toLowerCase() ||
+          c.shortName.toLowerCase() === newChain.toLowerCase() ||
+          c.nativeCurrency.name.toLowerCase() === newChain.toLowerCase()
+        )
+      })
+
       if (!chain) return term.log(colors.danger(`Cannot find chain ${newChain}`))
       findBy = chain.chainId
     }
@@ -190,11 +188,14 @@ export async function getBalance (symbol) {
   return balance
 }
 
-export async function sign (args) {
-  let message = args._[1]
-  message = message.replace(/\\n/g, '\n')
-  const result = await signer.signMessage(message)
-  term.log(result)
+export async function sign (message) {
+  // message = message.replace(/\\n/g, '\n')
+  const msg = Ethers.utils.hashMessage(message)
+  console.log({ message, msg })
+  const result = await signer.signMessage(msg)
+  // const data = Ethers.utils.toUtf8Bytes(message)
+  // const addr = await signer.getAddress()
+  // const { result } = await provider.send('personal_sign', [Ethers.utils.hashMessage(message), addr.toLowerCase()])
   return result
 }
 
@@ -226,7 +227,7 @@ export async function run (terminal, context) {
     case 'balance':
       return term.log(await getBalance(args?._[1]))
     case 'sign':
-      return sign(args)
+      return term.log(sign(args?._[1]))
     case 'send':
       return term.log(await send(args))
     case undefined:

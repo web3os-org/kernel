@@ -2,6 +2,7 @@ import path from 'path'
 import colors from 'ansi-colors'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
+import { AttachAddon } from 'xterm-addon-attach'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 
 import 'xterm/css/xterm.css'
@@ -32,7 +33,6 @@ class Web3osTerminal extends Terminal {
   log (...args) {
     args.forEach(msg => {
       msg = typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2)
-      // msg = msg.replace(/\\n/gm, '\n')
       this.writeln(msg)
     })
   }
@@ -165,6 +165,10 @@ export function create (options = {}) {
 
   term.loadAddon(fitAddon)
   term.loadAddon(new WebLinksAddon())
+  if (options.socket) {
+    const attachAddon = new AttachAddon(options.socket)
+    term.loadAddon(attachAddon)
+  }
 
   term.fit = fitAddon.fit.bind(fitAddon)
   return term

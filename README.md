@@ -61,6 +61,8 @@ The project is still very young, and proper documentation and organization is Co
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Developer-friendly: apps are just HTML/CSS/JS
 - Optional desktop environment
+- WASM Executable Support
+- It runs Doom (and Wolfenstein 3D!)
 
 ## Alpha Footage
 
@@ -181,6 +183,10 @@ A good example of a more full-featured app can be found in [src/bin/confetti/ind
 - Finish the packaging system to be able to install apps
 - Some apps are really just placeholders and don't yet have full functionality
 - Adding more things to this list
+
+## Can it do *thing*?
+
+If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. Let's talk about it in [Discord](https://discord.gg/yA4M83fXn9)!
 
 ## Further Documentation
 

@@ -1,5 +1,7 @@
+@import './js-dos.css';
 @import './rotate.css';
 @import 'https://cdnjs.cloudflare.com/ajax/libs/hint.css/2.7.0/hint.min.css';
+/* @import 'js-dos/dist/js-dos.css'; */
 
 * {
   touch-action: none;
@@ -17,6 +19,7 @@ body {
   margin: 0;
   padding: 0.5rem;
   position: fixed;
+  font-family: 'Times New Roman', Times, serif;
 }
 
 #terminal {
@@ -54,8 +57,5 @@ body {
 }
 
 .web3os-jsdos {
-  width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0;
 }

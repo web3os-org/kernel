@@ -2,6 +2,7 @@ import path from 'path'
 import colors from 'ansi-colors'
 import { ctxmenu } from 'ctxmenu'
 import sweetalert from 'sweetalert2'
+import { lookup } from 'mime-types'
 
 import './files.css'
 
@@ -56,6 +57,8 @@ async function loadFolder (browser, url) {
       }
 
       const extension = path.extname(file)
+      const mime = lookup(extension)
+
       switch (extension) {
         case '.js':
           fileIcon = 'javascript'
@@ -121,7 +124,6 @@ async function loadFolder (browser, url) {
             const filepath = path.resolve(addressBar.value, file.name)
             kernel.fs.writeFileSync(filepath, buffer)
             kernel.snackbar({ labelText: `Uploaded ${filepath}` })
-            console.log({ filepath })
 
             loadFolder(browser, url)
           }
@@ -214,7 +216,6 @@ async function loadFolder (browser, url) {
       entry.addEventListener('contextmenu', e => {
         e.preventDefault()
         e.stopPropagation()
-        console.log(e.target.closest('.web3os-files-explorer-entry').querySelector('mwc-icon'))
         ctxmenu.show(entryContextMenu, e.target.closest('.web3os-files-explorer-entry').querySelector('mwc-icon'))
       })
   
@@ -256,7 +257,7 @@ async function loadFolder (browser, url) {
           case '.txt':
             return kernel.execute(`edit ${location}`)
           case '.md':
-            return kernel.execute(`markdown ${location}`)
+            return kernel.execute(`markdown ${location}`)          
           case '.link':
             try {
               const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
@@ -266,13 +267,8 @@ async function loadFolder (browser, url) {
               kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
             }
             break
-          case '.jpg':
-          case '.png':
-          case '.webp':
-          case '.svg':
-          case '.gif':
-            return kernel.execute(`view ${location}`)
           default:
+            if (mime.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
             kernel.execute(`alert I'm not sure how to handle this file!`)
         }
       })
@@ -389,15 +385,16 @@ export async function run (terminal, url) {
   const appWindow = kernel.appWindow({
     mount: browser,
     title: url,
-    class: ['modern', 'web3os-files-explorer'],
+    class: ['modern', 'web3os-files-explorer-window'],
     height: '60%',
-    minwidth: '60%',
+    width: '60%',
     x: 'center',
     y: 'center'
   })
 
   appWindow.window.body.style.margin = '0'
   appWindow.window.body.style.overflow = 'hidden'
+  appWindow.window.body.style.color = '#121212'
 
   browser.appWindow = appWindow
 

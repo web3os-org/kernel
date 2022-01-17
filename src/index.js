@@ -33,8 +33,9 @@ import theme from './themes/default/index.js'
 
 const figletFontName = 'Graffiti'
 
+// TODO: Make this configurable via env
 const builtinApps = [
-  'account', 'confetti', 'desktop', 'doom', 'edit', 'files', 'help', 'ipfs', 'markdown', 'screensaver', 'view', 'wolfenstein', 'wpm', 'www'
+  'account', 'confetti', 'desktop', 'doom', 'edit', 'files', 'gibson', 'help', 'ipfs', 'markdown', 'screensaver', 'view', 'wasm', 'wolfenstein', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
@@ -48,7 +49,6 @@ export let fs
 export let term
 export let BrowserFS
 let memory
-let gibsonSocket
 
 colors.theme(theme)
 
@@ -119,8 +119,8 @@ export function deleteNamespace (namespace) {
   updateLocalStorage()
 }
 
-export function getGibson () { return gibsonSocket }
-export function setGibson (socket) { gibsonSocket = socket }
+// export function getGibson () { return gibsonSocket }
+// export function setGibson (socket) { gibsonSocket = socket }
 
 export function log (msg, options = {}) {
   if (!msg) return
@@ -206,16 +206,26 @@ export async function wait (ms) {
 }
 
 export async function download (term, context) {
-  const filename = context
+  let filename = context
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
-  filename = path.resolve(term.cwd, filename)
-  const data = fs.readFileSync(filename)
-  const file = new File([data], path.parse(filename).base, { type: 'application/octet-stream' })
-  const url = URL.createObjectURL(file)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = path.parse(filename).base
-  link.click()
+
+  if (context.match(/^http/i)) {
+    const url = new URL(context)
+    filename = path.parse(url.pathname).base
+    const buffer = await (await fetch(url.href)).arrayBuffer()
+    const data = BrowserFS.Buffer.from(buffer)
+    console.log({ filename, data })
+    fs.writeFileSync(path.resolve(term.cwd, filename), data)
+  } else {
+    filename = path.resolve(term.cwd, filename)
+    const data = fs.readFileSync(filename)
+    const file = new File([data], path.parse(filename).base, { type: 'application/octet-stream' })
+    const url = URL.createObjectURL(file)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = path.parse(filename).base
+    link.click()
+  }
 }
 
 export async function upload (term, context) {
@@ -261,7 +271,7 @@ export async function snackbar (options={}) {
 }
 
 async function setupFilesystem () {
-  const browserfs = await import('browserfs')
+  const browserfs = await import('C:/ode/web3os/BrowserFS/build/browserfs.js')
   let filesystem = {}
 
   browserfs.install(filesystem)
@@ -269,27 +279,30 @@ async function setupFilesystem () {
     fs: 'MountableFileSystem',
     options: {
       '/': { fs: 'LocalStorage' },
+      // '/home': { fs: 'IndexedDB', options: { storeName: 'web3os' } },
       '/bin': { fs: 'InMemory' },
       '/tmp': { fs: 'InMemory' },
       '/docs': { fs: 'InMemory' }
     }
   }, err => {
+    console.log('fscallback', err)
     if (err) {
       console.error(err)
-      log(colors.danger(`Failed to initialize filsystem: ${err.message}`))
+      log(colors.danger(`Failed to initialize filesystem: ${err.message}`))
     } else {
       BrowserFS = filesystem
       fs = filesystem.require('fs')
+      window.fs = fs
 
       // Prepare required paths
       if (!fs.existsSync('/var')) fs.mkdirSync('/var')
       if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
       if (!fs.existsSync('/config')) fs.mkdirSync('/config')
-      if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', '[]')
+      if (!fs.existsSync('/config/packages')) window.fs.writeFileSync('/config/packages', '[]')
 
       // Populate /docs
       const docs = fs.readdirSync('/docs')
-      if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
+      if (docs.length === 0) window.fs.writeFileSync('/docs/README.md', README)
 
       // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
       // const dragover = e => { e.stopPropagation(); e.preventDefault() }
@@ -332,7 +345,7 @@ async function setupFilesystem () {
       }}
 
       bin.upload = { description: 'Upload files', run: upload }
-      bin.download = { args: ['filename'], description: 'Download a file', run: download }
+      bin.download = { args: ['filename_or_url'], description: 'Download URL to CWD, or download FILE to PC', run: download }
 
       bin.mkdir = { args: ['path'], description: 'Create a directory', run: (term, context) => {
         if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
@@ -455,7 +468,7 @@ async function registerKernelBins () {
   }
 
   bin.deleteKernelKey = {
-    args: ["namespace", "key"],
+    args: ['namespace', 'key'],
     description: 'Delete specified key, or entire namespace if no key is specified',
     run: (term, context = '') => {
       try {

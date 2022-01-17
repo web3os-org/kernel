@@ -97,6 +97,7 @@
 
 .web3os-desktop-launcher-entry img {
   width: 64px;
+  margin: auto;
   /* temporary hack; famous last words */
   filter: invert(1);
 }
@@ -149,7 +150,7 @@
   align-items: center;
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: 10px;
-  max-width: 80px;
+  /* max-width: 80px; */
   max-height: 80px;
   padding: 1rem;
   -ms-user-select: none;

@@ -2,6 +2,7 @@ import arg from 'arg'
 import path from 'path'
 import colors from 'ansi-colors'
 import { ctxmenu } from 'ctxmenu'
+import { lookup } from 'mime-types'
 
 import './index.css'
 import defaultWallpaperURL from './default_wallpaper.png'
@@ -30,7 +31,38 @@ let kernel
 let desktop
 let terminal
 let launcher
-// let defaultWallpaperURL = 'https://placeimg.com/800/800/tech'
+
+export function saveDesktopIconPositions () {
+  const positions = {}
+
+  document.querySelectorAll('.web3os-desktop-entry').forEach(entry => {
+    const { x, y } = entry.getBoundingClientRect()
+    const { location } = JSON.parse(entry.dataset.file)
+    positions[location] = { x, y }
+  })
+
+  window.localStorage.setItem('web3os_desktop_icon_positions', JSON.stringify(positions))
+}
+
+export function loadDesktopIconPositions () {
+  try {
+    const positions = JSON.parse(window.localStorage.getItem('web3os_desktop_icon_positions'))
+
+    document.querySelectorAll('.web3os-desktop-entry').forEach(entry => {
+      try {
+        const { location } = JSON.parse(entry.dataset.file)
+        const { x, y } = positions[location]
+        entry.style.position = 'absolute'
+        entry.style.top = y + 'px'
+        entry.style.left = x + 'px'
+      } catch {
+        console.log('Position not set:', entry.dataset.file)
+      }
+    })
+  } catch (err) {
+    console.warn('No desktop positions set')
+  }
+}
 
 export async function launchTerminal (options = {}) {
   let win
@@ -89,6 +121,10 @@ export async function start (args) {
 
   const fileLayer = document.createElement('div')
   fileLayer.id = 'web3os-desktop-file-layer'
+  fileLayer.addEventListener('dragover', e => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  })
 
   const files = kernel.fs.readdirSync('/desktop')
 
@@ -112,6 +148,7 @@ export async function start (args) {
         fileIcon = 'text_snippet'
     }
 
+    entry.id = `web3os-desktop-entry-${btoa(file.location)}`
     entry.classList.add('web3os-desktop-entry')
 
     icon.textContent = fileIcon
@@ -125,11 +162,19 @@ export async function start (args) {
     fileLayer.appendChild(entry)
     
     entry.draggable = true
+
+    entry.addEventListener('dragstart', e => {
+      // console.log('dragstart', e)
+      e.dataTransfer.setData('text', e.target.id)
+      e.dataTransfer.effectAllowed = 'move'
+    })
+
     entry.addEventListener('dragend', e => {
       // console.log('dragend', e)
       e.target.style.position = 'absolute'
-      e.target.style.left = e.x + 'px'
-      e.target.style.top = e.y + 'px'
+      e.target.style.left = (e.x - 48) + 'px'
+      e.target.style.top = (e.y - 48) + 'px'
+      saveDesktopIconPositions()
     })
 
     const entryContextMenu = [
@@ -151,6 +196,7 @@ export async function start (args) {
       const stat = kernel.fs.statSync(data.location)
       const fileParts = path.parse(data.name)
       const extension = fileParts.ext
+      const mime = lookup(extension)
 
       if (stat.isDirectory()) {
         return kernel.execute(`files ${data.location}`)
@@ -166,6 +212,7 @@ export async function start (args) {
         case '.md':
           return kernel.execute(`markdown ${data.location}`)
         default:
+          if (mime.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
           kernel.execute(`alert I'm not sure how to handle this file!`)
       }
     })
@@ -239,19 +286,21 @@ export async function start (args) {
   document.querySelector('#terminal').style.display = 'none'
   document.body.appendChild(desktop)
 
-  const desktopContextMenu = [
-    {
-      text: 'New File',
-      action: () => {}
-    }
-  ]
+  loadDesktopIconPositions()
 
-  desktop.addEventListener('contextmenu', e => {
-    e.preventDefault()
-    e.stopPropagation()
-    // console.log(e)
-    ctxmenu.show(desktopContextMenu, e)
-  })
+  // const desktopContextMenu = [
+  //   {
+  //     text: 'New File',
+  //     action: () => {}
+  //   }
+  // ]
+
+  // desktop.addEventListener('contextmenu', e => {
+  //   e.preventDefault()
+  //   e.stopPropagation()
+  //   // console.log(e)
+  //   ctxmenu.show(desktopContextMenu, e)
+  // })
 }
 
 export async function toggleRunner () {
