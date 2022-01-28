@@ -71,6 +71,8 @@
     "@material/mwc-snackbar": "^0.25.3",
     "@metamask/detect-provider": "^1.2.0",
     "@sweetalert2/theme-dark": "^5.0.8",
+    "@wasmer/wasm-terminal": "^0.12.0",
+    "@wasmer/wasmfs": "^0.12.0",
     "@web3os/openocean-api": "https://github.com/web3os-org/openocean-api.git",
     "abort-controller": "^3.0.0",
     "animate.css": "^4.1.1",

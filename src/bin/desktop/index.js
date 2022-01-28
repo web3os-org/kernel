@@ -343,7 +343,8 @@ export async function toggleLauncher () {
     { name: 'Instacalc', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://instacalc.com') },
     { name: 'Thesaurus', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://thesaurus.com') },
     { name: 'Dictionary', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://dictionary.com') },
-    { name: 'Scrolller', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://scrolller.com') }
+    { name: 'WASM Studio', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://webassembly.studio') },
+    { name: 'WASM Shell', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://webassembly.sh') }
   ]
 
   const template = document.createElement('div')

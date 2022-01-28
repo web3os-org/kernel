@@ -1,10 +1,12 @@
+import arg from 'arg'
 import path from 'path'
 import colors, { blue } from 'ansi-colors'
+import { parse as cliParse } from 'shell-quote'
 
 import './www.css'
 
 export const name = 'www'
-export const args = ['url']
+export const version = '1.0.0'
 export const description = 'WWW Browser'
 export const help = `
   ${colors.danger.bold('NOTE:')} This app is not designed to be a full-featured browser,
@@ -17,15 +19,33 @@ export const help = `
   ${colors.blue.bold('BACK')} and ${colors.blue.bold('FORWARD')} buttons use history of ${colors.cyan.bold('typed')} addresses, not ${colors.yellow.bold('browsed')} addresses.
 
   Usage:
-    www <url>         Open a window at <url>
+    www <options> <url>         Open a window at <url>
+
+  Options:
+    --help                      Print this help
+    --no-toolbar                Hide the toolbar
+    --title                     Window title
+    --version                   Show version information
 `
 
-export async function run (terminal, url) {
+export const spec = {
+  '--help': Boolean,
+  '--version': Boolean,
+  '--no-toolbar': Boolean,
+  '--title': String
+}
+
+export async function run (terminal, context) {
   const { kernel, log } = terminal
   let { fs } = kernel
 
-  url = (!url || url === '') ? 'about:blank' : url
+  const args = arg(spec, { argv: cliParse(context) })
+  
+  let url = args._?.[0]
+  if (args['--version']) return terminal.log(version)
+  if (args['--help']) return terminal.log(help)
 
+  url = (!url || url === '') ? 'about:blank' : url
   const history = [url]
   let historyPosition = 0
 
@@ -100,7 +120,7 @@ export async function run (terminal, url) {
 
   const appWindow = kernel.appWindow({
     mount: browser,
-    title: `WWW: ${url}`,
+    title: args['--title'] || `WWW: ${url}`,
     class: ['modern', 'web3os-www-browser'],
     width: '60%',
     height: '60%'
@@ -108,4 +128,6 @@ export async function run (terminal, url) {
 
   appWindow.window.body.style.margin = '0'
   appWindow.window.body.style.overflow = 'hidden'
+
+  if (args['--no-toolbar']) toolbar.style.display = 'none'
 }
