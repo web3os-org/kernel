@@ -13,9 +13,11 @@ export const help = `
 function createImage (mime, url, appWindow) {
   const content = new Image()
   content.src = url
-  content.style.maxWidth = '100%'
+  content.style.objectFit = 'cover'
+  content.style.width = '100%'
+  content.style.height = '100%'
   content.onload = () => {
-    appWindow.window.resize(content.width, content.height + 35)
+    // appWindow.window.resize(content.width, content.height + 35)
   }
 
   return content

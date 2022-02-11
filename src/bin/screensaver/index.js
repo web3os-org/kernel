@@ -40,7 +40,7 @@ function listenForKeypress (callback) {
   keyTrap.focus()
 }
 
-export async function run (term, context) {
+export async function run (term = window.terminal, context = '') {
   terminal = term
   kernel = term.kernel
 

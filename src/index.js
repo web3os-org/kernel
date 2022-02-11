@@ -16,6 +16,7 @@ import figletFont from 'figlet/importable-fonts/Graffiti'
 import columnify from 'columnify'
 import { AttachAddon } from 'xterm-addon-attach'
 import sweetalert from 'sweetalert2'
+import { unzip } from 'unzipit'
 
 import 'animate.css'
 import './css/index.css'
@@ -35,7 +36,9 @@ const figletFontName = 'Graffiti'
 
 // TODO: Make this configurable via env
 const builtinApps = [
-  'account', 'confetti', 'desktop', 'doom', 'edit', 'files', 'gibson', 'help', 'ipfs', 'markdown', 'screensaver', 'view', 'wasm', 'wolfenstein', 'wpm', 'www'
+  'account', 'confetti', 'desktop', 'doom', 'edit', 'files', 'gibson',
+  'help', 'ipfs', 'markdown', 'screensaver', 'usb', 'view', 'wasm', 
+  'wolfenstein', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
@@ -210,8 +213,9 @@ export async function download (term, context) {
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
 
   if (context.match(/^http/i)) {
-    const url = new URL(context)
+    const url = new URL(context.split(' ')[0])
     filename = path.parse(url.pathname).base
+    if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
     const buffer = await (await fetch(url.href)).arrayBuffer()
     const data = BrowserFS.Buffer.from(buffer)
     console.log({ filename, data })
@@ -273,7 +277,43 @@ export async function snackbar (options={}) {
 async function setupFilesystem () {
   // const browserfs = await import('C:/ode/web3os/BrowserFS/build/browserfs.js')
   const browserfs = await import('browserfs')
+  let initfs
   let filesystem = {}
+
+  const bootArgs = new URLSearchParams(window.location.search)
+  const initfsUrl = bootArgs.get('initfs')
+
+  if (bootArgs.has('initfs')) {
+    try {
+      const result = await kernel.dialog({
+        title: 'Use initfs?',
+        icon: 'warning',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showDenyButton: true,
+        showLoaderOnConfirm: true,
+        focusDeny: true,
+        confirmButtonText: 'Yes',
+        html: `
+          <p>Do you want to overwrite existing files in your filesystem with the initfs located at:</p>
+          <h4><a href="${initfsUrl}" target="_blank">${initfsUrl}</a></h4>
+          <p><strong>Be sure you trust the source!</strong></p>
+        `,
+        preConfirm: async () => {
+          return await unzip(initfsUrl)
+        }
+      })
+
+      if (result.isDenied) throw new Error('User rejected using initfs')
+      const { entries } = result.value
+      initfs = entries
+      history.replaceState(null, null, '/') // prevent reload with initfs
+    } catch (err) {
+      terminal.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
+      terminal.log(colors.danger(err.message))
+      console.error(err)
+    }
+  }
 
   browserfs.install(filesystem)
   browserfs.configure({
@@ -286,7 +326,6 @@ async function setupFilesystem () {
       '/docs': { fs: 'InMemory' }
     }
   }, err => {
-    console.log('fscallback', err)
     if (err) {
       console.error(err)
       log(colors.danger(`Failed to initialize filesystem: ${err.message}`))
@@ -295,16 +334,31 @@ async function setupFilesystem () {
       fs = filesystem.require('fs')
       window.fs = fs
 
+      // Use an initfs if available
+      if (initfs) {
+        Object.entries(initfs).forEach(async ([name, entry]) => {
+          const filepath = path.join('/', name)
+
+          if (entry.isDirectory) !fs.existsSync(filepath) && fs.mkdirSync(path.join('/', name))
+          else {
+            const parentDir = path.parse(filepath).dir
+            if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir)
+            fs.writeFileSync(filepath, BrowserFS.Buffer.from(await entry.arrayBuffer()))
+          }
+        })
+      }
+      
       // Prepare required paths
       if (!fs.existsSync('/var')) fs.mkdirSync('/var')
       if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
       if (!fs.existsSync('/config')) fs.mkdirSync('/config')
-      if (!fs.existsSync('/config/packages')) window.fs.writeFileSync('/config/packages', '[]')
+      if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', '[]')
 
       // Populate /docs
       const docs = fs.readdirSync('/docs')
-      if (docs.length === 0) window.fs.writeFileSync('/docs/README.md', README)
+      if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
 
+      // Drag and drop on terminal
       // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
       // const dragover = e => { e.stopPropagation(); e.preventDefault() }
       // const drop = e => {
@@ -326,9 +380,9 @@ async function setupFilesystem () {
       //   }
       // }
 
-      // document.body.addEventListener('dragenter', dragenter)
-      // document.body.addEventListener('dragover', dragover)
-      // document.body.addEventListener('drop', drop)
+      // terminal.addEventListener('dragenter', dragenter)
+      // terminal.addEventListener('dragover', dragover)
+      // terminal.addEventListener('drop', drop)
 
       // Setup FS commands
       bin.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
@@ -346,7 +400,7 @@ async function setupFilesystem () {
       }}
 
       bin.upload = { description: 'Upload files', run: upload }
-      bin.download = { args: ['filename_or_url'], description: 'Download URL to CWD, or download FILE to PC', run: download }
+      bin.download = { args: ['filename_or_url', 'save_as_filename'], description: 'Download URL to CWD, or download FILE to PC', run: download }
 
       bin.mkdir = { args: ['path'], description: 'Create a directory', run: (term, context) => {
         if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
@@ -426,6 +480,7 @@ async function setupFilesystem () {
 
       // FS command aliases
       bin.cat = { args: ['path'], description: 'Alias of read', run: bin.read.run }
+      bin.dir = { args: ['path'], description: 'Alias of ls', run: bin.ls.run }
       bin.rename = { args: ['from', 'to'], description: 'Alias of mv', run: bin.mv.run }
     }
   })
@@ -601,21 +656,21 @@ export async function showSplash (msg, options = {}) {
   background.style.height = '100vh'
   background.style.zIndex = 100001
 
-  if (!options.disableVideoBackground) {
-    const video = document.createElement('video')
-    const file = (await import('./assets/splash.mp4')).default
+  // if (!options.disableVideoBackground) {
+  //   const video = document.createElement('video')
+  //   const file = (await import('./assets/splash.mp4')).default
 
-    video.id = 'web3os-splash-video'
-    video.src = file
-    video.muted = true
-    video.loop = true
-    video.autoplay = true
-    video.style.width = '100vw'
-    video.style.height = '100vh'
-    video.style.objectFit = 'cover'
+  //   video.id = 'web3os-splash-video'
+  //   video.src = file
+  //   video.muted = true
+  //   video.loop = true
+  //   video.autoplay = true
+  //   video.style.width = '100vw'
+  //   video.style.height = '100vh'
+  //   video.style.objectFit = 'cover'
 
-    background.appendChild(video)
-  }
+  //   background.appendChild(video)
+  // }
 
   const message = document.createElement('h3')
   message.id = 'web3os-splash-message'
@@ -683,16 +738,16 @@ export async function boot () {
   if (!bootArgs.has('nobootsplash')) {
     const closeSplash = await showSplash()
     await execute('confetti --startVelocity 90 --particleCount 150')
+    setTimeout(closeSplash, 2000) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
 
     // Automatically start the desktop on small screens
     // TODO: Fix everything on small screens
     if (window.innerWidth < 768) {
       // document.querySelector('#terminal').style.display = 'none'
-      // execute('desktop')
+      setTimeout(() => execute('desktop'), 2100)
     } else {
       document.querySelector('#terminal').style.display = 'block'
       setTimeout(terminal.fit, 50)
-      setTimeout(closeSplash, 2000) // The splash is pretty and needs to be seen and validated.
       terminal.focus()
     }
   } else {
@@ -747,15 +802,21 @@ const kernelWallet = {
 
 export const wallet = kernelWallet
 
-// Provide crypto icons from scco's fusion library
-// export function icon (options = {}) {
-//   const library = options.library || 'coins'
-//   const name = options.name || 'BTC_1'
-//   const svg = document.createElement('svg')
-//   const use = document.createElement('use')
-//   svg.classList.add('web3os-icon-fusion')
-//   use.setAttribute('xlink:href', `sprites/fusion-${library}.svg#${name}`)
-//   svg.appendChild(use)
-//   return svg
-// }
+// Setup screensaver interval
+let idleTimer
+const resetIdleTime = () => {
+  clearTimeout(idleTimer)
+  if (!bin.screensaver) return
+  idleTimer = setTimeout(bin.screensaver.run, get('config', 'screensaver-timeout') || 90000)
+}
 
+window.addEventListener('load', resetIdleTime)
+document.addEventListener('mousemove', resetIdleTime)
+document.addEventListener('keydown', resetIdleTime)
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+  })
+}

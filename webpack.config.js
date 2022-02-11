@@ -11,11 +11,20 @@ module.exports = {
   devtool: 'eval-source-map',
   devServer: {
     static: './dist',
-    server: { type: 'https' }
     // devMiddleware: { writeToDisk: true }
+    server: {
+      type: 'https',
+      options: {
+        cert: './src/assets/ssl/localhost.crt',
+        key: './src/assets/ssl/localhost.key'
+      }
+    }
   },
   experiments: {
     topLevelAwait: true
+  },
+  externals: {
+    'wasmer_wasi_js_bg.wasm': true
   },
   plugins: [
     // new WebpackBundleAnalyzer(),
@@ -33,8 +42,12 @@ module.exports = {
 
     new CopyPlugin({
       patterns: [
+        { from: 'manifest.json' },
         { from: 'node_modules/js-dos/dist/wdosbox.wasm' },
-        { from: 'node_modules/js-dos/dist/wdosbox.js' }
+        { from: 'node_modules/js-dos/dist/wdosbox.js' },
+        { from: 'src/assets/icon-512.png', to: 'assets/icon.png' },
+        { from: 'src/assets/icon-192.png', to: 'assets' },
+        { from: 'src/assets/maskable_icon_x192.png', to: 'assets' }
       ]
     })
   ],
@@ -42,6 +55,7 @@ module.exports = {
   entry: {
     _loader: './src/_loader.js',
     kernel: './src/index.js',
+    'service-worker': './src/service-worker.js',
     ...glob.sync('./src/bin/**/*.js').reduce((obj, el) => { obj['bin/' + path.parse(el).dir.split('/').at(-1)] = el; return obj }, {})
   },
 

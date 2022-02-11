@@ -68,9 +68,9 @@ async function updateTokenList () {
 
 export async function connect (args) {
   try {
+    await window.ethereum.enable()
     provider = window.web3.currentProvider
     web3 = new Web3(provider)
-    window.web3 = web3
   } catch {
     throw new Error(colors.danger('Failed to connect to web3 provider. Do you have https://metamask.io installed?'))
   }

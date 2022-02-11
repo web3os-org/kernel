@@ -44,25 +44,40 @@ The project is still very young, and proper documentation and organization is Co
 - [Disclaimer](#disclaimer)
 - [User Quickstart](#user-quickstart)
 - [Developer Quickstart](#developer-quickstart)
+- [Autostart](#autostart)
 - [Scripting](#scripting)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
 - [TODO](#todo)
+- [Can it do *thing*?](#can-it-do-thing)
 - [Further Documentation](#further-documentation)
 
 ---
 
 ## Features
 
+- Runs completely in a web browser
+- Optional desktop environment
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
 - Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js) and [ethers.js](https://github.com/ethers-io/ethers.js)
+  - Currently, it only integrates with [MetaMask](https://metamask.io/)
+  - Still in heavy development, so more to come!
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
-- Developer-friendly: apps are just HTML/CSS/JS
-- Optional desktop environment
-- WASM Executable Support
-- It runs Doom (and Wolfenstein 3D!)
+- IPFS integration with [ipfs-core](https://github.com/)
+- It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
+- WebAssembly executable support *(very experimental)*:
+  - [WASI](https://wasi.dev/)
+  - [Emscripten](https://emscripten.org/)
+  - [AssemblyScript](https://www.assemblyscript.org/)
+- Decentralized:
+  - Open source to run your own copy
+  - Backup site hosted on IPFS
+    - *(soon, there are still some issues to resolve)*
+- Developer-friendly:
+  - Programs are just HTML/CSS/JS, or any language that compiles to WebAssembly
+  - A package manager, wpm, is in development but not yet functional
 
 ## Alpha Footage
 
@@ -101,6 +116,14 @@ yarn start # or npm start
 
 From here, simply connect to [https://localhost:8080](https://localhost:8080) and accept the self-signed certificate warning.
 
+## Autostart
+
+To modify the commands the system executes on startup:
+
+- `edit /config/autostart.sh`
+- then add `desktop` to the end of the file
+- insert any additional commands you want to run on startup
+
 ## Scripting
 
 Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js) offers far more power.
@@ -117,7 +140,7 @@ To run a Javascript script: `eval /path/to/script.js`
 
 This (and everything else) is subject to change before version 1.0.
 
-Also, expect undocumented methods.
+Also, expect undocumented features for now.
 
 `window.kernel.bin` { name: app }
 
@@ -186,7 +209,7 @@ A good example of a more full-featured app can be found in [src/bin/confetti/ind
 
 ## Can it do *thing*?
 
-If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. Let's talk about it in [Discord](https://discord.gg/yA4M83fXn9)!
+If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. PR's are always welcome and encouraged. Let's talk about it in [Discord](https://discord.gg/yA4M83fXn9)!
 
 ## Further Documentation
 

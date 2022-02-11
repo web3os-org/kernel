@@ -5,6 +5,7 @@ import { ctxmenu } from 'ctxmenu'
 import { lookup } from 'mime-types'
 
 import './index.css'
+import README from '../../../README.md'
 import defaultWallpaperURL from './default_wallpaper.png'
 import { default as defaultAppIcon } from '../../assets/default-app-icon.svg'
 import { create as createTerminal } from '../../terminal'
@@ -110,6 +111,7 @@ export async function start (args) {
 
   const wallpaper = document.createElement('img')
   wallpaper.id = 'web3os-desktop-wallpaper'
+  wallpaper.alt = ''
   wallpaper.src = args['--wallpaper'] || defaultWallpaperURL
   wallpaper.style.opacity = 0
 
@@ -343,8 +345,8 @@ export async function toggleLauncher () {
     { name: 'Instacalc', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://instacalc.com') },
     { name: 'Thesaurus', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://thesaurus.com') },
     { name: 'Dictionary', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://dictionary.com') },
-    { name: 'WASM Studio', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://webassembly.studio') },
-    { name: 'WASM Shell', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://webassembly.sh') }
+    // { name: 'WASM Studio', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://webassembly.studio') },
+    // { name: 'WASM Shell', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://webassembly.sh') }
   ]
 
   const template = document.createElement('div')
@@ -410,6 +412,7 @@ export async function run (term, context) {
   if (args['--version']) return terminal.log(version)
   if (!kernel.fs.existsSync('/desktop')) kernel.fs.mkdirSync('/desktop')
   if (!kernel.fs.existsSync('/desktop/Documents')) kernel.fs.mkdirSync('/desktop/Documents')
+  kernel.fs.writeFileSync('/desktop/README.md', README)
 
   switch (cmd) {
     case 'start':
