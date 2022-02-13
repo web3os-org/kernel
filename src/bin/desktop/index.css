@@ -72,27 +72,46 @@
 #web3os-desktop-launcher {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-evenly;
+  justify-content: space-between;
   gap: 1rem;
   margin: 2rem;
+  z-index: 100;
+  position: relative;
+  perspective: 10;
+}
+
+#web3os-desktop-launcher-wallpaper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* height: 100%; */
+  /* width: 100%; */
+  min-height: 100%;
+background-repeat: no-repeat;
+background-attachment: fixed;
+background-position: center;
+background-size: cover;
 }
 
 .web3os-desktop-launcher-entry {
-  min-width: 75px;
+  width: 128px;
+  height: 128px;
   text-align: center;
   padding: 1.25rem;
   border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(7, 7, 7, 0.7);
   transition: transform 0.5s;
+  overflow: hidden;
+  word-break: break-all;
 }
 
 .web3os-desktop-launcher-entry:hover {
-  transform: scale(1.25);
+  transform: scale(1.15);
   cursor: pointer;
 }
 
 .web3os-desktop-launcher-entry h1 {
-  font-size: 1.5rem;
+  font-size: 1em;
 }
 
 .web3os-desktop-launcher-entry img {

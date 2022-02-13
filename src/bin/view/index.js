@@ -13,13 +13,19 @@ export const help = `
 function createImage (mime, url, appWindow) {
   const content = new Image()
   content.src = url
-  content.style.objectFit = 'cover'
+  content.style.objectFit = 'contain'
   content.style.width = '100%'
   content.style.height = '100%'
   content.onload = () => {
     // appWindow.window.resize(content.width, content.height + 35)
   }
 
+  // appWindow.window.body.style.backgroundImage = `url(${url})`
+  // appWindow.window.body.style.backgroundAttachment = 'fixed'
+  // appWindow.window.body.style.backgroundSize = 'cover'
+  // appWindow.window.body.style.backgroundRepeat = 'no-repeat'
+
+  // return document.createElement('div')
   return content
 }
 

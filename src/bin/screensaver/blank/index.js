@@ -1,4 +1,5 @@
 export default async function ({ listenForKeypress }) {
+  if (document.getElementById('screensaver')) return false
   const canvas = document.createElement('canvas')
   canvas.id = 'screensaver'
   canvas.width = window.innerWidth

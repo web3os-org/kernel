@@ -15,23 +15,28 @@ export const version = '1.0.0'
 export const description = 'Web3OS Desktop'
 export const help = `
   Usage:
-    desktop <options>       Start the Crypotoba.sh Desktop
+    desktop <options>             Start the Desktop Environment
+    desktop launcher              Start the Desktop Launcher only
 
   Options:
-    --wallpaper, -w         Specify the path to the wallpaper to use at startup
+    --wallpaper, -w               Specify the URL to the wallpaper to use at startup
+    --launcher-wallpaper, l       Specify the URL to the wallpaper for the launcher
 `
 
 const spec = {
   '--version': Boolean,
   '-v': '--version',
   '--wallpaper': String,
-  '-w': '--wallpaper'
+  '-w': '--wallpaper',
+  '--launcher-wallpaper': String,
+  '-l': '--launcher-wallpaper'
 }
 
 let kernel
 let desktop
 let terminal
 let launcher
+let defaultLauncherWallpaper = 'https://images.unsplash.com/photo-1639262498805-17c7dc422d37'
 
 export function saveDesktopIconPositions () {
   const positions = {}
@@ -231,7 +236,8 @@ export async function start (args) {
   menuButton.classList.add('hint--left', 'hint--success')
   
   menuButton.addEventListener('animationend', () => menuButton.classList.remove('animate__animated', 'animate__bounce', 'animate__slow'))
-  menuButton.addEventListener('click', toggleLauncher)
+  menuButton.addEventListener('click', e => toggleLauncher({ e }))
+
   menuButton.addEventListener('contextmenu', e => {
     e.preventDefault()
     e.stopPropagation()
@@ -275,7 +281,7 @@ export async function start (args) {
 
   const metaListener = e => {
     if (e.code === 'KeyQ' && e.ctrlKey && e.shiftKey) exitDesktop()
-    if (e.key === 'Meta' && e.ctrlKey) toggleLauncher()
+    if (e.key === 'Meta' && e.ctrlKey) toggleLauncher(args)
     if (e.key === 'Tab' && e.shiftKey) toggleRunner()
   }
 
@@ -330,7 +336,7 @@ export async function toggleRunner () {
   // TODO: Figure out how to get the damn input focused properly - everything I tried didn't work
 }
 
-export async function toggleLauncher () {
+export async function toggleLauncher (args) {
   if (launcher) {
     launcher.window.close()
     launcher = null
@@ -340,6 +346,8 @@ export async function toggleLauncher () {
   // TODO: Load this from somewhere configurable
   const launcherApps = [
     { name: 'Files', icon: kernel.bin.files?.icon, description: kernel.bin.files?.description, run: () => kernel.execute('files /desktop')},
+    { name: 'Doom', icon: kernel.bin.doom?.icon, description: kernel.bin.doom?.description, run: () => kernel.execute('doom')},
+    { name: 'Wolfenstein', icon: kernel.bin.wolfenstein?.icon, description: kernel.bin.wolfenstein?.description, run: () => kernel.execute('wolfenstein')},
     { name: 'Screensaver', icon: kernel.bin.screensaver?.icon, description: kernel.bin.screensaver?.description, run: () => kernel.execute('screensaver') },
     { name: 'Browser', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www about:blank')},
     { name: 'Instacalc', icon: kernel.bin.www?.icon, description: kernel.bin.www?.description, run: () => kernel.execute('www https://instacalc.com') },
@@ -384,13 +392,16 @@ export async function toggleLauncher () {
   }
 
   launcher = kernel.appWindow({
-    title: 'web3os.sh Launcher',
+    title: 'web3os.sh',
     mount: template,
     onclose: () => {
       launcher = null
     }
   })
 
+  launcher.window.body.style.backgroundImage = `url(${args['--launcher-wallpaper'] || defaultLauncherWallpaper})`
+  launcher.window.body.style.backgroundAttachment = 'fixed'
+  launcher.window.body.style.backgroundSize = 'cover'
   launcher.window.maximize()
 }
 
@@ -402,7 +413,6 @@ export async function exitDesktop () {
 }
 
 export async function run (term, context) {
-  if (document.querySelector('#web3os-desktop')) throw new Error('Desktop is already running')
   terminal = term
   kernel = term.kernel
 
@@ -412,11 +422,13 @@ export async function run (term, context) {
   if (args['--version']) return terminal.log(version)
   if (!kernel.fs.existsSync('/desktop')) kernel.fs.mkdirSync('/desktop')
   if (!kernel.fs.existsSync('/desktop/Documents')) kernel.fs.mkdirSync('/desktop/Documents')
-  kernel.fs.writeFileSync('/desktop/README.md', README)
 
   switch (cmd) {
+    case 'launcher':
+      return toggleLauncher(args)
     case 'start':
     default:
+      if (document.querySelector('#web3os-desktop')) throw new Error('Desktop is already running')
       return await start(args)
   }
 }

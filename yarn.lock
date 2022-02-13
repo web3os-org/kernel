@@ -1504,7 +1504,7 @@
 
 "@material/mwc-ripple@^0.25.3":
   version "0.25.3"
-  resolved "https://registry.npmjs.org/@material/mwc-ripple/-/mwc-ripple-0.25.3.tgz"
+  resolved "https://registry.yarnpkg.com/@material/mwc-ripple/-/mwc-ripple-0.25.3.tgz#3b8f08b9d4195ff42989d08a22cc07a432fd753d"
   integrity sha512-G/gt/csxgME6/sAku3GiuB0O2LLvoPWsRTLq/9iABpaGLJjqaKHvNg/IVzNDdF3YZT7EORgR9cBWWl7umA4i4Q==
   dependencies:
     "@material/dom" "=14.0.0-canary.261f2db59.0"

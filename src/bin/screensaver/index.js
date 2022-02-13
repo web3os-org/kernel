@@ -24,6 +24,7 @@ const spec = {
 
 let kernel
 let terminal
+export let running = false
 
 function listenForKeypress (callback) {
   const keyTrap = document.createElement('input')

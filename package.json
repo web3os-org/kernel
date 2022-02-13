@@ -72,6 +72,7 @@
     "@material/mwc-button": "^0.25.3",
     "@material/mwc-dialog": "^0.25.3",
     "@material/mwc-icon-button": "^0.25.3",
+    "@material/mwc-ripple": "^0.25.3",
     "@material/mwc-snackbar": "^0.25.3",
     "@metamask/detect-provider": "^1.2.0",
     "@sweetalert2/theme-dark": "^5.0.8",

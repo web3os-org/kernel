@@ -48,6 +48,8 @@ The project is still very young, and proper documentation and organization is Co
 - [Scripting](#scripting)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
+- [Web3os-server](#web3os-server)
+- [WebUSB](#webusb)
 - [TODO](#todo)
 - [Can it do *thing*?](#can-it-do-thing)
 - [Further Documentation](#further-documentation)
@@ -76,7 +78,9 @@ The project is still very young, and proper documentation and organization is Co
   - Backup site hosted on IPFS
     - *(soon, there are still some issues to resolve)*
 - Developer-friendly:
-  - Programs are just HTML/CSS/JS, or any language that compiles to WebAssembly
+  - Easily scriptable and hookable ecosystem of modules
+    - This sacrifices some security; WASM helps
+  - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
   - A package manager, wpm, is in development but not yet functional
 
 ## Alpha Footage
@@ -85,9 +89,11 @@ Here's a quick video showcasing a few of the features: [web3os alpha demo](https
 
 ## Disclaimer
 
-This project is still considered to be in an alpha state. All apps run in the same context and can access every other app, as well as the entire browserfs.
+This project is still considered to be in an alpha state. All apps run in the same context and can access every other app, as well as the entire virtual browserfs.
 
 Do not rely on it to keep anything safe, and never paste commands you don't understand. Anywhere, ever.
+
+Heavily scrutinize any application or script you install or run, as well as its authors.
 
 ## User Quickstart
 
@@ -98,9 +104,10 @@ Do not rely on it to keep anything safe, and never paste commands you don't unde
 - Launch the desktop: `desktop`
 - Launch the file explorer: `files`
 - Launch a browser: `www https://instacalc.com`
-- Show your ETH address: `account`
+- Show your wallet address: `account`
 - Check native coin balance: `account balance`
 - Check token balance: `account balance USDC`
+- Switch to another network: `account chain polygon`, `account chain bsc`, `account chain 0x2`
 - Learn more about commands: `help command`
 - Run the screensaver: `screensaver`
 - 🎉 Fire the Confetti Gun: `confetti`
@@ -199,17 +206,53 @@ export async function run (terminal, context) {
 
 A good example of a more full-featured app can be found in [src/bin/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/bin/confetti/index.js).
 
+## Web3os-server
+
+The web3os-server spins up a private Docker container for performing various server-side tasks at the request of the web3os client, authenticated with a user's wallet.
+
+It offers multi-user capability while restricting access based on user's authenticated wallet address.
+
+[View the web3os-server repository](https://github.com/web3os-org/server)
+
+## WebUSB
+
+Experimental WebUSB features are only available in Chrome-based browsers at this time.
+
+The `usb` command doesn't do much except pair and maintain a list of devices.
+
+```text
+Usage:
+    usb devices            List paired USB devices
+    usb request <options>  Request USB device (blank for user choice)
+
+  Options:
+    --help                 Print this help message
+    --name                 Specify a friendly name for the USB device
+    --product              Product ID of the USB device
+    --vendor               Vendor ID of the USB device
+    --version              Print the version information
+```
+
+Access the array of devices within an app: `kernel.bin.usb.devices`
+
 ## TODO
 
 - There's a lot to do 😅
 - Decoupling of built-in apps into their own packages
+- P2P messaging and file sharing
+- Unified WASM handling
+- Finish development of backend Node.js web3os-server API
 - Finish the packaging system to be able to install apps
-- Some apps are really just placeholders and don't yet have full functionality
-- Adding more things to this list
+- Rewrite most core modules in Rust
+- Increase inter-module security
+- Some apps are basically just placeholders
+- Adding more things to the TODO list
 
 ## Can it do *thing*?
 
 If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. PR's are always welcome and encouraged. Let's talk about it in [Discord](https://discord.gg/yA4M83fXn9)!
+
+Better yet, if you can make it do the thing, please [submit a PR](CONTRIBUTING.md)! This project will never grow without a thriving community of developers!
 
 ## Further Documentation
 

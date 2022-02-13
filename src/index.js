@@ -4,6 +4,7 @@
 
   Author: Jay Mathis <code@mathis.network>
   Repo: https://github.com/web3os-org/kernel
+  License: MIT
 
   Entry-point of the web3os kernel
 */
@@ -121,9 +122,6 @@ export function deleteNamespace (namespace) {
   delete memory[namespace]
   updateLocalStorage()
 }
-
-// export function getGibson () { return gibsonSocket }
-// export function setGibson (socket) { gibsonSocket = socket }
 
 export function log (msg, options = {}) {
   if (!msg) return
@@ -300,7 +298,14 @@ async function setupFilesystem () {
           <p><strong>Be sure you trust the source!</strong></p>
         `,
         preConfirm: async () => {
-          return await unzip(initfsUrl)
+          try {
+            return await unzip(initfsUrl)
+          } catch (err) {
+            console.error(err)
+            // await kernel.alert('Failed to unzip initfsUrl at ' + initfsUrl)
+            terminal.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
+            return true
+          }
         }
       })
 
