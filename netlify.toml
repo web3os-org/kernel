@@ -10,4 +10,4 @@
     X-Frame-Options = "SAMEORIGIN"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
-    Content-Security-Policy = "script-src 'self' 'unsafe-eval'; object-src 'self'; worker-src blob:"
+    Content-Security-Policy = "script-src 'self' 'unsafe-eval'; object-src 'self'; worker-src blob: https://web3os.sh/"
