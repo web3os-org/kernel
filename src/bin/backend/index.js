@@ -1,15 +1,15 @@
 import colors from 'ansi-colors'
 import { create as createTerminal } from '../../terminal'
 
-export const name = 'gibson'
+export const name = 'backend'
 export const args = ['command', 'arguments']
-export const description = 'Manages the connection to a Gibson server'
+export const description = 'Manages the connection to a Backend server'
 export const help = `
   Usage:
-    gibson <command> <arguments>      Send a command to the currently connected Gibson server
+    backend <command> <arguments>      Send a command to the currently connected Backend server
 
   Commands:
-    connect <host:port>               Connect to a Gibson server at host:port
+    connect <host:port>               Connect to a Backend server at host:port
     auth                              Sign a message with your wallet to authenticate to the server
     shell                             Run a bash shell on a server with admin privileges
 
@@ -43,7 +43,7 @@ export async function launchShell (options = {}) {
   newTerm.open(container)
 
   win = kernel.appWindow({
-    title: 'Gibson Shell',
+    title: 'Backend Shell',
     mount: container,
     width: options.windowWidth || '75%',
     height: options.windowHeight || '70%'
@@ -74,13 +74,13 @@ export async function run (terminal, context = '') {
 
     connection.onerror = err => {
       console.error(err)
-      log(colors.danger('\nGibson connection error'))
+      log(colors.danger('\nBackend connection error'))
       terminal.prompt()
     }
 
     connection.onopen = () => {
       const initHandler = async e => {
-        console.log('gibson:init', e.data)
+        console.log('backend:init', e.data)
 
         if (e.data === 'HI') return connection.send(kernel.wallet.account.address)
         if (e.data.split(' ')[0] === 'SUCCESS') {
@@ -90,7 +90,7 @@ export async function run (terminal, context = '') {
 
           const handler = async ({ data }) => {
             data = data[0] === '{' ? JSON.parse(data) : data
-            console.log('gibson:handler', data)
+            console.log('backend:handler', data)
 
             switch (data.cmd) {
               case 'authSign':
@@ -118,7 +118,7 @@ export async function run (terminal, context = '') {
       connection.addEventListener('message', initHandler)
 
       connection.onclose = () => {
-        const msg = 'Connection to Gibson was closed'
+        const msg = 'Connection to Backend was closed'
         terminal.log(msg)
         terminal.prompt(oldPrompt)
       }

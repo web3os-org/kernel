@@ -48,7 +48,7 @@ The project is still very young, and proper documentation and organization is Co
 - [Scripting](#scripting)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
-- [Web3os-server](#web3os-server)
+- [Backend (web3os-server)](#backend-web3os-server)
 - [WebUSB](#webusb)
 - [TODO](#todo)
 - [Can it do *thing*?](#can-it-do-thing)
@@ -149,21 +149,21 @@ This (and everything else) is subject to change before version 1.0.
 
 Also, expect undocumented features for now.
 
-`window.kernel.bin` { name: app }
+`window.kernel.bin` = { name: app }
 
 - Contains all apps registered in the kernel
 - e.g., `window.kernel.bin.desktop.run()`
 
-`window.kernel.wallet.web3` :Web3Provider
+`window.kernel.wallet.web3` = :Web3Provider
 
 - The web3 provider setup with the `account` command
 
-`window.kernel.wallet.account` { address: '0x..', chainId: 1 }
+`window.kernel.wallet.account` = { address: '0x..', chainId: 1 }
 
 - You may also interact directly with the account app.
   - e.g., `window.kernel.bin.account.connect()`
 
-`window.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) })
+`window.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
 
 - Convenience method to create a sweetalert2 dialog with appropriate defaults
 - e.g., `window.kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
@@ -174,11 +174,15 @@ Also, expect undocumented features for now.
 - e.g., `window.kernel.set('user', 'name', 'hosk')`
 - e.g., `window.kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
 
-`window.kernel.get` ('namespace', 'key')
+`window.kernel.get` ('namespace', 'key') = value
 
 - Gets a value from the kernel "memory" - loaded from localStorage
 - e.g., `window.kernel.get('user', 'name')`
 - e.g., `const { color } = window.kernel.get('myapp', 'theme')`
+
+`window.kernel.appWindow` (options) = { options, window }
+
+- Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
 
 ## App Structure
 
@@ -206,9 +210,9 @@ export async function run (terminal, context) {
 
 A good example of a more full-featured app can be found in [src/bin/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/bin/confetti/index.js).
 
-## Web3os-server
+## Backend (web3os-server)
 
-The web3os-server spins up a private Docker container for performing various server-side tasks at the request of the web3os client, authenticated with a user's wallet.
+The `backend` command is the utility to connect to and interact with backend servers. The web3os-server spins up a private Docker container for performing various server-side tasks at the request of the web3os client, authenticated with a user's wallet.
 
 It offers multi-user capability while restricting access based on user's authenticated wallet address.
 
