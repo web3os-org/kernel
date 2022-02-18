@@ -192,7 +192,7 @@ export async function executeScript (filename, options = {}) {
 
 export async function autostart () {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'account connect\n#desktop\n#markdown docs/README.md\n') // Setup default autostart.sh
+    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', '#account connect\n#desktop\n#markdown docs/README.md\n') // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)
@@ -452,7 +452,7 @@ async function setupFilesystem () {
               case '/bin':
                 data.push({
                   name: colors.cyanBright(entry),
-                  description: colors.muted(kernel.bin[entry]?.description || '')
+                  description: colors.muted(kernel.bin[entry]?.description.substr(0, 50) || '')
                 })
 
                 break
@@ -503,6 +503,14 @@ async function registerKernelBins () {
   bin.notify = { args: ['title', 'body'], description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   bin.snackbar = { args: ['message'], description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
   bin.man = { args: ['command'], description: 'Alias of help', run: (term, context) => bin.help.run(term, context) }
+
+  bin.ipecho = { description: 'Echo your public IP address', run: async term => {
+    const result = await fetch('https://ipecho.net/plain')
+    const ip = await result.text()
+    console.log({ ip })
+    term.log(ip)
+    return ip
+  }}
 
   bin.set = {
     args: ['namespace', 'key', 'value'],
@@ -812,12 +820,15 @@ let idleTimer
 const resetIdleTime = () => {
   clearTimeout(idleTimer)
   if (!bin.screensaver) return
-  idleTimer = setTimeout(bin.screensaver.run, get('config', 'screensaver-timeout') || 90000)
+  idleTimer = setTimeout(() => bin.screensaver.run(terminal, kernel.get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || kernel.get('user', 'screensaver-timeout') || 90000)
 }
 
 window.addEventListener('load', resetIdleTime)
 document.addEventListener('mousemove', resetIdleTime)
 document.addEventListener('keydown', resetIdleTime)
+document.addEventListener('keyup', resetIdleTime)
+document.addEventListener('keypress', resetIdleTime)
+document.addEventListener('pointerdown', resetIdleTime)
 
 // Register service worker
 if ('serviceWorker' in navigator) {

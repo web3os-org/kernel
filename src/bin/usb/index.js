@@ -10,7 +10,6 @@ export const version = '0.1.0'
 export const description = 'WebUSB tool'
 export const help = `
   ${colors.bold(colors.danger('This is experimental technology'))}
-  ${colors.muted('There is no real use for this tool yet')}
 
   Please check the compatibility table at:
   ${colors.underline('https://developer.mozilla.org/en-US/docs/Web/API/USBDevice#browser_compatibility')}

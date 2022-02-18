@@ -55,6 +55,7 @@ export async function run (terminal, context) {
   const buttonWrapper = document.createElement('div')
   const backIcon = document.createElement('mwc-icon')
   const forwardIcon = document.createElement('mwc-icon')
+  const openIcon = document.createElement('mwc-icon')
   const iframe = document.createElement('iframe')
 
   backIcon.style.color = 'darkslateblue'
@@ -64,6 +65,11 @@ export async function run (terminal, context) {
   forwardIcon.style.color = 'darkslateblue'
   forwardIcon.textContent = 'arrow_forward_ios'
   forwardIcon.title = 'Forward'
+
+  openIcon.style.color = 'white'
+  openIcon.style.cursor = 'pointer'
+  openIcon.textContent = 'open_in_new'
+  openIcon.title = 'Open in new tab'
 
   iframe.src = url
   addressBar.value = url
@@ -109,8 +115,13 @@ export async function run (terminal, context) {
     gotoHistory()
   })
 
+  openIcon.addEventListener('click', () => {
+    window.open(url, '_blank')
+  })
+
   buttonWrapper.appendChild(backIcon)
   buttonWrapper.appendChild(forwardIcon)
+  buttonWrapper.appendChild(openIcon)
 
   toolbar.appendChild(buttonWrapper)
   toolbar.appendChild(addressBar)
@@ -122,8 +133,10 @@ export async function run (terminal, context) {
     mount: browser,
     title: args['--title'] || `WWW: ${url}`,
     class: ['modern', 'web3os-www-browser'],
-    width: '60%',
-    height: '60%'
+    x: 'center',
+    y: 'center',
+    width: '50%',
+    height: '50%'
   })
 
   appWindow.window.body.style.margin = '0'

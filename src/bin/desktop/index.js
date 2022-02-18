@@ -346,6 +346,7 @@ export async function toggleLauncher (args) {
   // TODO: Load this from somewhere configurable
   const launcherApps = [
     { name: 'Files', icon: kernel.bin.files?.icon, description: kernel.bin.files?.description, run: () => kernel.execute('files /desktop')},
+    { name: 'Mailchain', icon: kernel.bin.mailchain?.icon, description: kernel.bin.mailchain?.description, run: () => kernel.execute('www --no-toolbar --title Mailchain https://inbox.mailchain.xyz')},
     { name: 'Doom', icon: kernel.bin.doom?.icon, description: kernel.bin.doom?.description, run: () => kernel.execute('doom')},
     { name: 'Wolfenstein', icon: kernel.bin.wolfenstein?.icon, description: kernel.bin.wolfenstein?.description, run: () => kernel.execute('wolfenstein')},
     { name: 'Screensaver', icon: kernel.bin.screensaver?.icon, description: kernel.bin.screensaver?.description, run: () => kernel.execute('screensaver') },
@@ -360,7 +361,7 @@ export async function toggleLauncher (args) {
   const template = document.createElement('div')
   template.id = 'web3os-desktop-launcher'
   
-  for (const app of launcherApps) {
+  for (const app of launcherApps.sort((a, b) => a.name > b.name ? 1 : ((b.name > a.name) ? -1 : 0))) {
     const { name, description, icon, run } = app
 
     const entry = document.createElement('div')

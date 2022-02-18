@@ -8,6 +8,8 @@ html {
   --mdc-dialog-content-ink-color: #eee;
   --color-danger: #c91d12;
   --mdc-dialog-z-index: 10000;
+
+  scroll-behavior: smooth;
 }
 
 

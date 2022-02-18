@@ -73,6 +73,8 @@
   padding-left: 1rem;
   background-color: #240858;
   min-height: 2.5rem;
+  position: relative;
+  z-index: 10;
 }
 
 .web3os-files-explorer-toolbar-button-wrapper {

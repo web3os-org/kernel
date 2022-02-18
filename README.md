@@ -42,6 +42,7 @@ The project is still very young, and proper documentation and organization is Co
 - [Features](#features)
 - [Alpha Footage](#alpha-footage)
 - [Disclaimer](#disclaimer)
+- [Help Wanted](#help-wanted)
 - [User Quickstart](#user-quickstart)
 - [Developer Quickstart](#developer-quickstart)
 - [Autostart](#autostart)
@@ -91,9 +92,17 @@ Here's a quick video showcasing a few of the features: [web3os alpha demo](https
 
 This project is still considered to be in an alpha state. All apps run in the same context and can access every other app, as well as the entire virtual browserfs.
 
-Do not rely on it to keep anything safe, and never paste commands you don't understand. Anywhere, ever.
+The code in this repository has not been audited. Do not rely on it to keep anything safe, and never paste commands you don't understand. Anywhere, ever.
 
 Heavily scrutinize any application or script you install or run, as well as its authors.
+
+## Help Wanted
+
+It's going to take people far smarter than me to make this project achieve its full potential.
+
+Please consider digging into the code and see what you can come up with and submit a PR!
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## User Quickstart
 

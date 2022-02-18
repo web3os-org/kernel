@@ -43,7 +43,7 @@ export function setPrompt (terminal) {
 }
 
 export const account = {
-  address: null, _chainId: 1,
+  address: null, _chainId: 1, encryptionPublicKey: null,
 
   get chain () {
     return chains?.find(chain => chain.chainId === this._chainId)
@@ -57,7 +57,7 @@ export const account = {
   }
 }
 
-async function updateTokenList () {
+export async function updateTokenList () {
   try {
     tokens = await Ocean.tokenList(account.chainId)
   } catch (err) {
@@ -68,15 +68,24 @@ async function updateTokenList () {
 
 export async function connect (args) {
   try {
-    await window.ethereum.enable()
-    provider = window.web3.currentProvider
+    provider = Web3.givenProvider
     web3 = new Web3(provider)
-  } catch {
-    throw new Error(colors.danger('Failed to connect to web3 provider. Do you have https://metamask.io installed?'))
-  }
+    
+    await ethereum.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    })
 
-  account.address = (await web3.eth.getAccounts())[0]
-  account.chainId = await web3.eth.getChainId()
+    account.address = (await web3.eth.getAccounts())[0]
+    account.chainId = await web3.eth.getChainId()
+
+    account.encryptionPublicKey = await ethereum.request({
+      method: 'eth_getEncryptionPublicKey',
+      params: [account.address]
+    })
+  } catch {
+    throw new Error(colors.danger('Failed to connect to web3 provider. Do you have https://metamask.io installed and unlocked?'))
+  }
 
   ethers = new Ethers.providers.Web3Provider(provider, 'any')
   signer = ethers.getSigner()
@@ -190,13 +199,17 @@ export async function getBalance (symbol) {
 
 export async function sign (message) {
   // message = message.replace(/\\n/g, '\n')
-  const msg = Ethers.utils.hashMessage(message)
-  console.log({ message, msg })
-  const result = await signer.signMessage(msg)
+
+  // const msg = Ethers.utils.hashMessage(message)
+  // console.log({ message, msg })
+  // const result = await signer.signMessage(msg)
   // const data = Ethers.utils.toUtf8Bytes(message)
   // const addr = await signer.getAddress()
-  // const { result } = await provider.send('personal_sign', [Ethers.utils.hashMessage(message), addr.toLowerCase()])
-  return result
+  // const { result } = await provider.request('personal_sign', [message, account.address.toLowerCase()])
+
+  // const result = await web3.eth.sign(message, account.address)
+
+  // return result
 }
 
 export async function send (args) {

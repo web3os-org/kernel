@@ -10,7 +10,7 @@ export const help = `
     view <filename>
 `
 
-function createImage (mime, url, appWindow) {
+export function createImage (mime, url, appWindow) {
   const content = new Image()
   content.src = url
   content.style.objectFit = 'contain'
@@ -20,16 +20,10 @@ function createImage (mime, url, appWindow) {
     // appWindow.window.resize(content.width, content.height + 35)
   }
 
-  // appWindow.window.body.style.backgroundImage = `url(${url})`
-  // appWindow.window.body.style.backgroundAttachment = 'fixed'
-  // appWindow.window.body.style.backgroundSize = 'cover'
-  // appWindow.window.body.style.backgroundRepeat = 'no-repeat'
-
-  // return document.createElement('div')
   return content
 }
 
-function createVideo (mime, url) {
+export function createVideo (mime, url) {
   const content = document.createElement('video')
   content.loop = true
   content.autoplay = true
@@ -41,7 +35,7 @@ function createVideo (mime, url) {
   return content
 }
 
-function createObject (mime, url) {
+export function createObject (mime, url) {
   const content = document.createElement('object')
   content.data = url
   content.type = mime
@@ -51,7 +45,7 @@ function createObject (mime, url) {
   return content
 }
 
-function createAudio (mime, url, appWindow) {
+export function createAudio (mime, url, appWindow) {
   const content  = document.createElement('audio')
   content.autoplay = true
   content.controls = true
