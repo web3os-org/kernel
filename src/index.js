@@ -250,6 +250,13 @@ export async function upload (term, context) {
   input.click()
 }
 
+export function colorChars (str, options = {}) {
+  if (typeof str !== 'string') throw new Error('You must provide a string to colorChars')
+  const numbers = options.numbers || colors.blue
+  const letters = options.letters || colors.white
+  return str.split('').map(c => isNaN(c) ? letters(c) : numbers(c)).join('')
+}
+
 export async function notify (options={}) {
   if (Notification.permission !== 'granted') throw new Error('Notification permission denied')
   return new Notification(options.title, options)
@@ -286,7 +293,6 @@ async function setupFilesystem () {
       '/docs': { fs: 'InMemory' }
     }
   }, err => {
-    console.log('fscallback', err)
     if (err) {
       console.error(err)
       log(colors.danger(`Failed to initialize filesystem: ${err.message}`))
@@ -304,31 +310,6 @@ async function setupFilesystem () {
       // Populate /docs
       const docs = fs.readdirSync('/docs')
       if (docs.length === 0) window.fs.writeFileSync('/docs/README.md', README)
-
-      // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
-      // const dragover = e => { e.stopPropagation(); e.preventDefault() }
-      // const drop = e => {
-      //   e.stopPropagation()
-      //   e.preventDefault()
-      //   const dt = e.dataTransfer
-      //   const files = dt.files
-
-      //   for (const file of files) {
-      //     const reader = new FileReader()
-
-      //     reader.readAsArrayBuffer(file)
-      //     reader.onload = () => {
-      //       const buffer = BrowserFS.Buffer.from(reader.result)
-      //       const filepath = path.resolve(terminal.cwd, file.name)
-      //       fs.writeFileSync(filepath, buffer)
-      //       kernel.snackbar({ labelText: `Uploaded ${filepath}` })
-      //     }
-      //   }
-      // }
-
-      // document.body.addEventListener('dragenter', dragenter)
-      // document.body.addEventListener('dragover', dragover)
-      // document.body.addEventListener('drop', drop)
 
       // Setup FS commands
       bin.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
@@ -602,19 +583,19 @@ export async function showSplash (msg, options = {}) {
   background.style.zIndex = 100001
 
   if (!options.disableVideoBackground) {
-    const video = document.createElement('video')
-    const file = (await import('./assets/splash.mp4')).default
+    // const video = document.createElement('video')
+    // const file = (await import('./assets/splash.mp4')).default
 
-    video.id = 'web3os-splash-video'
-    video.src = file
-    video.muted = true
-    video.loop = true
-    video.autoplay = true
-    video.style.width = '100vw'
-    video.style.height = '100vh'
-    video.style.objectFit = 'cover'
+    // video.id = 'web3os-splash-video'
+    // video.src = file
+    // video.muted = true
+    // video.loop = true
+    // video.autoplay = true
+    // video.style.width = '100vw'
+    // video.style.height = '100vh'
+    // video.style.objectFit = 'cover'
 
-    background.appendChild(video)
+    // background.appendChild(video)
   }
 
   const message = document.createElement('h3')
