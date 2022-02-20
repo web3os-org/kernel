@@ -90,7 +90,7 @@ export async function connect (args) {
   ethers = new Ethers.providers.Web3Provider(provider, 'any')
   signer = ethers.getSigner()
 
-  term.log(`${colors.success('Connected to account:')} ${colors.bold.blue(account.address)}`)
+  term.log(`${colors.success('Connected to account:')} ${colors.muted('0x')}${kernel.colorChars(account.address.replace('0x', ''))}`)
 
   // Subscribe to accounts change
   provider.on('accountsChanged', accounts => {
