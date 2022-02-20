@@ -62,7 +62,7 @@ export function loadDesktopIconPositions () {
         entry.style.top = y + 'px'
         entry.style.left = x + 'px'
       } catch {
-        // console.log('Position not set:', entry.dataset.file)
+        console.log('Position not set:', entry.dataset.file)
       }
     })
   } catch (err) {
@@ -135,8 +135,6 @@ export async function start (args) {
 
   const files = kernel.fs.readdirSync('/desktop')
 
-  fileLayer.innerText = ''
-
   files.forEach(filename => {
     const file = {
       name: filename,
@@ -157,7 +155,7 @@ export async function start (args) {
         fileIcon = 'text_snippet'
     }
 
-    entry.id = `web3os-desktop-entry-${btoa(file.location).replace(/=/g, '')}`
+    entry.id = `web3os-desktop-entry-${btoa(file.location)}`
     entry.classList.add('web3os-desktop-entry')
 
     icon.textContent = fileIcon
@@ -173,8 +171,17 @@ export async function start (args) {
     entry.draggable = true
 
     entry.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('id', e.target.id)
+      // console.log('dragstart', e)
+      e.dataTransfer.setData('text', e.target.id)
       e.dataTransfer.effectAllowed = 'move'
+    })
+
+    entry.addEventListener('dragend', e => {
+      // console.log('dragend', e)
+      e.target.style.position = 'absolute'
+      e.target.style.left = (e.x - 48) + 'px'
+      e.target.style.top = (e.y - 48) + 'px'
+      saveDesktopIconPositions()
     })
 
     const entryContextMenu = [
@@ -207,82 +214,15 @@ export async function start (args) {
           return kernel.executeScript(data.location)
         case '.js':
           return kernel.execute(`eval ${data.location}`)
-        case '.json':
         case '.txt':
           return kernel.execute(`edit ${data.location}`)
         case '.md':
           return kernel.execute(`markdown ${data.location}`)
         default:
-          if (mime?.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
+          if (mime.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
           kernel.execute(`alert I'm not sure how to handle this file!`)
       }
     })
-  })
-
-  loadDesktopIconPositions()
-}
-
-export async function start (args) {
-  terminal.log('Starting web3os.sh Desktop..')
-
-  desktop = document.createElement('div')
-  desktop.id = 'web3os-desktop'
-
-  const wallpaper = document.createElement('img')
-  wallpaper.id = 'web3os-desktop-wallpaper'
-  wallpaper.src = args['--wallpaper'] || window.localStorage.getItem('web3os_desktop_wallpaper') || defaultWallpaperURL
-  wallpaper.style.opacity = 0
-
-  if (wallpaper.complete) {
-    wallpaper.style.opacity = 1
-  } else {
-    wallpaper.classList.add('transition')
-    wallpaper.addEventListener('load', () => { wallpaper.style.opacity = 1 })
-  }
-
-  const fileLayer = document.createElement('div')
-  fileLayer.id = 'web3os-desktop-file-layer'
-  fileLayer.addEventListener('dragover', e => {
-    e.preventDefault()
-    if (e.dataTransfer.effectAllowed === 'uninitialized') e.dataTransfer.dropEffect = 'copy'
-    else e.dataTransfer.dropEffect = 'move'
-  })
-
-  fileLayer.addEventListener('drop', e => {
-    e.stopPropagation()
-    e.preventDefault()
-    const dt = e.dataTransfer
-
-    if (dt.files.length > 0) {
-      // Upload files to desktop
-      const files = dt.files
-
-      for (const file of files) {
-        const reader = new FileReader()
-
-        reader.readAsArrayBuffer(file)
-        reader.onload = () => {
-          const buffer = kernel.BrowserFS.Buffer.from(reader.result)
-          const filepath = path.resolve('/desktop', file.name)
-          kernel.fs.writeFileSync(filepath, buffer)
-          kernel.snackbar({ labelText: `Uploaded ${filepath}` })
-
-          loadDesktopIcons()
-        }
-      }
-
-      loadDesktopIcons()
-    } else {
-      // Move icon
-      const id = dt.getData('id')
-      const target = document.querySelector(`#${id}`)
-      // console.log('drop', { id, x: e.x, y: e.y })
-
-      target.style.position = 'absolute'
-      target.style.left = (e.x - 48) + 'px'
-      target.style.top = (e.y - 48) + 'px'
-      saveDesktopIconPositions()
-    }
   })
 
   desktop.appendChild(wallpaper)
@@ -290,7 +230,7 @@ export async function start (args) {
 
   const menuButton = document.createElement('mwc-icon')
   menuButton.id = 'web3os-desktop-menu-button'
-  menuButton.setAttribute('aria-label', 'Open the Launcher')
+  menuButton.ariaLabel = 'Open the Launcher'
   menuButton.textContent = 'widgets'
   menuButton.classList.add('animate__animated', 'animate__bounce', 'animate__slow')
   menuButton.classList.add('hint--left', 'hint--success')
@@ -314,14 +254,14 @@ export async function start (args) {
 
   const shellButton = document.createElement('mwc-icon')
   shellButton.id = 'web3os-desktop-shell-button'
-  shellButton.setAttribute('aria-label', 'Open a terminal')
+  shellButton.ariaLabel = 'Open a terminal'
   shellButton.textContent = 'terminal'
   shellButton.classList.add('hint--left', 'hint--info')
   shellButton.addEventListener('click', launchTerminal)
 
   const exitButton = document.createElement('mwc-icon')
   exitButton.id = 'web3os-desktop-exit-button'
-  exitButton.setAttribute('aria-label', 'Exit the desktop')
+  exitButton.ariaLabel = 'Exit the desktop'
   exitButton.textContent = 'logout'
   exitButton.classList.add('hint--left', 'hint--info')
   exitButton.addEventListener('click', exitDesktop)
@@ -354,46 +294,21 @@ export async function start (args) {
   document.querySelector('#terminal').style.display = 'none'
   document.body.appendChild(desktop)
 
-  await loadDesktopIcons()
   loadDesktopIconPositions()
 
-  const desktopContextMenu = [
-    {
-      text: 'Set Wallpaper',
-      action: async () => {
-        const dialog = await kernel.dialog({
-          title: 'Enter Wallpaper URL',
-          input: 'url',
-          showCancelButton: true,
-          inputValidator: value => {
-            if (!value) return 'URL is required'
-            if (!value.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/)) return 'Invalid URL'
-          }
-        })
+  // const desktopContextMenu = [
+  //   {
+  //     text: 'New File',
+  //     action: () => {}
+  //   }
+  // ]
 
-        const { isConfirmed, value } = dialog
-        if (isConfirmed) {
-          wallpaper.classList.remove('transition')
-          wallpaper.style.opacity = 0
-          wallpaper.src = value
-          window.localStorage.setItem('web3os_desktop_wallpaper', value)
-          if (wallpaper.complete) {
-            wallpaper.style.opacity = 1
-          } else {
-            wallpaper.classList.add('transition')
-            wallpaper.addEventListener('load', () => { wallpaper.style.opacity = 1 })
-          }
-        }
-      }
-    }
-  ]
-
-  desktop.addEventListener('contextmenu', e => {
-    e.preventDefault()
-    e.stopPropagation()
-    // console.log(e)
-    ctxmenu.show(desktopContextMenu, e)
-  })
+  // desktop.addEventListener('contextmenu', e => {
+  //   e.preventDefault()
+  //   e.stopPropagation()
+  //   // console.log(e)
+  //   ctxmenu.show(desktopContextMenu, e)
+  // })
 }
 
 export async function toggleRunner () {
@@ -507,10 +422,7 @@ export async function run (term, context) {
 
   if (args['--version']) return terminal.log(version)
   if (!kernel.fs.existsSync('/desktop')) kernel.fs.mkdirSync('/desktop')
-  if (!kernel.fs.existsSync('/desktop/documents')) kernel.fs.mkdirSync('/desktop/documents')
-  if (!kernel.fs.existsSync('/desktop/pictures')) kernel.fs.mkdirSync('/desktop/pictures')
-  if (!kernel.fs.existsSync('/desktop/videos')) kernel.fs.mkdirSync('/desktop/videos')
-  if (!kernel.fs.existsSync('/desktop/audio')) kernel.fs.mkdirSync('/desktop/audio')
+  if (!kernel.fs.existsSync('/desktop/Documents')) kernel.fs.mkdirSync('/desktop/Documents')
 
   switch (cmd) {
     case 'launcher':

@@ -135,8 +135,8 @@ export async function run (terminal, context) {
     class: ['modern', 'web3os-www-browser'],
     x: 'center',
     y: 'center',
-    width: '50%',
-    height: '50%'
+    width: '75%',
+    height: '75%'
   })
 
   appWindow.window.body.style.margin = '0'
