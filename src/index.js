@@ -370,7 +370,6 @@ async function setupFilesystem () {
       const docs = fs.readdirSync('/docs')
       if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
 
-<<<<<<< HEAD
       // Drag and drop on terminal
       // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
       // const dragover = e => { e.stopPropagation(); e.preventDefault() }
@@ -397,8 +396,6 @@ async function setupFilesystem () {
       // terminal.addEventListener('dragover', dragover)
       // terminal.addEventListener('drop', drop)
 
-=======
->>>>>>> development
       // Setup FS commands
       bin.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
       bin.cd = { args: ['path'], description: 'Change the current working directory', run: (term, context) => {
@@ -679,7 +676,6 @@ export async function showSplash (msg, options = {}) {
   background.style.height = '100vh'
   background.style.zIndex = 100001
 
-<<<<<<< HEAD
   // if (!options.disableVideoBackground) {
   //   const video = document.createElement('video')
   //   const file = (await import('./assets/splash.mp4')).default
@@ -695,23 +691,6 @@ export async function showSplash (msg, options = {}) {
 
   //   background.appendChild(video)
   // }
-=======
-  if (!options.disableVideoBackground) {
-    // const video = document.createElement('video')
-    // const file = (await import('./assets/splash.mp4')).default
-
-    // video.id = 'web3os-splash-video'
-    // video.src = file
-    // video.muted = true
-    // video.loop = true
-    // video.autoplay = true
-    // video.style.width = '100vw'
-    // video.style.height = '100vh'
-    // video.style.objectFit = 'cover'
-
-    // background.appendChild(video)
-  }
->>>>>>> development
 
   const message = document.createElement('h3')
   message.id = 'web3os-splash-message'

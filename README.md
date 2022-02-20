@@ -45,21 +45,12 @@ The project is still very young, and proper documentation and organization is Co
 - [Help Wanted](#help-wanted)
 - [User Quickstart](#user-quickstart)
 - [Developer Quickstart](#developer-quickstart)
-<<<<<<< HEAD
 - [Autostart](#autostart)
 - [Scripting](#scripting)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
 - [Backend (web3os-server)](#backend-web3os-server)
 - [WebUSB](#webusb)
-=======
-- [Filesystem](#filesystem)
-- [Scripting](#scripting)
-- [Kernel Interface](#kernel-interface)
-- [App Structure](#app-structure)
-- [Gibson Backend Server](#gibson-backend-server)
-  - [Connecting to a Gibson Server](#connecting-to-a-gibson-server)
->>>>>>> development
 - [TODO](#todo)
 - [Can it do *thing*?](#can-it-do-thing)
 - [Further Documentation](#further-documentation)
@@ -68,16 +59,7 @@ The project is still very young, and proper documentation and organization is Co
 
 ## Features
 
-<<<<<<< HEAD
 - Runs completely in a web browser
-=======
-- Developer-friendly *(eventually)*:
-  - apps are just HTML/CSS/JS!
-  - or Web3OS Scripts!
-  - or WebComponents!
-  - or WebAssembly!
-  - [You can probably squeeze anything into it if you tried hard enough.](https://memegenerator.net/img/instances/43742458/thats-what-she-said.jpg)
->>>>>>> development
 - Optional desktop environment
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
 - Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js) and [ethers.js](https://github.com/ethers-io/ethers.js)
@@ -87,7 +69,6 @@ The project is still very young, and proper documentation and organization is Co
 - IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
-<<<<<<< HEAD
 - IPFS integration with [ipfs-core](https://github.com/)
 - It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
 - WebAssembly executable support *(very experimental)*:
@@ -103,10 +84,6 @@ The project is still very young, and proper documentation and organization is Co
     - This sacrifices some security; WASM helps
   - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
   - A package manager, wpm, is in development but not yet functional
-=======
-- WASM Executable Support with [as-bind](https://github.com/torch2424/as-bind)
-- It runs Doom (and Wolfenstein 3D!) - and more with [js-dos](https://github.com/caiiiycuk/js-dos)
->>>>>>> development
 
 ## Alpha Footage
 
@@ -124,17 +101,9 @@ Heavily scrutinize any application or script you install or run, as well as its 
 
 It's going to take people far smarter than me to make this project achieve its full potential.
 
-<<<<<<< HEAD
 Please consider digging into the code and see what you can come up with and submit a PR!
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
-=======
-APIs may change without notice before v1.0.0, so develop with some flexibility.
-
-All wallet-related features have only been developed and tested with MetaMask. WalletConnect and more coming soon.
-
-Do not rely on it to keep anything safe, and never paste commands you don't understand. *Anywhere, ever.*
->>>>>>> development
 
 ## User Quickstart
 
@@ -159,17 +128,10 @@ Do not rely on it to keep anything safe, and never paste commands you don't unde
 - Show your wallet address: `account`
 - Check native coin balance: `account balance`
 - Check token balance: `account balance USDC`
-<<<<<<< HEAD
 - Switch to another network: `account chain polygon`, `account chain bsc`, `account chain 0x2`
 - Learn more about commands: `help command`
 - Run the screensaver: `screensaver`
 - 🎉 Fire the Confetti Gun: `confetti`
-=======
-- See info about current chain: `account chain`
-- Change to Polygon network: `account chain polygon`
-
-</details>
->>>>>>> development
 
 ## Developer Quickstart
 
@@ -187,7 +149,6 @@ yarn start # or npm start
 
 From here, simply connect to [https://localhost:8080](https://localhost:8080) and accept the self-signed certificate warning.
 
-<<<<<<< HEAD
 ## Autostart
 
 To modify the commands the system executes on startup:
@@ -195,34 +156,6 @@ To modify the commands the system executes on startup:
 - `edit /config/autostart.sh`
 - then add `desktop` to the end of the file
 - insert any additional commands you want to run on startup
-=======
-</details>
-
-## Filesystem
-
-<details open>
-<summary><strong>Expand Filesystem</strong></summary>
-
----
-
-Currently, LocalStorage is used for storage, so there is a **limit of 5MB**.
-
-Work is being done to get IndexedDB working with BrowserFS (as well as backend/cloud storage options) to open up more potential storage space, but in the meantime it's advised to access your larger files via IPFS or HTTP.
-
-However, you may store more data in `/tmp` which does not use LocalStorage but will be lost on reload.
-
-- `/bin` - this directory is filled with stubs of all installed apps
-- `/config` - various system configuration files go here
-  - `/config/autostart.sh` - this file is executed on every boot
-- `/desktop` - this directory holds all of the files shown in the desktop environment
-- `/docs` - this directory holds all documentation files
-- `/tmp` - temporary storage that is cleared on reload
-- `/var` - various system and app data storage
-
-These directories are cleared on every boot: `/bin`, `/docs`, `/tmp`
-
-</details>
->>>>>>> development
 
 ## Scripting
 
@@ -252,17 +185,7 @@ To run a Javascript script: `eval /path/to/script.js`
 
 This (and everything else) is subject to change before version 1.0.
 
-<<<<<<< HEAD
 Also, expect undocumented features for now.
-=======
-Also, expect undocumented methods. Play around with the `window.kernel` object to learn more.
-
-Some examples:
-
-`window.kernel.appWindow` ({ ...[winboxoptions](https://github.com/nextapps-de/winbox) }) => { options: { ...winboxoptions }, window: WinBox }
-
-- Open a new window for your app
->>>>>>> development
 
 `window.kernel.bin` = { name: app }
 
@@ -296,13 +219,9 @@ Some examples:
 - e.g., `window.kernel.get('user', 'name')`
 - e.g., `const { color } = window.kernel.get('myapp', 'theme')`
 
-<<<<<<< HEAD
 `window.kernel.appWindow` (options) = { options, window }
 
 - Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
-=======
-</details>
->>>>>>> development
 
 ## App Structure
 
@@ -335,7 +254,6 @@ export async function run (terminal, context) {
 
 A good example of a more full-featured app can be found in [src/bin/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/bin/confetti/index.js).
 
-<<<<<<< HEAD
 ## Backend (web3os-server)
 
 The `backend` command is the utility to connect to and interact with backend servers. The web3os-server spins up a private Docker container for performing various server-side tasks at the request of the web3os client, authenticated with a user's wallet.
@@ -364,37 +282,6 @@ Usage:
 ```
 
 Access the array of devices within an app: `kernel.bin.usb.devices`
-=======
-</details>
-
-## Gibson Backend Server
-
-<details>
-<summary><strong>Expand Gibson Backend Server</strong></summary>
-
----
-
-For more power and features, web3os can connect to a backend server running in a Docker container. The connection is authenticated by signing a message with the browser wallet (currently only MetaMask).
-
-The server software is [@web3os/gibson-server](https://github.com/web3os-org/gibson-server), and can be run using Docker Compose:
-
-```sh
-docker compose build
-docker compose up
-```
-
-The server is based off of Alpine Linux, and exposes port `1922` for SSH connections, and `1995` for WebSocket connections.
-
-The default SSH user is `gibson`/`gibs1234` - be sure to change this in the `Dockerfile`.
-
-### Connecting to a Gibson Server
-
-`(ETH)[0x1]<0x..>:/# gibson connect` *localhost:1995 is the default, or specify host:port()*
-`(ETH)[0x1]<0x..>:/# gibson auth` *sign the message to authenticate*
-`(ETH)[0x1]<0x..>:/{localhost:1995}# gibson shell` *admin can get raw shell, but SSH is better*
-
-</details>
->>>>>>> development
 
 ## TODO
 
