@@ -29,6 +29,36 @@ export const help = `
     edit <filename>
 `
 
+async function executeFile ({ filename, extension }) {
+  try {
+    switch (extension) {
+      case '.js':
+        await kernel.execute(`eval ${filename}`)
+        break
+      case '.sh':
+        await kernel.executeScript(filename)
+        break
+    }
+
+    return true
+  } catch (err) {
+    console.error(err)
+    kernel.dialog({ title: 'Error executing file', text: err.message })
+    return false
+  }
+}
+
+async function saveFile ({ filename, mirror }) {
+  try {
+    kernel.fs.writeFileSync(filename, mirror.getValue())
+    return true
+  } catch (err) {
+    console.error(err)
+    kernel.dialog({ title: 'Error saving file', text: err.message })
+    return false
+  }
+}
+
 export async function run (terminal, filename) {
   const { kernel, log } = terminal
 
@@ -37,17 +67,21 @@ export async function run (terminal, filename) {
   const fileParts = path.parse(filename)
   const extension = fileParts.ext
 
-  let mode
+  let mode, executable
 
   switch (extension) {
     case '.js':
       mode = 'javascript'
+      executable = true
       break
     case '.json':
       mode = { name: 'javascript', mode: 'json' }
       break
     case '.yml':
       mode = 'yaml'
+      break
+    case '.sh':
+      executable = true
       break
     default:
       mode = null
@@ -66,8 +100,8 @@ export async function run (terminal, filename) {
   const appWindow = kernel.appWindow({
     title: `Edit: ${filename}`,
     mount: content,
-    minheight: '445px',
-    minwidth: '310px'
+    height: '75%',
+    width: '100%'
   })
 
   const mirror = CodeMirror.fromTextArea(textarea, {
@@ -77,7 +111,8 @@ export async function run (terminal, filename) {
     styleActiveLine: true,
     viewportMargin: Infinity,
     extraKeys: {
-      'Ctrl-S': () => saveFile(),
+      'Ctrl-S': () => saveFile({ filename, mirror }),
+      'Ctrl-R': () => executeFile({ filename, extension }),
       'Ctrl-Q': () => { appWindow.window.close(); terminal.focus() }
     }
   })
@@ -87,33 +122,24 @@ export async function run (terminal, filename) {
     mirror.focus()
   }
 
-  const saveFile = dialog => {
-    try {
-      kernel.fs.writeFileSync(filename, mirror.getValue())
-    } catch (err) {
-      console.error(err)
-      log(colors.danger(err.message))
-      kernel.dialog({ title: 'Error Saving File', text: err.message })
-    }
-  }
-
   const buttons = [
     {
       component: `<mwc-button slot="primaryAction" icon="save" raised>Save</mwc-button>`,
-      action: saveFile
+      action: () => saveFile({ mirror, filename })
     },
 
     {
       component: `<mwc-button icon="help_outline">Help</mwc-button>`,
       action: () => {
         kernel.dialog({
-          title: 'Editor Documentation',
+          title: 'Editor Help',
           html: `
             <p>
               <strong>Keyboard Shortcuts:</strong>
               <ul style='text-align:left'>
                 <li>Ctrl+Q: Quit editor</li>
                 <li>Ctrl+S: Save file</li>
+                ${executable && '<li>Ctrl+R: Save & Run</li>'}
                 <li>Ctrl+F: Search</li>
                 <li>Alt+G: Jump to line number</li>
               </ul>
@@ -124,12 +150,23 @@ export async function run (terminal, filename) {
     }
   ]
 
+  if (executable) {
+    buttons.unshift({
+      component: '<mwc-button icon="play_arrow" raised>Save &amp; Run</mwc-button>',
+      action: async () => {
+        await saveFile({ filename, mirror })
+        await executeFile({ filename, extension })
+      }
+    })
+  }
+
   const buttonWrapper = document.createElement('div')
   buttonWrapper.classList.add('app-actions')
   buttonWrapper.style.display = 'flex'
   buttonWrapper.style.justifyContent = 'flex-end'
   buttonWrapper.style.gap = '0.5rem'
   buttonWrapper.style.marginTop = '0.25rem'
+  buttonWrapper.style.marginRight = '0.5rem'
 
   for (const button of buttons.reverse()) {
     const btn = document.createElement('div')

@@ -2,18 +2,18 @@ import arg from 'arg'
 import path from 'path'
 import colors from 'ansi-colors'
 
-export const name = 'cpm'
-export const version = '1.0.0'
+export const name = 'wpm'
+export const version = '0.1.0'
 export const description = 'web3os Package Manager'
 export const help = `
   Usage:
     ${colors.blue('Installation URL Examples:')}
-      ${colors.muted('https://cpm.web3os.sh/demo-app')}
+      ${colors.muted('https://wpm.web3os.sh/demo-app')}
       ${colors.muted('http://localhost:5500/dist')}
 
-    cpm install <url>         Install the package located at <url>
-    cpm update <name>         Update package
-    cpm uninstall <name>      Uninstall package
+    wpm install <url>         Install the package located at <url>
+    wpm update <name>         Update package
+    wpm uninstall <name>      Uninstall package
 `
 
 const spec = {

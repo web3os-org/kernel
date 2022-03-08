@@ -259,6 +259,7 @@ Access the array of devices within an app: `kernel.bin.usb.devices`
 - Rewrite most core modules in Rust
 - Increase inter-module security
 - Some apps are basically just placeholders
+- Modify command interfaces to conform to IEEE Std 1003.1-2017
 - Adding more things to the TODO list
 
 ## Can it do *thing*?

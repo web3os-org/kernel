@@ -37,15 +37,15 @@ const figletFontName = 'Graffiti'
 
 // TODO: Make this configurable via env
 const builtinApps = [
-  'account', 'backend', 'confetti', 'desktop', 'doom', 'edit', 'files',
-  'help', 'ipfs', 'markdown', 'screensaver', 'usb', 'view', 'wasm',
+  'account', 'backend', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
+  'files', 'git', 'help', 'ipfs', 'markdown', 'screensaver', 'usb', 'view', 'wasm',
   'wolfenstein', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
 const configDescriptions = {
   'autostart.sh': 'Executed at startup line by line',
-  'packages': 'Master local package list for CPM'
+  'packages': 'Master local package list for wpm'
 }
 
 export const bin = {}
@@ -66,9 +66,12 @@ const showBootIntro = () => {
   log(colors.danger(`Type ${colors.bold.underline('help')} for help`))
   log(colors.gray(`Type ${colors.bold.underline('markdown /docs/README.md')} to view the README`))
   log(colors.info(`Type ${colors.bold.underline('desktop')} to launch the desktop`))
-  log(colors.primary(`Type ${colors.bold.underline('account balance')} to view your account balance`))
+  log(colors.primary(`Type ${colors.bold.underline('account connect')} to connect your wallet`))
   log(colors.success(`Type ${colors.bold.underline('ls /bin')} to see all commands`))
   log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun\n`))
+
+  log('Learn how to interact with smart contracts:')
+  log(`\t${colors.blue('https://github.com/web3os-org/sample-scripts')}\n`)
 
   // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
@@ -76,9 +79,9 @@ const showBootIntro = () => {
   log(`${colors.danger('NOTE:')} ${colors.muted('The first boot will take the longest')}  😅`)
 }
 
-export function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }
+function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }
 
-export function loadLocalStorage () {
+function loadLocalStorage () {
   try {
     const storedMemory = localStorage.getItem('memory')
     if (!storedMemory) { memory = { version: pkg.version } }
@@ -433,6 +436,15 @@ async function setupFilesystem () {
         if (!fs.existsSync(from)) throw new Error(`mv: source ${from} does not exist`)
         if (fs.existsSync(to)) throw new Error(`mv: target ${to} already exists`)
         fs.renameSync(from, to)
+      }}
+
+      bin.cp = { args: ['from', 'to'], description: 'Copy a file or directory', run: (term, context) => {
+        const [fromStr, toStr] = context.split(' ')
+        const from = path.resolve(term.cwd, fromStr)
+        const to = path.resolve(term.cwd, toStr)
+        if (!fs.existsSync(from)) throw new Error(`cp: source ${from} does not exist`)
+        if (fs.existsSync(to)) throw new Error(`cp: target ${to} already exists`)
+        fs.copySync(from, to)
       }}
 
       bin.ls = {
@@ -803,7 +815,7 @@ export async function boot () {
 }
 
 // Integrate basic wallet functionality within the kernel
-const kernelWallet = {
+const kernelWalletInterface = {
   get account () {
     return bin.account?.account
   },
@@ -813,7 +825,7 @@ const kernelWallet = {
   }
 }
 
-export const wallet = kernelWallet
+export const wallet = kernelWalletInterface
 
 // Setup screensaver interval
 let idleTimer

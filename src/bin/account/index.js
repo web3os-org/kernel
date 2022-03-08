@@ -1,10 +1,10 @@
 import arg from 'arg'
 import colors from 'ansi-colors'
-import { ethers as Ethers } from 'ethers'
+// import { ethers as Ethers } from 'ethers'
 import { parse as cliParse } from 'shell-quote'
+import Web3 from 'web3'
 import * as Ocean from '@web3os/openocean-api'
 
-import Web3 from 'web3'
 import chains from './chains.json'
 
 export const name = 'account'
@@ -26,15 +26,20 @@ export const help = `
 
 `
 
-export const spec = {}
+export const spec = {
+  '--help': Boolean,
+  '--version': Boolean
+}
 
 export let web3
 export let term
-export let ethers
 export let signer
 export let provider
 export let tokens = {}
 export const allChains = chains
+
+provider = Web3.givenProvider
+web3 = new Web3(provider)
 
 export function setPrompt (terminal) {
   terminal = terminal || term || window.terminal
@@ -66,29 +71,26 @@ export async function updateTokenList () {
   }
 }
 
-export async function connect (args) {
+export async function connect () {
   try {
-    provider = Web3.givenProvider
-    web3 = new Web3(provider)
-    
-    await ethereum.request({
-      method: 'wallet_requestPermissions',
-      params: [{ eth_accounts: {} }],
-    })
+    const accounts = await web3.eth.getAccounts()
+    if (accounts.length === 0) {
+      await provider.request({
+        method: 'wallet_requestPermissions',
+        params: [{ eth_accounts: {} }],
+      })
+    }
 
     account.address = (await web3.eth.getAccounts())[0]
     account.chainId = await web3.eth.getChainId()
 
-    account.encryptionPublicKey = await ethereum.request({
-      method: 'eth_getEncryptionPublicKey',
-      params: [account.address]
-    })
+    // account.encryptionPublicKey = await provider.request({
+    //   method: 'eth_getEncryptionPublicKey',
+    //   params: [account.address]
+    // })
   } catch {
     throw new Error(colors.danger('Failed to connect to web3 provider. Do you have https://metamask.io installed and unlocked?'))
   }
-
-  ethers = new Ethers.providers.Web3Provider(provider, 'any')
-  signer = ethers.getSigner()
 
   term.log(`${colors.success('Connected to account:')} ${colors.bold.blue(account.address)}`)
 
@@ -182,10 +184,11 @@ export async function switchChain (args) {
 }
 
 export async function getBalance (symbol) {
+  if (!account.address) throw new Error('Not connected to wallet')
   let balance = 0
 
   if (!symbol) {
-    balance = Ethers.utils.formatEther(await ethers.getBalance(account.address)) + ' ' + account.chain.nativeCurrency.symbol
+    balance = web3.utils.fromWei(await web3.eth.getBalance(account.address)) + ' ' + account.chain.nativeCurrency.symbol
   } else {
     const token = (symbol.substr(0, 2) === '0x') ? tokens?.find(token => token.address === symbol) : tokens?.find(token => token.symbol === symbol)
     if (!token) throw new Error(colors.danger('Unknown token'))
@@ -198,28 +201,16 @@ export async function getBalance (symbol) {
 }
 
 export async function sign (message) {
-  // message = message.replace(/\\n/g, '\n')
-
-  // const msg = Ethers.utils.hashMessage(message)
-  // console.log({ message, msg })
-  // const result = await signer.signMessage(msg)
-  // const data = Ethers.utils.toUtf8Bytes(message)
-  // const addr = await signer.getAddress()
-  // const { result } = await provider.request('personal_sign', [message, account.address.toLowerCase()])
-
-  // const result = await web3.eth.sign(message, account.address)
-
-  // return result
+  message = message.replace(/\\n/g, '\n')
+  return await web3.eth.personal.sign(message, account.address)
 }
 
 export async function send (args) {
-  const result = await web3.eth.sendTransaction({
+  return await web3.eth.sendTransaction({
     from: account.address,
     to: args._[2],
-    value: Ethers.utils.parseEther(args._[1])
+    value: Web3.utils.toWei(args._[1])
   })
-
-  return result
 }
 
 async function displayOrConnect () {
@@ -232,6 +223,9 @@ export async function run (terminal, context) {
   const args = arg(spec, { argv: cliParse(context) })
   const cmd = args._?.[0]
 
+  if (args['--version']) return term.log(version)
+  if (args['--help']) return term.log(help)
+
   switch (cmd) {
     case 'connect':
       return connect(args)
@@ -240,7 +234,7 @@ export async function run (terminal, context) {
     case 'balance':
       return term.log(await getBalance(args?._[1]))
     case 'sign':
-      return term.log(sign(args?._[1]))
+      return term.log(await sign(args?._[1]))
     case 'send':
       return term.log(await send(args))
     case undefined:
