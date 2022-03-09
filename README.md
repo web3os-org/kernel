@@ -155,6 +155,8 @@ To run a Javascript script: `eval /path/to/script.js`
 
 - Or from an app: `window.kernel.execute('eval /path/to/script.js')`
 
+See some sample scripts at: [https://github.com/web3os-org/sample-scripts](https://github.com/web3os-org/sample-scripts)
+
 ## Kernel Interface
 
 This (and everything else) is subject to change before version 1.0.
