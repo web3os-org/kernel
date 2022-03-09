@@ -62,15 +62,18 @@ The project is still very young, and proper documentation and organization is Co
 - Runs completely in a web browser
 - Optional desktop environment
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
-- Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js) and [ethers.js](https://github.com/ethers-io/ethers.js)
-  - Currently, it only integrates with [MetaMask](https://metamask.io/)
-  - Still in heavy development, so more to come!
+- Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js)
+  - Interact with smart contracts
+  - Programmatically switch chains
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
-- IPFS integration with [ipfs-core](https://github.com/)
+- IPFS integration with [ipfs-core](https://github.com/ipfs/js-ipfs)
+- Git integration with [isomorphic-git](https://isomorphic-git.org/)
+- Decentralized messaging support with [Mailchain](https://mailchain.xyz)
 - It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
-- WebAssembly executable support *(very experimental)*:
+- WebUSB support *(Chrome only; very experimental)*
+- WebAssembly executable support *(very experimental - incomplete)*:
   - [WASI](https://wasi.dev/)
   - [Emscripten](https://emscripten.org/)
   - [AssemblyScript](https://www.assemblyscript.org/)
@@ -80,7 +83,6 @@ The project is still very young, and proper documentation and organization is Co
     - *(soon, there are still some issues to resolve)*
 - Developer-friendly:
   - Easily scriptable and hookable ecosystem of modules
-    - This sacrifices some security; WASM helps
   - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
   - A package manager, wpm, is in development but not yet functional
 
@@ -107,16 +109,17 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 ## User Quickstart
 
 - Visit [https://web3os.sh](https://web3os.sh)
-- Type `help`
-- Type `ls /bin`
+- Type `help` for generic helpful information
+- Type `ls /bin` to list all available commands
 - Edit a file: `edit /tmp/test.txt`
 - Launch the desktop: `desktop`
 - Launch the file explorer: `files`
 - Launch a browser: `www https://instacalc.com`
-- Show your wallet address: `account`
+- Connect to your wallet: `account connect`
 - Check native coin balance: `account balance`
 - Check token balance: `account balance USDC`
 - Switch to another network: `account chain polygon`, `account chain bsc`, `account chain 0x2`
+- Interact with a smart contract: `contract --help`
 - Learn more about commands: `help command`
 - Run the screensaver: `screensaver`
 - 🎉 Fire the Confetti Gun: `confetti`
@@ -137,7 +140,7 @@ From here, simply connect to [https://localhost:8080](https://localhost:8080) an
 To modify the commands the system executes on startup:
 
 - `edit /config/autostart.sh`
-- then add `desktop` to the end of the file
+- For example, add `desktop` to the end of the file
 - insert any additional commands you want to run on startup
 
 ## Scripting
