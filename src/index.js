@@ -255,6 +255,13 @@ export async function upload (term, context) {
   input.click()
 }
 
+export function colorChars (str, options = {}) {
+  if (typeof str !== 'string') throw new Error('You must provide a string to colorChars')
+  const numbers = options.numbers || colors.blue
+  const letters = options.letters || colors.white
+  return str.split('').map(c => isNaN(c) ? letters(c) : numbers(c)).join('')
+}
+
 export async function notify (options={}) {
   if (Notification.permission !== 'granted') throw new Error('Notification permission denied')
   return new Notification(options.title, options)

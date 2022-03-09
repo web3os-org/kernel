@@ -107,36 +107,9 @@ async function loadFolder (browser, url) {
       icon.dataset.file = entry.dataset.file
       title.dataset.file = entry.dataset.file
 
-      const dragenter = e => { e.stopPropagation(); e.preventDefault() }
-      const dragover = e => { e.stopPropagation(); e.preventDefault() }
-      const drop = e => {
-        e.stopPropagation()
-        e.preventDefault()
-        const dt = e.dataTransfer
-        const files = dt.files
-
-        for (const file of files) {
-          const reader = new FileReader()
-
-          reader.readAsArrayBuffer(file)
-          reader.onload = () => {
-            const buffer = kernel.BrowserFS.Buffer.from(reader.result)
-            const filepath = path.resolve(addressBar.value, file.name)
-            kernel.fs.writeFileSync(filepath, buffer)
-            kernel.snackbar({ labelText: `Uploaded ${filepath}` })
-
-            loadFolder(browser, url)
-          }
-        }
-      }
-
-      browser.addEventListener('dragenter', dragenter)
-      browser.addEventListener('dragover', dragover)
-      browser.addEventListener('drop', drop)
-
       let divider = false
       const entryContextMenu = []
-      const setAriaLabel = label => [icon, title].forEach(el => { el.ariaLabel = label })
+      const setAriaLabel = label => [icon, title].forEach(el => { el.setAttribute('aria-label', label) }) // .ariaLabel isn't yet supported in firefox
 
       switch (extension) {
         case '.js':
@@ -178,8 +151,8 @@ async function loadFolder (browser, url) {
           break
       }
 
-      if (icon.ariaLabel) icon.classList.add('hint--right', 'hint--info')
-      if (title.ariaLabel) title.classList.add('hint--right', 'hint--info')
+      if (icon.getAttribute('aria-label')) icon.classList.add('hint--right', 'hint--info')
+      if (title.getAttribute('aria-label')) title.classList.add('hint--right', 'hint--info')
       if (divider) entryContextMenu.push({ isDivider: true })
 
       if (fileData.type !== 'dir') entryContextMenu.push(
@@ -254,6 +227,7 @@ async function loadFolder (browser, url) {
             return promptExecute(() => kernel.executeScript(location))
           case '.js':
             return promptExecute(() => kernel.execute(`eval ${location}`))
+          case '.json':
           case '.txt':
             return kernel.execute(`edit ${location}`)
           case '.md':
@@ -268,7 +242,7 @@ async function loadFolder (browser, url) {
             }
             break
           default:
-            if (mime.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
+            if (mime?.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
             kernel.execute(`alert I'm not sure how to handle this file!`)
         }
       })
@@ -381,6 +355,33 @@ export async function run (terminal, url) {
 
   browser.appendChild(toolbar)
   browser.appendChild(explorer)
+
+  const dragstart = e => { e.dataTransfer.effectAllowed = 'copy' }
+  const dragover = e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy' }
+  const drop = e => {
+    e.stopPropagation()
+    e.preventDefault()
+    const dt = e.dataTransfer
+    const files = dt.files
+
+    for (const file of files) {
+      const reader = new FileReader()
+
+      reader.readAsArrayBuffer(file)
+      reader.onload = () => {
+        const buffer = kernel.BrowserFS.Buffer.from(reader.result)
+        const filepath = path.resolve(addressBar.value, file.name)
+        kernel.fs.writeFileSync(filepath, buffer)
+        kernel.snackbar({ labelText: `Uploaded ${filepath}` })
+
+        loadFolder(browser, url)
+      }
+    }
+  }
+
+  browser.addEventListener('dragstart', dragstart)
+  browser.addEventListener('dragover', dragover)
+  browser.addEventListener('drop', drop)
 
   const appWindow = kernel.appWindow({
     mount: browser,

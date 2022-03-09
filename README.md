@@ -66,6 +66,7 @@ The project is still very young, and proper documentation and organization is Co
   - Interact with smart contracts
   - Programmatically switch chains
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
+- IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - IPFS integration with [ipfs-core](https://github.com/ipfs/js-ipfs)
@@ -108,12 +109,29 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## User Quickstart
 
+<<<<<<< HEAD
 - Visit [https://web3os.sh](https://web3os.sh)
 - Type `help` for generic helpful information
 - Type `ls /bin` to list all available commands
+=======
+<details open>
+<summary><strong>Expand User Quickstart</strong></summary>
+
+---
+
+- **Visit [https://web3os.sh](https://web3os.sh)**
+- Type `help`
+- Type `ls /bin`
+>>>>>>> 2289c27c935a72908abab615ad5fe8431508157d
 - Edit a file: `edit /tmp/test.txt`
 - Launch the desktop: `desktop`
-- Launch the file explorer: `files`
+- Learn more about commands: `help command`
+- Run the screensaver: `screensaver`
+- Play DOOM: `doom`
+- Play Wolfenstein 3D: `wolfenstein`
+- Read this README: `markdown /docs/README.md`
+- 🎉 Fire the Confetti Gun: `confetti`
+- Launch the file explorer: `files /docs`
 - Launch a browser: `www https://instacalc.com`
 - Connect to your wallet: `account connect`
 - Check native coin balance: `account balance`
@@ -125,6 +143,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 - 🎉 Fire the Confetti Gun: `confetti`
 
 ## Developer Quickstart
+
+<details open>
+<summary><strong>Expand Developer Quickstart</strong></summary>
+
+---
 
 ```sh
 git clone git@github.com:web3os-org/kernel.git
@@ -145,6 +168,11 @@ To modify the commands the system executes on startup:
 
 ## Scripting
 
+<details>
+<summary><strong>Expand Scripting</strong></summary>
+
+---
+
 Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js) offers far more power.
 
 To run a web3os script: `sh /path/to/script.sh`
@@ -155,7 +183,14 @@ To run a Javascript script: `eval /path/to/script.js`
 
 - Or from an app: `window.kernel.execute('eval /path/to/script.js')`
 
+</details>
+
 ## Kernel Interface
+
+<details>
+<summary><strong>Expand Kernel Interface</strong></summary>
+
+---
 
 This (and everything else) is subject to change before version 1.0.
 
@@ -174,6 +209,7 @@ Also, expect undocumented features for now.
 
 - You may also interact directly with the account app.
   - e.g., `window.kernel.bin.account.connect()`
+  - e.g., `window.kernel.bin.account.account.address`
 
 `window.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
 
@@ -197,6 +233,11 @@ Also, expect undocumented features for now.
 - Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
 
 ## App Structure
+
+<details>
+<summary><strong>Expand App Structure</strong></summary>
+
+---
 
 Developers should be able to create apps in any way they like, with as few requirements as possible. Remember, your app is simply running in a browser - you have access to everything that any other script does.
 
@@ -253,7 +294,7 @@ Access the array of devices within an app: `kernel.bin.usb.devices`
 
 ## TODO
 
-- There's a lot to do 😅
+- There's a lot to do... please help. 😅
 - Decoupling of built-in apps into their own packages
 - P2P messaging and file sharing
 - Unified WASM handling

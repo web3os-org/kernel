@@ -92,7 +92,14 @@ export async function connect () {
     throw new Error(colors.danger('Failed to connect to web3 provider. Do you have https://metamask.io installed and unlocked?'))
   }
 
+<<<<<<< HEAD
   term.log(`${colors.success('Connected to account:')} ${colors.bold.blue(account.address)}`)
+=======
+  ethers = new Ethers.providers.Web3Provider(provider, 'any')
+  signer = ethers.getSigner()
+
+  term.log(`${colors.success('Connected to account:')} ${colors.muted('0x')}${kernel.colorChars(account.address.replace('0x', ''))}`)
+>>>>>>> 2289c27c935a72908abab615ad5fe8431508157d
 
   // Subscribe to accounts change
   provider.on('accountsChanged', accounts => {

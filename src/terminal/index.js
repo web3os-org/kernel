@@ -53,18 +53,23 @@ class Web3osTerminal extends Terminal {
   }
 
   isPrintable (domEvent) {
+    const code = domEvent.which
+    if (!code) return false
+
     return !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey &&
       (
-        (domEvent.keyCode === 32) ||
-        (domEvent.keyCode >= 48 && domEvent.keyCode <= 111) ||
-        (domEvent.keyCode >= 185 && domEvent.keyCode <= 222) ||
-        (domEvent.key === 'Tab' || domEvent.key === 'ArrowLeft' || domEvent.key === 'ArrowRight')
+        code >= 32 && code <= 126 ||
+        code >= 186 && code <= 192 ||
+        [173, 220].includes(code)
       )
   }
 
   async keyHandler ({ key, domEvent }) {
+    if (!key) return
     const keyName = domEvent.key
     const printable = this.isPrintable(domEvent)
+
+    // console.log({ keyName, domEvent, key, printable })
 
     if (domEvent.ctrlKey) {
       switch (keyName.toLowerCase()) {

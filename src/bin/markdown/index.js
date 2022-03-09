@@ -24,6 +24,7 @@ export async function run (term, filename) {
   const wrapper = document.createElement('div')
   wrapper.style.padding = '1rem'
   wrapper.innerHTML = html
+  wrapper.querySelectorAll('a').forEach(a => { a.style.color = '#4287f5' })
 
   kernel.appWindow({
     title: filename,
