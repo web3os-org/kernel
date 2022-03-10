@@ -109,20 +109,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## User Quickstart
 
-<<<<<<< HEAD
 - Visit [https://web3os.sh](https://web3os.sh)
 - Type `help` for generic helpful information
 - Type `ls /bin` to list all available commands
-=======
-<details open>
-<summary><strong>Expand User Quickstart</strong></summary>
-
----
-
-- **Visit [https://web3os.sh](https://web3os.sh)**
-- Type `help`
-- Type `ls /bin`
->>>>>>> 2289c27c935a72908abab615ad5fe8431508157d
 - Edit a file: `edit /tmp/test.txt`
 - Launch the desktop: `desktop`
 - Learn more about commands: `help command`
