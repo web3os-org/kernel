@@ -179,7 +179,8 @@ async function loadFolder (browser, url) {
             })
 
             if (isConfirmed) {
-              await kernel.execute(`rm ${location}`)
+              if (fileData.type !== 'dir') await kernel.execute(`rm ${location}`)
+              else await kernel.execute(`rmdir -f ${location}`)
               loadFolder(browser, url)
             }
           }

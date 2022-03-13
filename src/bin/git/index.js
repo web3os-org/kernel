@@ -1,6 +1,5 @@
 import arg from 'arg'
 import path from 'path'
-import Web3 from 'web3'
 import git from 'isomorphic-git'
 import http from 'isomorphic-git/http/web'
 import colors from 'ansi-colors'

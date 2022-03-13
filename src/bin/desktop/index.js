@@ -108,24 +108,7 @@ export async function launchTerminal (options = {}) {
   setInterval(newTerm.fit, 100)
 }
 
-export async function start (args) {
-  terminal.log('Starting web3os.sh Desktop..')
-
-  desktop = document.createElement('div')
-  desktop.id = 'web3os-desktop'
-
-  const wallpaper = document.createElement('img')
-  wallpaper.id = 'web3os-desktop-wallpaper'
-  wallpaper.alt = ''
-  wallpaper.src = args['--wallpaper'] || defaultWallpaperURL
-  wallpaper.style.opacity = 0
-
-  if (wallpaper.complete) {
-    wallpaper.style.opacity = 1
-  } else {
-    wallpaper.addEventListener('load', () => { wallpaper.style.opacity = 1 })
-  }
-
+async function createFileLayer () {
   const fileLayer = document.createElement('div')
   fileLayer.id = 'web3os-desktop-file-layer'
   fileLayer.addEventListener('dragover', e => {
@@ -188,6 +171,16 @@ export async function start (args) {
       {
         text: 'Edit',
         action: () => kernel.execute(`edit ${file.location}`)
+      },
+
+      {
+        text: 'Delete',
+        action: async () => {
+          kernel.execute(`rm ${file.location}`)
+          const fileLayer = await createFileLayer()
+          document.querySelector('#web3os-desktop-file-layer').replaceWith(fileLayer)
+          loadDesktopIconPositions()
+        }
       }
     ]
 
@@ -224,6 +217,29 @@ export async function start (args) {
       }
     })
   })
+
+  return fileLayer
+}
+
+export async function start (args) {
+  terminal.log('Starting web3os.sh Desktop..')
+
+  desktop = document.createElement('div')
+  desktop.id = 'web3os-desktop'
+
+  const wallpaper = document.createElement('img')
+  wallpaper.id = 'web3os-desktop-wallpaper'
+  wallpaper.alt = ''
+  wallpaper.src = args['--wallpaper'] || defaultWallpaperURL
+  wallpaper.style.opacity = 0
+
+  if (wallpaper.complete) {
+    wallpaper.style.opacity = 1
+  } else {
+    wallpaper.addEventListener('load', () => { wallpaper.style.opacity = 1 })
+  }
+
+  const fileLayer = await createFileLayer()
 
   desktop.appendChild(wallpaper)
   desktop.appendChild(fileLayer)

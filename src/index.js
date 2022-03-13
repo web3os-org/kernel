@@ -38,7 +38,7 @@ const figletFontName = 'Graffiti'
 // TODO: Make this configurable via env
 const builtinApps = [
   'account', 'backend', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
-  'files', 'git', 'help', 'ipfs', 'markdown', 'screensaver', 'usb', 'view', 'wasm',
+  'files', 'git', 'help', 'ipfs', 'markdown', 'peer', 'screensaver', 'usb', 'view', 'wasm',
   'wolfenstein', 'wpm', 'www'
 ]
 

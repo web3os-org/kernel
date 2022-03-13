@@ -286,6 +286,7 @@ Access the array of devices within an app: `kernel.bin.usb.devices`
 - There's a lot to do... please help. 😅
 - Decoupling of built-in apps into their own packages
 - P2P messaging and file sharing
+- Fix desktop icon issues
 - Unified WASM handling
 - Finish development of backend Node.js web3os-server API
 - Finish the packaging system to be able to install apps
@@ -293,6 +294,7 @@ Access the array of devices within an app: `kernel.bin.usb.devices`
 - Increase inter-module security
 - Some apps are basically just placeholders
 - Modify command interfaces to conform to IEEE Std 1003.1-2017
+- Flesh out rm command and remove rmdir; allow recursive delete
 - Adding more things to the TODO list
 
 ## Can it do *thing*?

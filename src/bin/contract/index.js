@@ -61,7 +61,11 @@ async function execute ({ cmd, address, method, abiFile, abiUrl, args = [] }) {
   const callArgs = { _: [cmd, address, method, { op: '(' }, ...args, { op: ')' }] }
   if (abiFile) callArgs['--abi-file'] = abiFile
   if (abiUrl) callArgs['--abi-url'] = abiUrl
-  return await go(cmd, address, method, callArgs)
+  try {
+    return await go(cmd, address, method, callArgs)
+  } catch (err) {
+    return err
+  }
 }
 
 export async function go (cmd, address, method, args) {
