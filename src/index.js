@@ -35,7 +35,7 @@ import theme from './themes/default/index.js'
 
 const figletFontName = 'Graffiti'
 
-// TODO: Make this configurable via env
+// TODO: Make this configurable via env or querystring
 const builtinApps = [
   'account', 'backend', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
   'files', 'git', 'help', 'ipfs', 'markdown', 'peer', 'screensaver', 'usb', 'view', 'wasm',
@@ -60,7 +60,7 @@ const showBootIntro = () => {
   log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
   log(colors.heading.success.bold(`\n\n     web3os kernel v${pkg.version}     `))
   log(colors.warning('⚠            ALPHA           ⚠\n'))
-  log(colors.warning('If things get wacky, just reload!'))
+  log(colors.warning(`If things get wacky, just ${colors.bold.underline('reboot')}!`))
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
   log(colors.danger(`Type ${colors.bold.underline('help')} for help`))
@@ -76,7 +76,6 @@ const showBootIntro = () => {
   // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
   log(colors.muted('\nBooting...'))
-  log(`${colors.danger('NOTE:')} ${colors.muted('The first boot will take the longest')}  😅`)
 }
 
 function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }
@@ -774,14 +773,14 @@ export async function boot () {
 
     // Automatically start the desktop on small screens
     // TODO: Fix everything on small screens
-    if (window.innerWidth < 768) {
-      // document.querySelector('#terminal').style.display = 'none'
-      setTimeout(() => execute('desktop'), 2100)
-    } else {
-      document.querySelector('#terminal').style.display = 'block'
-      setTimeout(terminal.fit, 50)
-      terminal.focus()
-    }
+    // if (window.innerWidth < 768) {
+    //   // document.querySelector('#terminal').style.display = 'none'
+    //   setTimeout(() => execute('desktop'), 2100)
+    // } else {
+    document.querySelector('#terminal').style.display = 'block'
+    setTimeout(terminal.fit, 50)
+    terminal.focus()
+    // }
   } else {
     document.querySelector('#terminal').style.display = 'block'
     setTimeout(terminal.fit, 50)
@@ -850,8 +849,8 @@ document.addEventListener('keypress', resetIdleTime)
 document.addEventListener('pointerdown', resetIdleTime)
 
 // Register service worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-  })
-}
+// if ('serviceWorker' in navigator) {
+//   window.addEventListener('load', () => {
+//     navigator.serviceWorker.register('/service-worker.js')
+//   })
+// }

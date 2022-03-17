@@ -124,12 +124,12 @@ export async function run (terminal, filename) {
 
   const buttons = [
     {
-      component: `<mwc-button slot="primaryAction" icon="save" raised>Save</mwc-button>`,
+      component: '<mwc-button slot="primaryAction" icon="save" raised>Save</mwc-button>',
       action: () => saveFile({ mirror, filename })
     },
 
     {
-      component: `<mwc-button icon="help_outline">Help</mwc-button>`,
+      component: '<mwc-button icon="help_outline">Help</mwc-button>',
       action: () => {
         kernel.dialog({
           title: 'Editor Help',

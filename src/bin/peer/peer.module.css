@@ -1,0 +1,73 @@
+.container {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat {
+  height: 90%;
+  overflow: auto;
+  background-color: #121212;
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  display: flex;
+}
+
+.input {
+  font-size: 2rem;
+  width: 90%;
+}
+
+.button {
+  font-weight: bolder;
+  width: 10%;
+  background-color: #121212;
+  color: white;
+}
+
+.toMe, .fromMe {
+  position: relative;
+  padding: 1rem;
+  border-radius: 20px;
+  max-width: 30%;
+  min-width: 10ch;
+  margin: 1rem;
+  word-wrap: break-word;
+}
+
+.toMe {
+  background-color: #00aabb;
+  align-self: flex-start;
+}
+
+.fromMe {
+  background-color: #00bd26;
+  align-self: flex-end;
+}
+
+.toMe:after, .fromMe:after {
+  content: '';
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border: 20px solid transparent;
+  border-bottom: 0;
+	margin-left: -10px;
+	margin-bottom: -20px;
+}
+
+.toMe:after {
+	border-top-color: #00aabb;
+  border-left: 0;
+}
+
+.fromMe:after {
+	border-top-color: #00bd26;
+  border-right: 0;
+}
