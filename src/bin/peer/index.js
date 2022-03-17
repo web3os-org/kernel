@@ -16,11 +16,11 @@ export const help = `
     peer <command> <args> [options]
 
   Commands:
-    id                                     Display your peer ID
-    list                                   List available peers
-    connect <peer-id>                      Connect to a peer
     call <peer-id> [--video] [--audio]     Call a peer with media streams
     chat <peer-id>                         Open a text chat with a peer
+    connect <peer-id>                      Connect to a peer
+    id                                     Display your peer ID
+    list                                   List available peers
     send <peer-id> [--text] [--json]       Send a message
     upload <peer-id> [--file]              Upload a file to a peer
 
