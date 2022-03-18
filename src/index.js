@@ -604,8 +604,10 @@ async function registerBuiltinApps () {
   const apps = process.env.BUILTIN_APPS ? process.env.BUILTIN_APPS.split(',') : builtinApps
 
   builtinApps.forEach(async app => {
-    const appBin = await import(`./bin/${app}`)
-    addBin(appBin)
+    if (!module.hot) {
+      const appBin = await import(`./bin/${app}`)
+      addBin(appBin)
+    }
   })
 }
 
@@ -639,7 +641,9 @@ async function loadPackages () {
 }
 
 export function addBin (app) {
+  console.log('add', app.name)
   if (!app) throw new Error('Invalid app provided to kernel.addBin')
+  if (bin[app.name] && module.hot) delete bin[app.name]
   if (bin[app.name]) throw new Error('App is already loaded')
   bin[app.name] = app
   fs.writeFileSync(path.resolve('/bin', app.name), '')
@@ -648,7 +652,7 @@ export function addBin (app) {
 export async function showSplash (msg, options = {}) {
   document.querySelector('#web3os-splash')?.remove()
 
-  // TODO: I'll move a lot of this to the css eventually..
+  // TODO: I'll move a lot of this to the css eventually.. or scrap it entirely.
   const icon = document.createElement('mwc-icon')
   icon.id = 'web3os-splash-icon'
   icon.style.color = options.iconColor || '#03A062'

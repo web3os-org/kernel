@@ -10,8 +10,13 @@ module.exports = {
   mode: process.env.NODE_ENV || 'production',
   devtool: 'eval-source-map',
   devServer: {
+    hot: 'only',
     static: './dist',
-    // devMiddleware: { writeToDisk: true }
+    // devMiddleware: { writeToDisk: true },
+    client: {
+      logging: 'info',
+      // progress: true
+    },
     server: {
       type: 'https',
       options: {
@@ -28,6 +33,7 @@ module.exports = {
   },
   plugins: [
     // new WebpackBundleAnalyzer(),
+    new webpack.HotModuleReplacementPlugin(),
 
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
@@ -121,7 +127,7 @@ module.exports = {
             options: {
               compress: {
                 mode: 'lossless',
-                disableOnDevelopment: true,
+                disableOnDevelopment: true
               }
             }
           }

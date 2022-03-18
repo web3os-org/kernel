@@ -1,6 +1,6 @@
 import arg from 'arg'
 import path from 'path'
-import Peer from 'peerjs'
+import Peer from 'peerjs/dist/peerjs.esm'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
 
@@ -62,6 +62,7 @@ export const connections = {}
 let kernel
 let terminal
 
+console.log({ Peer })
 if (id === '') instance = new Peer()
 instance.on('open', myId => { id = myId })
 
@@ -267,16 +268,17 @@ export async function run (term, context = '') {
   terminal = term
   kernel = term.kernel
 
-  const peerOptions = {
-    debug: args['--debug'],
-    key: args['--server-key'],
-    host: args['--server-host'],
-    port: args['--server-port'],
-    path: args['--server-path'],
-    secure: args['--server-secure'],
-    pingInterval: args['--server-ping-interval']
-  }
+  const peerOptions = {}
 
+  if (args['--debug']) peerOptions.debug = args['--debug']
+  if (args['--server-key']) peerOptions.key = args['--server-key']
+  if (args['--server-host']) peerOptions.host = args['--server-host']
+  if (args['--server-port']) peerOptions.port = args['--server-port']
+  if (args['--server-path']) peerOptions.path = args['--server-path']
+  if (args['--server-secure']) peerOptions.secure = args['--server-secure']
+  if (args['--server-ping-interval']) peerOptions.pingInterval = args['--server-ping-interval']
+
+  console.log({ args }, args['--id'], id)
   if (args['--id'] && id !== args['--id']) instance = new Peer(args?.['--id'], peerOptions)
 
   switch (cmd) {

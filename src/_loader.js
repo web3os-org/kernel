@@ -17,3 +17,7 @@ import('./index').then(kernel => {
     kernel.boot()
   })
 })
+
+if (module.hot) {
+  module.hot.accept()
+}
