@@ -60,7 +60,8 @@ class Web3osTerminal extends Terminal {
       (
         code >= 32 && code <= 126 ||
         code >= 186 && code <= 192 ||
-        [173, 220].includes(code)
+        code >= 219 && code <= 222 ||
+        [173].includes(code)
       )
   }
 
@@ -99,6 +100,7 @@ class Web3osTerminal extends Terminal {
           const customCommand = this.customCommands?.find(c => c.name === this.cmd)
           if (customCommand) customCommand.run(this.cmd)
           else this.kernel.execute(this.cmd, { terminal: this, doPrompt: true })
+          this.interruptListener = this.onKey(this.interruptHandler.bind(this))
         } else {
           return this.prompt()
         }
@@ -138,6 +140,11 @@ class Web3osTerminal extends Terminal {
         }
 
         break
+      case 'Escape':
+        this.cmd = ''
+        this.writeln('')
+        this.prompt()
+        break
       default:
         if (printable) {
           this.cmd += key
@@ -146,10 +153,28 @@ class Web3osTerminal extends Terminal {
     }
   }
 
+  // This doesn't actually kill anything, but it will return access to the terminal
+  interruptHandler ({ key, domEvent }) {
+    if (!key) return
+    const keyName = domEvent.key
+
+    if (
+      (keyName === 'Escape') ||
+      (domEvent.ctrlKey && keyName.toLowerCase() === 'c')
+    ) {
+      this.interruptListener.dispose()
+      this.cmd = ''
+      this.write('^C\n')
+      return this.prompt()
+    }
+  }
+
   listen () {
     this.unlisten()
     this.keyListener = this.onKey(this.keyHandler.bind(this))
+
     // A little workaround: optimistically assume any data over one character is a paste
+    // TODO: Also catch other paste events
     this.pasteListener = this.onData(data => {
       const containsUnprintable = data.split('').some(char => !this.isPrintable(data))
       data.length > 1 && !containsUnprintable && this.paste()
@@ -160,6 +185,7 @@ class Web3osTerminal extends Terminal {
     try {
       this.keyListener.dispose()
       this.pasteListener.dispose()
+      this.interruptListener.dispose()
     } catch {}
   }
 }

@@ -69,9 +69,11 @@ The project is still very young, and proper documentation and organization is Co
 - IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
+- Decentralized messaging support with [Mailchain](https://mailchain.xyz)
 - IPFS integration with [ipfs-core](https://github.com/ipfs/js-ipfs)
 - Git integration with [isomorphic-git](https://isomorphic-git.org/)
-- Decentralized messaging support with [Mailchain](https://mailchain.xyz)
+- GunJS integration with [GUN](https://gun.eco)
+- Moralis integration with [Moralis](https://moralis.io)
 - It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
 - WebUSB support *(Chrome only; very experimental)*
 - WebAssembly executable support *(very experimental - incomplete)*:
@@ -285,7 +287,6 @@ Access the array of devices within an app: `kernel.bin.usb.devices`
 
 - There's a lot to do... please help. 😅
 - Decoupling of built-in apps into their own packages
-- P2P messaging and file sharing
 - Fix desktop icon issues
 - Unified WASM handling
 - Finish development of backend Node.js web3os-server API

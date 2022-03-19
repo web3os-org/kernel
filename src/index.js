@@ -38,8 +38,8 @@ const figletFontName = 'Graffiti'
 // TODO: Make this configurable via env or querystring
 const builtinApps = [
   'account', 'backend', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
-  'files', 'git', 'help', 'ipfs', 'markdown', 'peer', 'screensaver', 'usb', 'view', 'wasm',
-  'wolfenstein', 'wpm', 'www'
+  'files', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'screensaver', 'usb',
+  'view', 'wasm', 'wolfenstein', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
@@ -154,13 +154,13 @@ export async function execute (cmd, options = {}) {
 
   console.log({ cmd, options, command })
 
-  // if (!command) {
-  //   try {
-  //     command = await import(`./bin/${cmd.split(' ')[0]}`)
-  //   } catch (err) {
-  //     console.error(err)
-  //   }
-  // }
+  if (!command) {
+    try {
+      command = await import(`./bin/${cmd.split(' ')[0]}`)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   if (!command) { term.log(colors.danger('Invalid command')); return term.prompt() }
 

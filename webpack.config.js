@@ -10,11 +10,11 @@ module.exports = {
   mode: process.env.NODE_ENV || 'production',
   devtool: 'inline-source-map',
   devServer: {
-    hot: 'only',
+    // hot: 'only',
     static: './dist',
     // devMiddleware: { writeToDisk: true },
     client: {
-      logging: 'info',
+      // logging: 'info',
       // progress: true
     },
     server: {
@@ -86,6 +86,8 @@ module.exports = {
   },
 
   module: {
+    noParse: /gun\.js$/,
+
     rules: [
       {
         test: /\.m?js$/,
