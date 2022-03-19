@@ -8,7 +8,7 @@ import styles from './peer.module.css'
 
 export const name = 'peer'
 export const version = '0.1.0'
-export const description = 'PeerJS Utility1111'
+export const description = 'PeerJS Utility'
 export const help = `
   ${colors.magenta.bold('PeerJS Utility')}
 
@@ -283,7 +283,7 @@ export async function run (term, context = '') {
 
   switch (cmd) {
     case 'id':
-      return term.log('asdfasdfas')
+      return term.log(id)
     case 'connect':
       return await connect(args._?.[1], args)
     case 'chat':
