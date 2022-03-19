@@ -8,7 +8,7 @@ import styles from './peer.module.css'
 
 export const name = 'peer'
 export const version = '0.1.0'
-export const description = 'PeerJS Utility'
+export const description = 'PeerJS Utility1111'
 export const help = `
   ${colors.magenta.bold('PeerJS Utility')}
 
@@ -278,12 +278,12 @@ export async function run (term, context = '') {
   if (args['--server-secure']) peerOptions.secure = args['--server-secure']
   if (args['--server-ping-interval']) peerOptions.pingInterval = args['--server-ping-interval']
 
-  console.log({ args }, args['--id'], id)
+  console.log('12345678900000:)', { args }, args['--id'], id)
   if (args['--id'] && id !== args['--id']) instance = new Peer(args?.['--id'], peerOptions)
 
   switch (cmd) {
     case 'id':
-      return term.log(id)
+      return term.log('asdfasdfas')
     case 'connect':
       return await connect(args._?.[1], args)
     case 'chat':

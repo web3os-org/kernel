@@ -19,5 +19,7 @@ import('./index').then(kernel => {
 })
 
 if (module.hot) {
-  module.hot.accept()
+  module.hot.accept(e => {
+    console.log('hmr:accept', e)
+  })
 }

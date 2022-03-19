@@ -152,13 +152,15 @@ export async function execute (cmd, options = {}) {
   let command = bin[cmd.split(' ')[0]]
   const term = options.terminal || window.terminal
 
-  if (!command) {
-    try {
-      command = await import(`./bin/${cmd.split(' ')[0]}`)
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  console.log({ cmd, options, command })
+
+  // if (!command) {
+  //   try {
+  //     command = await import(`./bin/${cmd.split(' ')[0]}`)
+  //   } catch (err) {
+  //     console.error(err)
+  //   }
+  // }
 
   if (!command) { term.log(colors.danger('Invalid command')); return term.prompt() }
 
@@ -604,10 +606,8 @@ async function registerBuiltinApps () {
   const apps = process.env.BUILTIN_APPS ? process.env.BUILTIN_APPS.split(',') : builtinApps
 
   builtinApps.forEach(async app => {
-    if (!module.hot) {
-      const appBin = await import(`./bin/${app}`)
-      addBin(appBin)
-    }
+    const appBin = await import(`./bin/${app}`)
+    addBin(appBin)
   })
 }
 
@@ -641,9 +641,7 @@ async function loadPackages () {
 }
 
 export function addBin (app) {
-  console.log('add', app.name)
   if (!app) throw new Error('Invalid app provided to kernel.addBin')
-  if (bin[app.name] && module.hot) delete bin[app.name]
   if (bin[app.name]) throw new Error('App is already loaded')
   bin[app.name] = app
   fs.writeFileSync(path.resolve('/bin', app.name), '')

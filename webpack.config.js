@@ -8,7 +8,7 @@ const WebpackBundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerP
 
 module.exports = {
   mode: process.env.NODE_ENV || 'production',
-  devtool: 'eval-source-map',
+  devtool: 'inline-source-map',
   devServer: {
     hot: 'only',
     static: './dist',
@@ -33,7 +33,6 @@ module.exports = {
   },
   plugins: [
     // new WebpackBundleAnalyzer(),
-    new webpack.HotModuleReplacementPlugin(),
 
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
