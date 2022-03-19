@@ -171,7 +171,9 @@ yarn # or npm install
 yarn start # or npm start
 ```
 
-From here, simply connect to [https://localhost:8080](https://localhost:8080) and accept the self-signed certificate warning.
+From here, simply connect to [https://localhost:8080](https://localhost:8080) and accept the certificate warning.
+
+Alternatively, install [src/assets/ssl/localhost.crt](https://github.com/web3os-org/kernel/blob/master/src/assets/ssl/localhost.crt) to your trusted certificate store.
 
 </details>
 
