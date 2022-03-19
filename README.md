@@ -40,7 +40,7 @@ The project is still very young, and proper documentation and organization is Co
 ---
 
 - [Features](#features)
-- [Alpha Footage](#alpha-footage)
+- [Footage](#footage)
 - [Disclaimer](#disclaimer)
 - [Help Wanted](#help-wanted)
 - [User Quickstart](#user-quickstart)
@@ -58,6 +58,9 @@ The project is still very young, and proper documentation and organization is Co
 ---
 
 ## Features
+
+<details open>
+<summary><strong>Expand Features</strong></summary>
 
 - Runs completely in the browser
 - Optional desktop environment
@@ -82,7 +85,6 @@ The project is still very young, and proper documentation and organization is Co
   - [WASI](https://wasi.dev/)
   - [Emscripten](https://emscripten.org/)
   - [AssemblyScript](https://www.assemblyscript.org/)
-
 - Decentralized:
   - Open source to run your own copy
   - Backup site hosted on IPFS
@@ -92,11 +94,21 @@ The project is still very young, and proper documentation and organization is Co
   - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
   - A package manager, wpm, is in development but not yet functional
 
-## Alpha Footage
+</details>
+
+## Footage
+
+<details open>
+<summary><strong>Expand Footage</strong></summary>
 
 Here's a quick video showcasing a few of the features: [web3os alpha demo](https://youtu.be/JsyJ8mbWMxc) [![Watchers](https://img.shields.io/youtube/views/JsyJ8mbWMxc?style=social)](https://youtu.be/JsyJ8mbWMxc)
 
+</details>
+
 ## Disclaimer
+
+<details>
+<summary><strong>Expand Disclaimer</strong></summary>
 
 This project is still considered to be in an alpha state. All apps run in the same context and can access every other app, as well as the entire virtual browserfs.
 
@@ -104,7 +116,12 @@ The code in this repository has not been audited. Do not rely on it to keep anyt
 
 Heavily scrutinize any application or script you install or run, as well as its authors.
 
+</details>
+
 ## Help Wanted
+
+<details>
+<summary><strong>Expand Help Wanted</strong></summary>
 
 It's going to take people far smarter than me to make this project achieve its full potential.
 
@@ -112,7 +129,12 @@ Please consider digging into the code and see what you can come up with and subm
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
+</details>
+
 ## User Quickstart
+
+<details open>
+<summary><strong>Expand User Quickstart</strong></summary>
 
 - Visit [https://web3os.sh](https://web3os.sh)
 - Type `help` for generic helpful information
@@ -132,6 +154,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 - Switch to another network: `account chain polygon`, `account chain bsc`, `account chain 0x2`
 - Interact with a smart contract: `contract --help`
 - 🎉 Fire the Confetti Gun: `confetti`
+
+</details>
 
 ## Developer Quickstart
 
