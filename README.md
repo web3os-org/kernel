@@ -59,8 +59,9 @@ The project is still very young, and proper documentation and organization is Co
 
 ## Features
 
-- Runs completely in a web browser
+- Runs completely in the browser
 - Optional desktop environment
+- Optional backend environment runs in Docker container
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
 - Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js)
   - Interact with smart contracts
@@ -74,12 +75,14 @@ The project is still very young, and proper documentation and organization is Co
 - Git integration with [isomorphic-git](https://isomorphic-git.org/)
 - GunJS integration with [GUN](https://gun.eco)
 - Moralis integration with [Moralis](https://moralis.io)
+- P2P communication with [PeerJS](https://peerjs.com)
 - It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
 - WebUSB support *(Chrome only; very experimental)*
 - WebAssembly executable support *(very experimental - incomplete)*:
   - [WASI](https://wasi.dev/)
   - [Emscripten](https://emscripten.org/)
   - [AssemblyScript](https://www.assemblyscript.org/)
+
 - Decentralized:
   - Open source to run your own copy
   - Backup site hosted on IPFS
@@ -114,14 +117,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 - Visit [https://web3os.sh](https://web3os.sh)
 - Type `help` for generic helpful information
 - Type `ls /bin` to list all available commands
+- Learn more about commands: `help [command]`
 - Edit a file: `edit /tmp/test.txt`
 - Launch the desktop: `desktop`
-- Learn more about commands: `help command`
 - Run the screensaver: `screensaver`
 - Play DOOM: `doom`
 - Play Wolfenstein 3D: `wolfenstein`
 - Read this README: `markdown /docs/README.md`
-- 🎉 Fire the Confetti Gun: `confetti`
 - Launch the file explorer: `files /docs`
 - Launch a browser: `www https://instacalc.com`
 - Connect to your wallet: `account connect`
@@ -129,8 +131,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 - Check token balance: `account balance USDC`
 - Switch to another network: `account chain polygon`, `account chain bsc`, `account chain 0x2`
 - Interact with a smart contract: `contract --help`
-- Learn more about commands: `help command`
-- Run the screensaver: `screensaver`
 - 🎉 Fire the Confetti Gun: `confetti`
 
 ## Developer Quickstart
@@ -149,13 +149,20 @@ yarn start # or npm start
 
 From here, simply connect to [https://localhost:8080](https://localhost:8080) and accept the self-signed certificate warning.
 
+</details>
+
 ## Autostart
+
+<details open>
+<summary><strong>Expand Autostart</strong></summary>
 
 To modify the commands the system executes on startup:
 
 - `edit /config/autostart.sh`
 - For example, add `desktop` to the end of the file
 - insert any additional commands you want to run on startup
+
+</details>
 
 ## Scripting
 
@@ -223,6 +230,8 @@ Also, expect undocumented features for now.
 
 - Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
 
+</details>
+
 ## App Structure
 
 <details>
@@ -254,7 +263,12 @@ export async function run (terminal, context) {
 
 A good example of a more full-featured app can be found in [src/bin/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/bin/confetti/index.js).
 
+</details>
+
 ## Backend (web3os-server)
+
+<details>
+<summary><strong>Expand Backend</strong></summary>
 
 The `backend` command is the utility to connect to and interact with backend servers. The web3os-server spins up a private Docker container for performing various server-side tasks at the request of the web3os client, authenticated with a user's wallet.
 
@@ -262,7 +276,12 @@ It offers multi-user capability while restricting access based on user's authent
 
 [View the web3os-server repository](https://github.com/web3os-org/server)
 
+</details>
+
 ## WebUSB
+
+<details>
+<summary><strong>Expand WebUSB</strong></summary>
 
 Experimental WebUSB features are only available in Chrome-based browsers at this time.
 
@@ -283,7 +302,12 @@ Usage:
 
 Access the array of devices within an app: `kernel.bin.usb.devices`
 
+</details>
+
 ## TODO
+
+<details>
+<summary><strong>Expand TODO</strong></summary>
 
 - There's a lot to do... please help. 😅
 - Decoupling of built-in apps into their own packages
@@ -297,6 +321,8 @@ Access the array of devices within an app: `kernel.bin.usb.devices`
 - Modify command interfaces to conform to IEEE Std 1003.1-2017
 - Flesh out rm command and remove rmdir; allow recursive delete
 - Adding more things to the TODO list
+
+</details>
 
 ## Can it do *thing*?
 
