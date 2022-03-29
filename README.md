@@ -251,6 +251,7 @@ Also, expect undocumented features for now.
 `window.kernel.get` ('namespace', 'key') = value
 
 - Gets a value from the kernel "memory" - loaded from localStorage
+- e.g., `window.kernel.get('user')`
 - e.g., `window.kernel.get('user', 'name')`
 - e.g., `const { color } = window.kernel.get('myapp', 'theme')`
 

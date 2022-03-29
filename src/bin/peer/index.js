@@ -1,6 +1,6 @@
 import arg from 'arg'
 import path from 'path'
-import Peer from 'peerjs/dist/peerjs.esm'
+import Peer from 'peerjs'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
 
