@@ -1,6 +1,6 @@
 import arg from 'arg'
 import path from 'path'
-import Peer from 'peerjs'
+import Peer from 'peerjs/dist/peerjs.esm'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
 
@@ -278,7 +278,6 @@ export async function run (term, context = '') {
   if (args['--server-secure']) peerOptions.secure = args['--server-secure']
   if (args['--server-ping-interval']) peerOptions.pingInterval = args['--server-ping-interval']
 
-  console.log('12345678900000:)', { args }, args['--id'], id)
   if (args['--id'] && id !== args['--id']) instance = new Peer(args?.['--id'], peerOptions)
 
   switch (cmd) {
