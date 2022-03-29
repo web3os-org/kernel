@@ -209,6 +209,8 @@ To run a Javascript script: `eval /path/to/script.js`
 
 </details>
 
+See some sample scripts at: [https://github.com/web3os-org/sample-scripts](https://github.com/web3os-org/sample-scripts)
+
 ## Kernel Interface
 
 <details>
