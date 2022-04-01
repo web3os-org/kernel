@@ -57,13 +57,12 @@ export const spec = {
 }
 
 export let id = ''
-export let instance
+export let instance = new Peer()
 export const connections = {}
+
 let kernel
 let terminal
 
-console.log({ Peer })
-if (id === '') instance = new Peer()
 instance.on('open', myId => { id = myId })
 
 instance.on('connection', connection => {

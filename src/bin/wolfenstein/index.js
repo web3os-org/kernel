@@ -18,8 +18,7 @@ export async function run (term) {
   const appWindow = kernel.appWindow({
     title: 'Wolfenstein 3D',
     mount: wrapper,
-    width: 1036,
-    height: 657,
+    max: true,
     onclose: () => { game.exit() },
     onresize: (width, height) => {
       if (height === 0) game.pause()
