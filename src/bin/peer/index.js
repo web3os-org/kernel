@@ -57,13 +57,12 @@ export const spec = {
 }
 
 export let id = ''
-export let instance
+export let instance = new Peer()
 export const connections = {}
+
 let kernel
 let terminal
 
-console.log({ Peer })
-if (id === '') instance = new Peer()
 instance.on('open', myId => { id = myId })
 
 instance.on('connection', connection => {
@@ -278,7 +277,6 @@ export async function run (term, context = '') {
   if (args['--server-secure']) peerOptions.secure = args['--server-secure']
   if (args['--server-ping-interval']) peerOptions.pingInterval = args['--server-ping-interval']
 
-  console.log('12345678900000:)', { args }, args['--id'], id)
   if (args['--id'] && id !== args['--id']) instance = new Peer(args?.['--id'], peerOptions)
 
   switch (cmd) {
