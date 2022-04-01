@@ -36,8 +36,9 @@ import theme from './themes/default/index.js'
 const figletFontName = 'Graffiti'
 
 // TODO: Make this configurable via env or querystring
+// TODO: Also all of these core modules will eventually be extracted into their own packages
 const builtinApps = [
-  'account', 'backend', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
+  'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
   'files', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'screensaver', 'usb',
   'view', 'wasm', 'wolfenstein', 'wpm', 'www'
 ]

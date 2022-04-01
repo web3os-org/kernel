@@ -15,7 +15,7 @@ export const help = `
     gun <command> [options]
 
   Examples:
-    gun put hello "{\"name\": \"world\"}"
+    gun put hello "{\\"name\\": \\"world\\"}"
     gun get hello
 
   Commands:
