@@ -774,16 +774,17 @@ export async function boot () {
     await execute('confetti --startVelocity 90 --particleCount 150')
     setTimeout(closeSplash, 2000) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
 
-    // Automatically start the desktop on small screens
+    // Automatically start the desktop on small screens since xterm struggles with the keyboard
     // TODO: Fix everything on small screens
-    // if (window.innerWidth < 768) {
-    //   // document.querySelector('#terminal').style.display = 'none'
-    //   setTimeout(() => execute('desktop'), 2100)
-    // } else {
-    document.querySelector('#terminal').style.display = 'block'
-    setTimeout(terminal.fit, 50)
-    terminal.focus()
-    // }
+    if (window.innerWidth < 768) {
+      document.querySelector('#terminal').style.display = 'none'
+      setTimeout(() => execute('desktop'), 2100)
+      setTimeout(() => kernel.dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
+    } else {
+      document.querySelector('#terminal').style.display = 'block'
+      setTimeout(terminal.fit, 50)
+      terminal.focus()
+    }
   } else {
     document.querySelector('#terminal').style.display = 'block'
     setTimeout(terminal.fit, 50)

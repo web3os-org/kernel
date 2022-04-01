@@ -173,6 +173,13 @@ class Web3osTerminal extends Terminal {
     this.unlisten()
     this.keyListener = this.onKey(this.keyHandler.bind(this))
 
+    // TODO: Get mobile keyboard to work
+    // this.textarea.onkeyup = e => {
+    //   if (e.key === 'Unidentified') return
+    //   console.log({ up: e })
+    //   this.keyHandler({ key: e.key, domEvent: e })
+    // }
+
     // A little workaround: optimistically assume any data over one character is a paste
     // TODO: Also catch other paste events
     this.pasteListener = this.onData(data => {
