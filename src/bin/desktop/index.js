@@ -93,7 +93,9 @@ export async function launchTerminal (options = {}) {
     title: options.windowTitle || options.command || 'web3os.sh',
     mount: container,
     width: options.windowWidth || '75%',
-    height: options.windowHeight || '70%'
+    height: options.windowHeight || '70%',
+    x: 'center',
+    y: 'center'
   })
 
   win.term = newTerm

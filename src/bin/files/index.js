@@ -387,7 +387,7 @@ export async function run (terminal, url) {
   const appWindow = kernel.appWindow({
     mount: browser,
     title: url,
-    class: ['modern', 'web3os-files-explorer-window'],
+    class: ['web3os-window', 'web3os-files-explorer-window'],
     height: '60%',
     width: '60%',
     x: 'center',

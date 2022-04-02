@@ -59,8 +59,9 @@ colors.theme(theme)
 
 const showBootIntro = () => {
   log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
-  log(colors.heading.success.bold(`\n\n     web3os kernel v${pkg.version}     `))
-  log(colors.warning('⚠            ALPHA           ⚠\n'))
+  log(colors.heading.success.bold(`\t    web3os kernel v${pkg.version}    `))
+  log(colors.warning('\t⚠           ALPHA          ⚠\n'))
+  log(colors.muted('Booting...\n'))
   log(colors.warning(`If things get wacky, just ${colors.bold.underline('reboot')}!`))
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
@@ -76,7 +77,6 @@ const showBootIntro = () => {
 
   // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
-  log(colors.muted('\nBooting...'))
 }
 
 function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }

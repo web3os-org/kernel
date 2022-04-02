@@ -1,5 +1,6 @@
 import colors from 'ansi-colors'
 
+// Define the ansi-colors theme
 const theme = {
   danger: colors.red,
   dark: colors.dim.gray,

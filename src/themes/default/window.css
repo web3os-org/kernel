@@ -1,0 +1,62 @@
+.winbox.web3os-window {
+  background: linear-gradient(90deg,#ff00f0,#0050ff);
+  border-radius: 12px 12px 0 0;
+}
+
+.winbox.web3os-window:not(.min):not(.focus) {
+  background: #666;
+}
+
+@media (hover: hover) {
+  .winbox.web3os-window.min:not(:hover) {
+    background: #666;
+  }
+
+  .winbox.web3os-window .wb-icon * {
+    opacity: 0.65;
+  }
+
+  .winbox.web3os-window .wb-icon *:hover {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .winbox.web3os-window.min {
+    background: #666;
+  }
+}
+
+.winbox.web3os-window.max {
+  border-radius: 0;
+}
+
+.winbox.web3os-window .wb-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.winbox.web3os-window .wb-body {
+  margin: 4px;
+  color: #fff;
+  background: #131820;
+}
+
+.winbox.web3os-window .wb-body::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.winbox.web3os-window .wb-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.winbox.web3os-window .wb-body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #263040;
+}
+
+.winbox.web3os-window .wb-body::-webkit-scrollbar-thumb:window-inactive {
+  background: #181f2a;
+}
