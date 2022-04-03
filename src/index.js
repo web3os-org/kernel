@@ -39,7 +39,7 @@ const figletFontName = 'Graffiti'
 // TODO: Also all of these core modules will eventually be extracted into their own packages
 const builtinApps = [
   'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
-  'files', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'screensaver', 'usb',
+  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'screensaver', 'usb',
   'view', 'wasm', 'wolfenstein', 'wpm', 'www'
 ]
 
@@ -61,7 +61,7 @@ const showBootIntro = () => {
   log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
   log(colors.heading.success.bold(`\t    web3os kernel v${pkg.version}    `))
   log(colors.warning('\t⚠           ALPHA          ⚠\n'))
-  log(colors.muted('Booting...\n'))
+
   log(colors.warning(`If things get wacky, just ${colors.bold.underline('reboot')}!`))
   log(colors.warning(`If they're still wacky, clear local storage!\n`))
 
@@ -77,6 +77,8 @@ const showBootIntro = () => {
 
   // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
+
+  log(colors.muted('\nBooting...'))
 }
 
 function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }
@@ -153,7 +155,7 @@ export async function execute (cmd, options = {}) {
   let command = bin[cmd.split(' ')[0]]
   const term = options.terminal || window.terminal
 
-  console.log({ cmd, options, command })
+  // console.log({ cmd, options, command })
 
   if (!command) {
     try {
@@ -590,10 +592,7 @@ async function registerKernelBins () {
   bin.height = {
     args: ['css-height'],
     description: 'Set body height',
-    run: (term, context) => {
-      console.log('setting height:', context)
-      document.body.style.height = context
-    }
+    run: (term, context) => document.body.style.height = context
   }
 
   bin.width = {

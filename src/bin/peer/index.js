@@ -15,6 +15,9 @@ export const help = `
   Usage:
     peer <command> <args> [options]
 
+  Default Connection Broker:
+    ${colors.bold(`kernel.get('peerjs', 'server-host')`)} if set, or ${colors.bold('0.peerjs.com')}
+
   Commands:
     call <peer-id> [--video] [--audio]     Call a peer with media streams
     chat <peer-id>                         Open a text chat with a peer
@@ -30,7 +33,7 @@ export const help = `
     --help                                 Print this help message
     --id                                   Set your peer ID
     --json                                 Path to JSON file to send
-    --server-host                          Set the peerjs broker host {0.peerjs.com}
+    --server-host                          Set the peerjs broker host
     --server-key                           Server API key (for 0.peerjs.com)
     --server-path                          Set the peerjs broker path {/}
     --server-port                          Set the peerjs broker port {443}
@@ -56,79 +59,82 @@ export const spec = {
   '--video': Boolean
 }
 
-export let id = ''
-export let instance = new Peer()
-export const connections = {}
-
 let kernel
 let terminal
+export let id = ''
+export let instance
+export const connections = {}
 
-instance.on('open', myId => { id = myId })
-
-instance.on('connection', connection => {
-  connection.on('open', () => {
-    console.log('Incoming connection from', connection.peer)
-    kernel.execute(`snackbar Incoming connection from ${connection.peer}`)
-    connections[connection.peer] = { connection }
-    connection.on('data', data => processIncomingData(data, connection))
-  })
-})
-
-instance.on('call', async call => {
-  let avState = ''
-  if (call.metadata.video && call.metadata.audio) avState = 'Audio & Video'
-  if (call.metadata.video && !call.metadata.audio) avState = 'Video Only'
-  if (!call.metadata.video && call.metadata.audio) avState = 'Audio Only'
-
-  const container = document.createElement('div')
-  container.innerHTML = `
-    <p>
-      You have an incoming call (${avState}) from:
-      <br />
-      <strong style='font-family: monospace'>${call.peer}</strong>
-    </p>
-  `
-
-  const result = await kernel.dialog({
-    icon: 'info',
-    title: 'Incoming Call',
-    html: container.outerHTML,
-    reverseButtons: true,
-    showDenyButton: true,
-    denyButtonText: 'Decline',
-    confirmButtonText: 'Answer'
-  })
-
-  if (result.isConfirmed) {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: call.metadata?.audio, video: call.metadata?.video })
-    call.answer(stream)
-
-    call.on('stream', peerStream => {
-      console.log({ stream, peerStream })
-      const video = document.createElement('video')
-      video.style.width = '100%'
-      video.style.height = '100%'
-
-      if ('srcObject' in video) {
-        video.srcObject = peerStream
-      } else {
-        video.src = URL.createObjectURL(peerStream)
-      }
-
-      video.onloadedmetadata = () => video.play()
-
-      kernel.appWindow({
-        title: `Call: ${call.peer}`,
-        mount: video,
-        max: true
+export function setupInstance () {
+  return new Promise((resolve, reject) => {
+    instance.on('open', myId => { id = myId; resolve(id) })
+    instance.on('error', err => { console.error(err); reject(err) })
+    instance.on('connection', connection => {
+      connection.on('open', () => {
+        console.log('Incoming connection from', connection.peer)
+        kernel.execute(`snackbar Incoming connection from ${connection.peer}`)
+        connections[connection.peer] = { connection }
+        connection.on('data', data => processIncomingData(data, connection))
       })
     })
-
-    call.on('close', () => {
-      console.log('call closed')
+    
+    instance.on('call', async call => {
+      let avState = ''
+      if (call.metadata.video && call.metadata.audio) avState = 'Audio & Video'
+      if (call.metadata.video && !call.metadata.audio) avState = 'Video Only'
+      if (!call.metadata.video && call.metadata.audio) avState = 'Audio Only'
+    
+      const container = document.createElement('div')
+      container.innerHTML = `
+        <p>
+          You have an incoming call (${avState}) from:
+          <br />
+          <strong style='font-family: monospace'>${call.peer}</strong>
+        </p>
+      `
+    
+      const result = await kernel.dialog({
+        icon: 'info',
+        title: 'Incoming Call',
+        html: container.outerHTML,
+        reverseButtons: true,
+        showDenyButton: true,
+        denyButtonText: 'Decline',
+        confirmButtonText: 'Answer'
+      })
+    
+      if (result.isConfirmed) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: call.metadata?.audio, video: call.metadata?.video })
+        call.answer(stream)
+    
+        call.on('stream', peerStream => {
+          console.log({ stream, peerStream })
+          const video = document.createElement('video')
+          video.style.width = '100%'
+          video.style.height = '100%'
+    
+          if ('srcObject' in video) {
+            video.srcObject = peerStream
+          } else {
+            video.src = URL.createObjectURL(peerStream)
+          }
+    
+          video.onloadedmetadata = () => video.play()
+    
+          kernel.appWindow({
+            title: `Call: ${call.peer}`,
+            mount: video,
+            max: true
+          })
+        })
+    
+        call.on('close', () => {
+          console.log('call closed')
+        })
+      }
     })
-  }
-})
+  })
+}
 
 async function processIncomingData (data, connection) {
   if (typeof data === 'object') {
@@ -277,7 +283,19 @@ export async function run (term, context = '') {
   if (args['--server-secure']) peerOptions.secure = args['--server-secure']
   if (args['--server-ping-interval']) peerOptions.pingInterval = args['--server-ping-interval']
 
-  if (args['--id'] && id !== args['--id']) instance = new Peer(args?.['--id'], peerOptions)
+  if (!args['--server-host'] && kernel.get('peerjs', 'server-host')) {
+    peerOptions.host = kernel.get('peerjs', 'server-host')
+  }
+
+  if (args['--id'] && id !== args['--id']) {
+    instance = new Peer(args?.['--id'], peerOptions)
+    await setupInstance()
+  }
+
+  if (!instance) {
+    instance = new Peer(peerOptions)
+    await setupInstance()
+  }
 
   switch (cmd) {
     case 'id':

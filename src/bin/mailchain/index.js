@@ -1,6 +1,5 @@
 import arg from 'arg'
 import colors from 'ansi-colors'
-import columnify from 'columnify'
 import { parse as cliParse } from 'shell-quote'
 
 export const name = 'mailchain'

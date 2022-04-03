@@ -62,7 +62,8 @@ async function saveFile ({ filename, mirror }) {
 export async function run (terminal, filename) {
   const { kernel, log } = terminal
 
-  if (!filename || filename === '') return terminal.log(colors.danger('Invalid filename') + '\n' + help)
+  if (filename === '') filename = `/tmp/editor-${Math.random().toString(36).slice(2)}`
+  if (!filename) return terminal.log(colors.danger('Invalid filename') + '\n' + help)
   filename = path.resolve(terminal.cwd, filename)
   const fileParts = path.parse(filename)
   const extension = fileParts.ext

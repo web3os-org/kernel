@@ -4,12 +4,12 @@
 }
 
 .winbox.web3os-window:not(.min):not(.focus) {
-  background: #666;
+  background: #333;
 }
 
 @media (hover: hover) {
   .winbox.web3os-window.min:not(:hover) {
-    background: #666;
+    background: #333;
   }
 
   .winbox.web3os-window .wb-icon * {

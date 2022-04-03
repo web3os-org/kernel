@@ -132,7 +132,7 @@ export async function run (terminal, context) {
   const appWindow = kernel.appWindow({
     mount: browser,
     title: args['--title'] || `WWW: ${url}`,
-    class: ['modern', 'web3os-www-browser'],
+    class: ['web3os-window', 'web3os-www-browser'],
     x: 'center',
     y: 'center',
     width: '75%',
