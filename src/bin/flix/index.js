@@ -7,7 +7,7 @@ export const name = 'flix'
 export const version = '0.1.0'
 export const description = 'Watch videos over IPFS'
 export const help = `
-  ${colors.magenta.bold('Flix: Videos, the web3 way')}
+  ${colors.magenta.bold('Flix: Watch videos over IPFS')}
 
   Usage:
     flix <command> [options]
