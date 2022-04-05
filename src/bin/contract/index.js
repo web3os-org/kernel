@@ -18,8 +18,8 @@ export const help = `
     contract send 0xDEADBEEFCAFE store(12345)
 
   Commands:
-    call <address> <method> [...args]        Call a method on a smart contract (read)
-    send <address> <method> [...args]        Send a tx to a smart contract (write)
+    read <address> <method> [...args]        Call a method on a smart contract (call)
+    write <address> <method> [...args]        Send a tx to a smart contract (send)
 
   Options:
     --abi-file                               Path to the contract ABI JSON file
@@ -61,6 +61,7 @@ async function execute ({ cmd, address, method, abiFile, abiUrl, args = [] }) {
   const callArgs = { _: [cmd, address, method, { op: '(' }, ...args, { op: ')' }] }
   if (abiFile) callArgs['--abi-file'] = abiFile
   if (abiUrl) callArgs['--abi-url'] = abiUrl
+
   try {
     return await go(cmd, address, method, callArgs)
   } catch (err) {
@@ -116,8 +117,10 @@ export async function run (term, context = '') {
 
   switch (cmd) {
     case 'call':
+    case 'read':
       return term.log(await go('call', args._?.[1], args._?.[2], args))
     case 'send':
+    case 'write':
       return term.log(await go('send', args._?.[1], args._?.[2], args))
     default:
       return term.log(help)

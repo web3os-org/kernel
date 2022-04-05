@@ -47,8 +47,6 @@ export async function search (q, args) {
     .filter(hit => hit.mimetype.includes('video'))
     .map(({ hash, mimetype, title }) => ({ hash, mimetype, title: title.replace(/<\/?[^>]+(>|$)/g, '') }))
 
-  console.log(data)
-
   args.terminal.log(columnify(data, {
     columnSplitter: ' | ',
     columns: ['mimetype', 'title', 'hash'],

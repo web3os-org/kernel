@@ -420,8 +420,9 @@ export async function toggleLauncher (args) {
   })
 
   launcher.window.body.style.backgroundImage = `url(${args['--launcher-wallpaper'] || defaultLauncherWallpaper})`
-  launcher.window.body.style.backgroundAttachment = 'fixed'
-  launcher.window.body.style.backgroundSize = 'cover'
+  // launcher.window.body.style.backgroundAttachment = 'fixed'
+  // launcher.window.body.style.backgroundSize = 'cover'
+  launcher.window.body.id = 'web3os-desktop-launcher-wallpaper'
   launcher.window.maximize()
 }
 
