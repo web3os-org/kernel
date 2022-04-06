@@ -39,7 +39,7 @@ const figletFontName = 'Graffiti'
 // TODO: Also all of these core modules will eventually be extracted into their own packages
 const builtinApps = [
   'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
-  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'screensaver', 'usb',
+  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver', 'usb',
   'view', 'wasm', 'wolfenstein', 'wpm', 'www'
 ]
 
