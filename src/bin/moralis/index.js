@@ -12,6 +12,7 @@ export const version = '0.1.0'
 export const description = 'Moralis.io Utility'
 export const help = `
   ${colors.magenta.bold('Moralis.io Utility')}
+  https://moralis.io
 
   Usage:
     moralis <command> [options]
