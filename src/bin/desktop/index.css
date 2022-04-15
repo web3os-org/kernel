@@ -28,7 +28,8 @@
   transition: transform 0.5s, background-color 0.25s;
 }
 
-#web3os-desktop-menu-button:hover {
+/* #web3os-desktop-menu-button:hover { */
+.web3os-desktop-menu-button-hover {
   cursor: pointer;
   transform: rotate(45deg);
   background-color: darkgreen;

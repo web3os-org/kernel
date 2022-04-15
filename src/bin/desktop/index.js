@@ -224,109 +224,128 @@ async function createFileLayer () {
 }
 
 export async function start (args) {
-  terminal.log('Starting web3os.sh Desktop..')
+  try {
+    terminal.log('Starting web3os.sh Desktop..')
 
-  desktop = document.createElement('div')
-  desktop.id = 'web3os-desktop'
+    desktop = document.createElement('div')
+    desktop.id = 'web3os-desktop'
 
-  const wallpaper = document.createElement('img')
-  wallpaper.id = 'web3os-desktop-wallpaper'
-  wallpaper.alt = ''
-  wallpaper.src = args['--wallpaper'] || defaultWallpaperURL
-  wallpaper.style.opacity = 0
+    const wallpaper = document.createElement('img')
+    wallpaper.id = 'web3os-desktop-wallpaper'
+    wallpaper.src = args['--wallpaper'] || defaultWallpaperURL
+    wallpaper.style.opacity = 0
 
-  if (wallpaper.complete) {
-    wallpaper.style.opacity = 1
-  } else {
-    wallpaper.addEventListener('load', () => { wallpaper.style.opacity = 1 })
+    if (wallpaper.complete) {
+      wallpaper.style.opacity = 1
+    } else {
+      wallpaper.addEventListener('load', () => { wallpaper.style.opacity = 1 })
+    }
+
+    const fileLayer = await createFileLayer()
+
+    desktop.appendChild(wallpaper)
+    desktop.appendChild(fileLayer)
+
+    const menuButton = document.createElement('mwc-icon')
+    menuButton.id = 'web3os-desktop-menu-button'
+    menuButton.ariaLabel = 'Open the Launcher'
+    menuButton.textContent = 'widgets'
+    menuButton.classList.add('animate__animated', 'animate__bounce', 'animate__slow')
+    menuButton.classList.add('hint--left', 'hint--success')
+
+    const shellButton = document.createElement('mwc-icon')
+    shellButton.id = 'web3os-desktop-shell-button'
+    shellButton.ariaLabel = 'Open a terminal'
+    shellButton.textContent = 'terminal'
+    shellButton.classList.add('hint--left', 'hint--info')
+    shellButton.addEventListener('click', launchTerminal)
+
+    const exitButton = document.createElement('mwc-icon')
+    exitButton.id = 'web3os-desktop-exit-button'
+    exitButton.ariaLabel = 'Exit the desktop'
+    exitButton.textContent = 'logout'
+    exitButton.classList.add('hint--left', 'hint--info')
+    exitButton.addEventListener('click', exitDesktop)
+
+    const showButtons = () => {
+      [shellButton, exitButton].forEach(btn => { btn.style.opacity = 1 })
+    }
+
+    const hideButtons = () => {
+      [shellButton, exitButton].forEach(btn => { btn.style.opacity = 0 })
+    }
+    
+    menuButton.addEventListener('animationend', () => menuButton.classList.remove('animate__animated', 'animate__bounce', 'animate__slow'))
+    menuButton.addEventListener('click', e => toggleLauncher({ e }))
+
+    menuButton.addEventListener('contextmenu', e => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
+
+    menuButton.addEventListener('mouseenter', () => {
+      menuButton.classList.add('web3os-desktop-menu-button-hover')
+    })
+
+    menuButton.addEventListener('mouseleave', () => {
+      menuButton.classList.remove('web3os-desktop-menu-button-hover')
+    })
+
+    menuButton.addEventListener('touchstart', () => {
+      menuButton.classList.add('web3os-desktop-menu-button-hover')
+      showButtons()
+    })
+
+    menuButton.addEventListener('touchend', e => {
+      const target = document.elementFromPoint(e.changedTouches?.[0].clientX, e.changedTouches?.[0].clientY)
+      e.preventDefault()
+      e.stopPropagation()
+      if (target) target.click()
+      hideButtons()
+      menuButton.classList.remove('web3os-desktop-menu-button-hover')
+    })
+
+    const buttons = [menuButton, shellButton, exitButton]
+
+    buttons.forEach(btn => {
+      btn.addEventListener('pointerenter', showButtons)
+      btn.addEventListener('pointerleave', hideButtons)
+    })
+
+    const metaListener = e => {
+      if (e.code === 'KeyQ' && e.ctrlKey && e.shiftKey) exitDesktop()
+      if (e.key === 'Meta' && e.ctrlKey) toggleLauncher(args)
+      if (e.key === 'Tab' && e.shiftKey) toggleRunner()
+    }
+
+    window.addEventListener('keydown', metaListener)
+
+    desktop.append(menuButton)
+    desktop.append(shellButton)
+    desktop.append(exitButton)
+    
+    document.querySelector('#terminal').style.display = 'none'
+    document.body.appendChild(desktop)
+
+    loadDesktopIconPositions()
+
+    // const desktopContextMenu = [
+    //   {
+    //     text: 'New File',
+    //     action: () => {}
+    //   }
+    // ]
+
+    // desktop.addEventListener('contextmenu', e => {
+    //   e.preventDefault()
+    //   e.stopPropagation()
+    //   // console.log(e)
+    //   ctxmenu.show(desktopContextMenu, e)
+    // })
+  } catch (err) {
+    console.error(err)
+    throw err
   }
-
-  const fileLayer = await createFileLayer()
-
-  desktop.appendChild(wallpaper)
-  desktop.appendChild(fileLayer)
-
-  const menuButton = document.createElement('mwc-icon')
-  menuButton.id = 'web3os-desktop-menu-button'
-  menuButton.ariaLabel = 'Open the Launcher'
-  menuButton.textContent = 'widgets'
-  menuButton.classList.add('animate__animated', 'animate__bounce', 'animate__slow')
-  menuButton.classList.add('hint--left', 'hint--success')
-  
-  menuButton.addEventListener('animationend', () => menuButton.classList.remove('animate__animated', 'animate__bounce', 'animate__slow'))
-  menuButton.addEventListener('click', e => toggleLauncher({ e }))
-
-  menuButton.addEventListener('contextmenu', e => {
-    e.preventDefault()
-    e.stopPropagation()
-  })
-  menuButton.addEventListener('touchstart', () => {
-    console.log('touchstart!')
-  })
-  menuButton.addEventListener('pointerdown', () => {
-    console.log('pointerdown!')
-  })
-  menuButton.addEventListener('pointerup', () => {
-    console.log('pointerup!')
-  })
-
-  const shellButton = document.createElement('mwc-icon')
-  shellButton.id = 'web3os-desktop-shell-button'
-  shellButton.ariaLabel = 'Open a terminal'
-  shellButton.textContent = 'terminal'
-  shellButton.classList.add('hint--left', 'hint--info')
-  shellButton.addEventListener('click', launchTerminal)
-
-  const exitButton = document.createElement('mwc-icon')
-  exitButton.id = 'web3os-desktop-exit-button'
-  exitButton.ariaLabel = 'Exit the desktop'
-  exitButton.textContent = 'logout'
-  exitButton.classList.add('hint--left', 'hint--info')
-  exitButton.addEventListener('click', exitDesktop)
-
-  const showButtons = () => {
-    [shellButton, exitButton].forEach(btn => { btn.style.opacity = 1 })
-  }
-
-  const hideButtons = () => {
-    [shellButton, exitButton].forEach(btn => { btn.style.opacity = 0 })
-  }
-
-  [menuButton, shellButton, exitButton].forEach(btn => {
-    btn.addEventListener('pointerenter', showButtons)
-    btn.addEventListener('pointerleave', hideButtons)
-  })
-
-  const metaListener = e => {
-    if (e.code === 'KeyQ' && e.ctrlKey && e.shiftKey) exitDesktop()
-    if (e.key === 'Meta' && e.ctrlKey) toggleLauncher(args)
-    if (e.key === 'Tab' && e.shiftKey) toggleRunner()
-  }
-
-  window.addEventListener('keydown', metaListener)
-
-  desktop.append(menuButton)
-  desktop.append(shellButton)
-  desktop.append(exitButton)
-  
-  document.querySelector('#terminal').style.display = 'none'
-  document.body.appendChild(desktop)
-
-  loadDesktopIconPositions()
-
-  // const desktopContextMenu = [
-  //   {
-  //     text: 'New File',
-  //     action: () => {}
-  //   }
-  // ]
-
-  // desktop.addEventListener('contextmenu', e => {
-  //   e.preventDefault()
-  //   e.stopPropagation()
-  //   // console.log(e)
-  //   ctxmenu.show(desktopContextMenu, e)
-  // })
 }
 
 export async function toggleRunner () {

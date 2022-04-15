@@ -66,11 +66,12 @@ The project is still very young, and proper documentation and organization is Co
 - Optional desktop environment
 - Optional backend environment runs in Docker container
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
-- Web3 wallet integration with [web3](https://github.com/ChainSafe/web3.js)
+- Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
   - Interact with smart contracts
   - Programmatically switch chains
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
+  - Built-in IPFS video search and player; type `help flix`
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Decentralized messaging support with [Mailchain](https://mailchain.xyz)
@@ -79,6 +80,7 @@ The project is still very young, and proper documentation and organization is Co
 - GunJS integration with [GUN](https://gun.eco)
 - Moralis integration with [Moralis](https://moralis.io)
 - P2P communication with [PeerJS](https://peerjs.com)
+- Torrent integration with [WebTorrent](https://webtorrent.io)
 - It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
 - WebUSB support *(Chrome only; very experimental)*
 - WebAssembly executable support *(very experimental - incomplete)*:
@@ -345,17 +347,18 @@ Access the array of devices within an app: `kernel.bin.usb.devices`
 - Finish development of backend Node.js web3os-server API
 - Finish the packaging system to be able to install apps
 - Rewrite most core modules in Rust
-- Increase inter-module security
+- Increase inter-module security/isolation
 - Some apps are basically just placeholders
 - Modify command interfaces to conform to IEEE Std 1003.1-2017
 - Flesh out rm command and remove rmdir; allow recursive delete
+- Migrate all global CSS to CSS modules
 - Adding more things to the TODO list
 
 </details>
 
 ## Can it do *thing*?
 
-If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. PR's are always welcome and encouraged. Let's talk about it in [Discord](https://discord.gg/yA4M83fXn9)!
+If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. PR's are always welcome and encouraged. Let's talk about it on [Discord](https://discord.gg/yA4M83fXn9)!
 
 Better yet, if you can make it do the thing, please [submit a PR](CONTRIBUTING.md)! This project will never grow without a thriving community of developers!
 

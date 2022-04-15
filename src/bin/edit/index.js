@@ -140,7 +140,7 @@ export async function run (terminal, filename) {
               <ul style='text-align:left'>
                 <li>Ctrl+Q: Quit editor</li>
                 <li>Ctrl+S: Save file</li>
-                ${executable && '<li>Ctrl+R: Save & Run</li>'}
+                ${executable ? '<li>Ctrl+R: Save & Run</li>' : ''}
                 <li>Ctrl+F: Search</li>
                 <li>Alt+G: Jump to line number</li>
               </ul>

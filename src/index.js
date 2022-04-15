@@ -39,8 +39,8 @@ const figletFontName = 'Graffiti'
 // TODO: Also all of these core modules will eventually be extracted into their own packages
 const builtinApps = [
   'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
-  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver', 'usb',
-  'view', 'wasm', 'wolfenstein', 'wpm', 'www'
+  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver', 'torrent',
+  'usb', 'view', 'wasm', 'wolfenstein', 'wpm', 'www'
 ]
 
 // TODO: i18n this (and everything else)
@@ -217,7 +217,7 @@ export async function download (term, context) {
   let filename = context
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
 
-  if (context.match(/^http/i)) {
+  if (context.match(/^http/i) || context.match(/^blob/i)) {
     const url = new URL(context.split(' ')[0])
     filename = path.parse(url.pathname).base
     if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
@@ -419,7 +419,11 @@ async function setupFilesystem () {
       }}
 
       bin.upload = { description: 'Upload files', run: upload }
-      bin.download = { args: ['filename_or_url', 'save_as_filename'], description: 'Download URL to CWD, or download FILE to PC', run: download }
+      bin.download = {
+        args: ['filename_or_url', 'save_as_filename'],
+        description: 'Download URL to CWD, or download FILE to PC',
+        run: download
+      }
 
       bin.mkdir = { args: ['path'], description: 'Create a directory', run: (term, context) => {
         if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
@@ -600,6 +604,17 @@ async function registerKernelBins () {
     description: 'Set body width',
     run: (term, context) => document.body.style.width = context
   }
+
+  bin.objectUrl = {
+    args: ['file'],
+    description: 'Create an ObjectURL for a file',
+    run: (term, filename) => {
+      const data = fs.readFileSync(path.join(term.cwd, filename))
+      const file = new File([data], path.parse(filename).base, { type: 'application/octet-stream' })
+      const url = URL.createObjectURL(file)
+      term.log(url)
+    }
+  }
 }
 
 async function registerBuiltinApps () {
@@ -609,6 +624,11 @@ async function registerBuiltinApps () {
     const appBin = await import(`./bin/${app}`)
     addBin(appBin)
   })
+}
+
+export function loadModule (mod) {
+  console.log('load', mod)
+  addBin(mod)
 }
 
 export function loadPackage (exe) {

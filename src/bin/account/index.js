@@ -1,6 +1,5 @@
 import arg from 'arg'
 import colors from 'ansi-colors'
-// import { ethers as Ethers } from 'ethers'
 import { parse as cliParse } from 'shell-quote'
 import Web3 from 'web3'
 import * as Ocean from '@web3os/openocean-api'
@@ -8,8 +7,8 @@ import * as Ocean from '@web3os/openocean-api'
 import chains from './chains.json'
 
 export const name = 'account'
-export const version = '0.1.2'
-export const description = 'Manage everything related to your web3 wallet'
+export const version = '0.1.3'
+export const description = 'Manage your web3 wallet'
 export const help = `
   Usage:
     account                          ${colors.gray('Display your wallet address, or connects if none')}
@@ -24,6 +23,10 @@ export const help = `
     sign <message>                   ${colors.gray('Sign a message using your wallet')}
     send <amount> <address>          ${colors.gray('Send <amount> of native coin to <address>')}
 
+    Options:
+      --help                         Print this help message
+      --version                      Print the version information
+      --wallet                       {metamask},walletconnect
 `
 
 export const spec = {
@@ -73,6 +76,7 @@ export async function updateTokenList () {
 
 export async function connect () {
   try {
+
     const accounts = await web3.eth.getAccounts()
     if (accounts.length === 0) {
       await provider.request({

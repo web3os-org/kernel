@@ -9,6 +9,8 @@ export const version = '0.1.0'
 export const description = 'Smart Contract Utility'
 export const help = `
   ${colors.magenta.bold('Smart Contract Utility')}
+  See sample scripts:
+    https://github.com/web3os-org/sample-scripts/tree/master/contract
 
   Usage:
     contract <command> [options]
