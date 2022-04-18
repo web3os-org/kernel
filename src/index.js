@@ -9,13 +9,14 @@
   Entry-point of the web3os kernel
 */
 
+/* global localStorage */
+
 import path from 'path'
 import bytes from 'bytes'
 import colors from 'ansi-colors'
 import figlet from 'figlet'
 import figletFont from 'figlet/importable-fonts/Graffiti'
 import columnify from 'columnify'
-import { AttachAddon } from 'xterm-addon-attach'
 import sweetalert from 'sweetalert2'
 import { unzip } from 'unzipit'
 
