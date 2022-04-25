@@ -1,4 +1,6 @@
 /// <reference types="cypress" />
+/* global before, cy, describe, it */
+/* eslint-disable no-unused-expressions */
 
 const { expect } = require('chai')
 

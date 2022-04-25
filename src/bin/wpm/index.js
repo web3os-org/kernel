@@ -1,6 +1,8 @@
+/* global fetch, localStorage */
+
 import arg from 'arg'
-import path from 'path'
 import colors from 'ansi-colors'
+import { parse as cliParse } from 'shell-quote'
 
 export const name = 'wpm'
 export const version = '0.1.0'
@@ -8,8 +10,7 @@ export const description = 'web3os Package Manager'
 export const help = `
   Usage:
     ${colors.blue('Installation URL Examples:')}
-      ${colors.muted('https://wpm.web3os.sh/demo-app')}
-      ${colors.muted('http://localhost:5500/dist')}
+    https://unpkg.com/@web3os-org/sample.snowpack
 
     wpm install <url>         Install the package located at <url>
     wpm update <name>         Update package
@@ -17,7 +18,10 @@ export const help = `
 `
 
 const spec = {
+  '--help': Boolean,
   '--version': Boolean,
+
+  '-h': '--help',
   '-v': '--version'
 }
 
@@ -35,31 +39,39 @@ export async function install (args) {
   }
 
   const url = args[0]
-  const pkg = await (await fetch(url + '/package.json')).json()
-  const code = await (await fetch(url + '/index.js')).text()
+  const pkgJson = await (await fetch(`${url}/package.json`)).json()
+  const pkgName = pkgJson.name.split('/')
+  const main = pkgJson.main || 'index.js'
+  const mod = await import(/* webpackIgnore: true */ `${url}/${main}`)
 
-  if (kernel.bin[pkg.exe]) throw new Error(`There is already an app named: ${pkg.exe}`)
-  kernel.fs.writeFile(`/var/packages/${pkg.exe}`, code)
+  if (!kernel.fs.existsSync(`/var/packages/${pkgName[0]}`)) kernel.fs.mkdirSync(`/var/packages/${pkgName[0]}`)
+  if (pkgName.length > 1) {
+    if (!kernel.fs.existsSync(`/var/packages/${pkgName[0]}/${pkgName[1]}`)) {
+      kernel.fs.mkdirSync(`/var/packages/${pkgName[0]}/${pkgName[1]}`)
+    }
+  }
 
-  const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf-8'))
-  if (packages.some(p => p.exe === pkg.exe)) throw new Error(`There is already an app named: ${pkg.exe}`)
-
-  const { name, exe, version, description } = pkg
-  packages.push({ name, exe, version, description, url })
+  const pkgFolder = pkgName.length > 1 ? `/var/packages/${pkgName[0]}/${pkgName[1]}` : `/var/packages/${pkgName[0]}`
+  pkgJson.web3osData = { pkgFolder, url }
+  kernel.fs.writeFileSync(`${pkgFolder}/package.json`, JSON.stringify(pkgJson, null, 2), 'utf8')
+  const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
+  packages.push(pkgJson.name)
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(packages, null, 2))
-  await kernel.loadPackage(exe)
+  kernel.addBin(mod)
 }
 
 export async function uninstall (args) {
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-  const pkg = packages.find(p => p.exe === args[0])
+  const pkg = packages.find(p => p.name === args[0])
   if (!pkg) throw new Error('Package not found')
 
-  const newPackages = packages.filter(p => p.exe !== pkg.exe)
+  const pkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
+
+  const newPackages = packages.filter(p => p.name !== pkgJson.name)
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(newPackages, null, 2))
-  kernel.fs.unlinkSync(`/var/packages/${pkg.exe}`)
-  kernel.fs.unlinkSync(`/bin/${pkg.exe}`)
-  delete kernel.bin[pkg.exe]
+  kernel.fs.unlinkSync(`/var/packages/${pkgJson.web3osData.pkgFolder}/package.json`)
+  kernel.fs.unlinkSync(`/bin/${pkgJson.name}`)
+  delete kernel.bin[pkgJson.name]
 }
 
 export async function update (args) {
@@ -67,9 +79,7 @@ export async function update (args) {
   const pkg = packages.find(p => p.exe === args[0])
   if (!pkg) throw new Error('Package not found')
 
-  const fetchedPkg = await (await fetch(pkg.url + '/package.json')).json()
-  if (pkg.version >= fetchedPkg.version) throw new Error('Package is already up-to-date')
-  const code = await (await fetch(pkg.url + '/index.js')).text()
+  return
 
   const updatedPackages = packages.filter(p => p.exe !== pkg.exe)
   const { name, exe, version, description } = fetchedPkg
@@ -85,9 +95,10 @@ export async function run (term, context) {
   terminal = term
   kernel = term.kernel
 
-  const args = arg(spec, { argv: context.split(' ') })
+  const args = arg(spec, { argv: cliParse(context) })
   const cmd = args._?.[0]
 
+  if (args['--help']) return term.log(help)
   if (args['--version']) return term.log(version)
 
   switch (cmd) {

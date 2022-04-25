@@ -10,6 +10,8 @@ export const name = 'account'
 export const version = '0.1.3'
 export const description = 'Manage your web3 wallet'
 export const help = `
+  ${colors.magenta.bold(`NOTE: This tool is being replaced by the ${colors.underline('wallet')} command`)}
+
   Usage:
     account                          ${colors.gray('Display your wallet address, or connects if none')}
     account <command>                ${colors.gray('Perform an account action')}
@@ -18,7 +20,7 @@ export const help = `
     connect                          ${colors.gray('Connect to your wallet')}
     chain                            ${colors.gray('Display information about the current chain')}
     chain <id>                       ${colors.gray('Switch to chain id; may be hex, decimal, or name')}
-    balance                          ${colors.gray(`Display the account balance of the chain's native currency`)}
+    balance                          ${colors.gray("Display the account balance of the chain's native currency")}
     balance <token>                  ${colors.gray('Displays the account balance of the ERC20 token, eg. USDC')}
     sign <message>                   ${colors.gray('Sign a message using your wallet')}
     send <amount> <address>          ${colors.gray('Send <amount> of native coin to <address>')}
@@ -38,7 +40,7 @@ export let web3
 export let term
 export let signer
 export let provider
-export let tokens = {}
+export let tokens
 export const allChains = chains
 
 provider = Web3.givenProvider
@@ -76,12 +78,11 @@ export async function updateTokenList () {
 
 export async function connect () {
   try {
-
     const accounts = await web3.eth.getAccounts()
     if (accounts.length === 0) {
       await provider.request({
         method: 'wallet_requestPermissions',
-        params: [{ eth_accounts: {} }],
+        params: [{ eth_accounts: {} }]
       })
     }
 
@@ -139,7 +140,7 @@ export async function switchChain (args) {
           break
       }
 
-      let chain = chains.find(c => {
+      const chain = chains.find(c => {
         return (
           c.chain.toLowerCase() === newChain.toLowerCase() ||
           c.network.toLowerCase() === newChain.toLowerCase() ||
@@ -168,7 +169,7 @@ export async function switchChain (args) {
     account.chainId = chainInfo.chainId
   } catch (err) {
     if (err.code === 4902) {
-      term.log(colors.warning(`The network wasn't known by the wallet, trying to add it now..`))
+      term.log(colors.warning("The network wasn't known by the wallet, trying to add it now.."))
       await provider.request({
         method: 'wallet_addEthereumChain',
         params: [{
@@ -194,8 +195,13 @@ export async function getBalance (symbol) {
   if (!symbol) {
     balance = web3.utils.fromWei(await web3.eth.getBalance(account.address)) + ' ' + account.chain.nativeCurrency.symbol
   } else {
-    const token = (symbol.substr(0, 2) === '0x') ? tokens?.find(token => token.address === symbol) : tokens?.find(token => token.symbol === symbol)
-    if (!token) throw new Error(colors.danger('Unknown token'))
+    const token = tokens
+      ? symbol.substr(0, 2) === '0x'
+          ? tokens?.find(token => token.address === symbol)
+          : tokens?.find(token => token.symbol === symbol)
+      : null
+
+    if (!token) throw new Error(colors.danger('Unknown token on this network'))
 
     const data = await Ocean.getBalance(account.chainId, account.address, token.address)
     balance = data[0].balance + ' ' + data[0].symbol

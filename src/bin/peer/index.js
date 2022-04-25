@@ -1,5 +1,4 @@
 import arg from 'arg'
-import path from 'path'
 import Peer from 'peerjs/dist/peerjs.esm'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
@@ -16,7 +15,7 @@ export const help = `
     peer <command> <args> [options]
 
   Default Connection Broker:
-    ${colors.bold(`kernel.get('peerjs', 'server-host')`)} if set, or ${colors.bold('0.peerjs.com')}
+    ${colors.bold("kernel.get('peerjs', 'server-host')")} if set, or ${colors.bold('0.peerjs.com')}
 
   Commands:
     call <peer-id> [--video] [--audio]     Call a peer with media streams
@@ -77,13 +76,13 @@ export function setupInstance () {
         connection.on('data', data => processIncomingData(data, connection))
       })
     })
-    
+
     instance.on('call', async call => {
       let avState = ''
       if (call.metadata.video && call.metadata.audio) avState = 'Audio & Video'
       if (call.metadata.video && !call.metadata.audio) avState = 'Video Only'
       if (!call.metadata.video && call.metadata.audio) avState = 'Audio Only'
-    
+
       const container = document.createElement('div')
       container.innerHTML = `
         <p>
@@ -102,32 +101,32 @@ export function setupInstance () {
         denyButtonText: 'Decline',
         confirmButtonText: 'Answer'
       })
-    
+
       if (result.isConfirmed) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: call.metadata?.audio, video: call.metadata?.video })
         call.answer(stream)
-    
+
         call.on('stream', peerStream => {
           console.log({ stream, peerStream })
           const video = document.createElement('video')
           video.style.width = '100%'
           video.style.height = '100%'
-    
+
           if ('srcObject' in video) {
             video.srcObject = peerStream
           } else {
             video.src = URL.createObjectURL(peerStream)
           }
-    
+
           video.onloadedmetadata = () => video.play()
-    
+
           kernel.appWindow({
             title: `Call: ${call.peer}`,
             mount: video,
             max: true
           })
         })
-    
+
         call.on('close', () => {
           console.log('call closed')
         })
@@ -219,7 +218,7 @@ function openChatWindow (peer) {
   form.appendChild(input)
   form.appendChild(button)
   container.appendChild(form)
-  
+
   const receiveMessage = data => {
     if (typeof data !== 'string') return
     const bubble = document.createElement('div')
@@ -248,7 +247,7 @@ function openChatWindow (peer) {
     input.value = ''
   })
 
-  const win = kernel.appWindow({
+  kernel.appWindow({
     title: `Chat: ${peer.connection.peer}`,
     mount: container,
     width: '100%'

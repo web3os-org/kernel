@@ -34,6 +34,7 @@
     "watch": "webpack --watch",
     "build": "webpack build",
     "clean": "rimraf dist/*",
+    "testnet": "hardhat node",
     "test": "cross-env CYPRESS_REMOTE_DEBUGGING_PORT=9222 cypress open"
   },
   "devDependencies": {
@@ -47,7 +48,7 @@
     "crypto-browserify": "^3.12.0",
     "css-loader": "^6.5.1",
     "cypress": "^9.5.3",
-    "cypress-metamask": "^1.0.5-development",
+    "cypress-metamask-v2": "^1.6.10",
     "esm": "^3.2.25",
     "file-loader": "^6.2.0",
     "hardhat": "^2.9.3",

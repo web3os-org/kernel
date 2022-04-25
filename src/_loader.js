@@ -4,15 +4,15 @@ import('./index').then(kernel => {
   window.kernel = kernel
   import('./terminal').then(term => {
     window.terminal = term.create({
-      fontFamily: `'Fira Mono', monospace`,
+      fontFamily: "'Fira Mono', monospace",
       fontSize: 18,
       fontWeight: 900,
       theme: { background: '#121212' }
     })
-  
-    terminal.open(document.querySelector('#terminal'))
-    terminal.fit()
-    terminal.focus()
+
+    window.terminal.open(document.querySelector('#terminal'))
+    window.terminal.fit()
+    window.terminal.focus()
 
     kernel.boot()
   })

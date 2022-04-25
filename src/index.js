@@ -9,7 +9,7 @@
   Entry-point of the web3os kernel
 */
 
-/* global localStorage */
+/* global fetch, File, FileReader, localStorage, location, Notification */
 
 import path from 'path'
 import bytes from 'bytes'
@@ -38,7 +38,7 @@ const figletFontName = 'Graffiti'
 
 // TODO: Make this configurable via env or querystring
 // TODO: Also all of these core modules will eventually be extracted into their own packages
-const builtinApps = [
+const builtinModules = [
   'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
   'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver', 'torrent',
   'usb', 'view', 'wasm', 'wolfenstein', 'wpm', 'www'
@@ -47,7 +47,7 @@ const builtinApps = [
 // TODO: i18n this (and everything else)
 const configDescriptions = {
   'autostart.sh': 'Executed at startup line by line',
-  'packages': 'Master local package list for wpm'
+  packages: 'Master local package list for wpm'
 }
 
 export const bin = {}
@@ -64,7 +64,7 @@ const showBootIntro = () => {
   log(colors.warning('\t⚠           ALPHA          ⚠\n'))
 
   log(colors.warning(`If things get wacky, just ${colors.bold.underline('reboot')}!`))
-  log(colors.warning(`If they're still wacky, clear local storage!\n`))
+  log(colors.warning("If they're still wacky, clear local storage!\n"))
 
   log(colors.danger(`Type ${colors.bold.underline('help')} for help`))
   log(colors.gray(`Type ${colors.bold.underline('markdown /docs/README.md')} to view the README`))
@@ -87,7 +87,7 @@ function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(m
 function loadLocalStorage () {
   try {
     const storedMemory = localStorage.getItem('memory')
-    if (!storedMemory) { memory = { version: pkg.version } }
+    if (!storedMemory) memory = { version: pkg.version }
     else { memory = JSON.parse(storedMemory) }
   } catch (err) {
     console.error(err)
@@ -186,15 +186,11 @@ export async function executeScript (filename, options = {}) {
   if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
   filename = path.resolve(term.cwd, filename)
 
-  const value = kernel.fs.readFileSync(filename, 'utf8')
+  const value = fs.readFileSync(filename, 'utf8')
   const commands = value.split('\n')
 
   for (const cmd of commands) {
-    try {
-      if (cmd !== '' && cmd?.[0] !== '#' && cmd?.substr(0, 2) !== '//') await execute(cmd, { terminal: term, doPrompt: false })
-    } catch (err) {
-      throw err
-    }
+    if (cmd !== '' && cmd?.[0] !== '#' && cmd?.substr(0, 2) !== '//') await execute(cmd, { terminal: term, doPrompt: false })
   }
 }
 
@@ -206,7 +202,7 @@ export async function autostart () {
     console.error(err)
     log(colors.danger('Failed to complete autostart script'))
   } finally {
-    terminal.prompt()
+    window.terminal?.prompt()
   }
 }
 
@@ -252,7 +248,7 @@ export async function upload (term, context) {
         const buffer = BrowserFS.Buffer.from(reader.result)
         const filepath = path.resolve(term.cwd, file.name)
         fs.writeFileSync(filepath, buffer)
-        kernel.snackbar({ labelText: `Uploaded ${filepath}` })
+        snackbar({ labelText: `Uploaded ${filepath}` })
       }
     }
   })
@@ -267,12 +263,12 @@ export function colorChars (str, options = {}) {
   return str.split('').map(c => isNaN(c) ? letters(c) : numbers(c)).join('')
 }
 
-export async function notify (options={}) {
+export async function notify (options = {}) {
   if (Notification.permission !== 'granted') throw new Error('Notification permission denied')
   return new Notification(options.title, options)
 }
 
-export async function snackbar (options={}) {
+export async function snackbar (options = {}) {
   const snack = document.createElement('mwc-snackbar')
   snack.id = options.id || 'snack-' + Math.random()
   snack.labelText = options.labelText || ''
@@ -290,15 +286,15 @@ export async function snackbar (options={}) {
 async function setupFilesystem () {
   // const browserfs = await import('C:/ode/web3os/BrowserFS/build/browserfs.js')
   const browserfs = await import('browserfs')
-  let initfs
-  let filesystem = {}
+  const filesystem = {}
 
+  let initfs
   const bootArgs = new URLSearchParams(window.location.search)
   const initfsUrl = bootArgs.get('initfs')
 
   if (bootArgs.has('initfs')) {
     try {
-      const result = await kernel.dialog({
+      const result = await dialog({
         title: 'Use initfs?',
         icon: 'warning',
         allowOutsideClick: false,
@@ -317,8 +313,8 @@ async function setupFilesystem () {
             return await unzip(initfsUrl)
           } catch (err) {
             console.error(err)
-            // await kernel.alert('Failed to unzip initfsUrl at ' + initfsUrl)
-            terminal.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
+            // await alert('Failed to unzip initfsUrl at ' + initfsUrl)
+            window.terminal?.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
             return true
           }
         }
@@ -327,10 +323,10 @@ async function setupFilesystem () {
       if (result.isDenied) throw new Error('User rejected using initfs')
       const { entries } = result.value
       initfs = entries
-      history.replaceState(null, null, '/') // prevent reload with initfs
+      window.history.replaceState(null, null, '/') // prevent reload with initfs
     } catch (err) {
-      terminal.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
-      terminal.log(colors.danger(err.message))
+      window.terminal?.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
+      window.terminal?.log(colors.danger(err.message))
       console.error(err)
     }
   }
@@ -367,7 +363,7 @@ async function setupFilesystem () {
           }
         })
       }
-      
+
       // Prepare required paths
       if (!fs.existsSync('/var')) fs.mkdirSync('/var')
       if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
@@ -395,7 +391,7 @@ async function setupFilesystem () {
       //       const buffer = BrowserFS.Buffer.from(reader.result)
       //       const filepath = path.resolve(terminal.cwd, file.name)
       //       fs.writeFileSync(filepath, buffer)
-      //       kernel.snackbar({ labelText: `Uploaded ${filepath}` })
+      //       snackbar({ labelText: `Uploaded ${filepath}` })
       //     }
       //   }
       // }
@@ -406,18 +402,26 @@ async function setupFilesystem () {
 
       // Setup FS commands
       bin.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
-      bin.cd = { args: ['path'], description: 'Change the current working directory', run: (term, context) => {
-        const newCwd = path.resolve(term.cwd, context)
-        if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
-        if (!fs.statSync(newCwd).isDirectory()) throw new Error(`cd: ${context}: No such directory`)
-        term.cwd = newCwd
-      }}
+      bin.cd = {
+        args: ['path'],
+        description: 'Change the current working directory',
+        run: (term, context) => {
+          const newCwd = path.resolve(term.cwd, context)
+          if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
+          if (!fs.statSync(newCwd).isDirectory()) throw new Error(`cd: ${context}: No such directory`)
+          term.cwd = newCwd
+        }
+      }
 
-      bin.read = { args: ['path'], description: 'Read contents of file', run: (term, context) => {
-        const dir = path.resolve(term.cwd, context)
-        if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
-        term.log(fs.readFileSync(dir, 'utf8'))
-      }}
+      bin.read = {
+        args: ['path'],
+        description: 'Read contents of file',
+        run: (term, context) => {
+          const dir = path.resolve(term.cwd, context)
+          if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
+          term.log(fs.readFileSync(dir, 'utf8'))
+        }
+      }
 
       bin.upload = { description: 'Upload files', run: upload }
       bin.download = {
@@ -426,42 +430,62 @@ async function setupFilesystem () {
         run: download
       }
 
-      bin.mkdir = { args: ['path'], description: 'Create a directory', run: (term, context) => {
-        if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
-        fs.mkdirSync(path.resolve(term.cwd, context))
-      }}
+      bin.mkdir = {
+        args: ['path'],
+        description: 'Create a directory',
+        run: (term, context) => {
+          if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
+          fs.mkdirSync(path.resolve(term.cwd, context))
+        }
+      }
 
-      bin.rm = { args: ['path'], description: 'Remove a file', run: (term, context) => {
-        const target = path.resolve(term.cwd, context)
-        if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
-        if (!fs.existsSync(target)) throw new Error(`rm: ${context}: No such file`)
-        fs.unlinkSync(target)
-      }}
+      bin.rm = {
+        args: ['path'],
+        description: 'Remove a file',
+        run: (term, context) => {
+          const target = path.resolve(term.cwd, context)
+          if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
+          if (!fs.existsSync(target)) throw new Error(`rm: ${context}: No such file`)
+          fs.unlinkSync(target)
+        }
+      }
 
-      bin.rmdir = { args: ['path'], description: 'Remove a directory', run: (term, context) => {
-        const target = path.resolve(term.cwd, context)
-        if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
-        if (!fs.existsSync(target)) throw new Error(`rmdir: ${context}: No such directory`)
-        fs.rmdirSync(target)
-      }}
+      bin.rmdir = {
+        args: ['path'],
+        description: 'Remove a directory',
+        run: (term, context) => {
+          const target = path.resolve(term.cwd, context)
+          if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
+          if (!fs.existsSync(target)) throw new Error(`rmdir: ${context}: No such directory`)
+          fs.rmdirSync(target)
+        }
+      }
 
-      bin.mv = { args: ['from', 'to'], description: 'Move a file or directory', run: (term, context) => {
-        const [fromStr, toStr] = context.split(' ')
-        const from = path.resolve(term.cwd, fromStr)
-        const to = path.resolve(term.cwd, toStr)
-        if (!fs.existsSync(from)) throw new Error(`mv: source ${from} does not exist`)
-        if (fs.existsSync(to)) throw new Error(`mv: target ${to} already exists`)
-        fs.renameSync(from, to)
-      }}
+      bin.mv = {
+        args: ['from', 'to'],
+        description: 'Move a file or directory',
+        run: (term, context) => {
+          const [fromStr, toStr] = context.split(' ')
+          const from = path.resolve(term.cwd, fromStr)
+          const to = path.resolve(term.cwd, toStr)
+          if (!fs.existsSync(from)) throw new Error(`mv: source ${from} does not exist`)
+          if (fs.existsSync(to)) throw new Error(`mv: target ${to} already exists`)
+          fs.renameSync(from, to)
+        }
+      }
 
-      bin.cp = { args: ['from', 'to'], description: 'Copy a file or directory', run: (term, context) => {
-        const [fromStr, toStr] = context.split(' ')
-        const from = path.resolve(term.cwd, fromStr)
-        const to = path.resolve(term.cwd, toStr)
-        if (!fs.existsSync(from)) throw new Error(`cp: source ${from} does not exist`)
-        if (fs.existsSync(to)) throw new Error(`cp: target ${to} already exists`)
-        fs.copySync(from, to)
-      }}
+      bin.cp = {
+        args: ['from', 'to'],
+        description: 'Copy a file or directory',
+        run: (term, context) => {
+          const [fromStr, toStr] = context.split(' ')
+          const from = path.resolve(term.cwd, fromStr)
+          const to = path.resolve(term.cwd, toStr)
+          if (!fs.existsSync(from)) throw new Error(`cp: source ${from} does not exist`)
+          if (fs.existsSync(to)) throw new Error(`cp: target ${to} already exists`)
+          fs.copySync(from, to)
+        }
+      }
 
       bin.ls = {
         args: ['path'],
@@ -469,7 +493,7 @@ async function setupFilesystem () {
         run: (term, context) => {
           if (!context || context === '') context = term.cwd
           const entries = fs.readdirSync(path.resolve(term.cwd, context)).sort()
-          let data = []
+          const data = []
 
           entries.forEach(entry => {
             const filename = path.resolve(term.cwd, context, entry)
@@ -480,7 +504,7 @@ async function setupFilesystem () {
               case '/bin':
                 data.push({
                   name: colors.cyanBright(entry),
-                  description: colors.muted(kernel.bin[entry]?.description.substr(0, 50) || '')
+                  description: colors.muted(bin[entry]?.description.substr(0, 50) || '')
                 })
 
                 break
@@ -531,18 +555,22 @@ async function registerKernelBins () {
   bin.notify = { args: ['title', 'body'], description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   bin.snackbar = { args: ['message'], description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
   bin.man = { args: ['command'], description: 'Alias of help', run: (term, context) => bin.help.run(term, context) }
+  bin.import = { args: ['url'], description: 'Import a module from a URL', run: (term, context) => loadModuleUrl(context) }
 
-  bin.ipecho = { description: 'Echo your public IP address', run: async term => {
-    const result = await fetch('https://ipecho.net/plain')
-    const ip = await result.text()
-    console.log({ ip })
-    term.log(ip)
-    return ip
-  }}
+  bin.ipecho = {
+    description: 'Echo your public IP address',
+    run: async term => {
+      const result = await fetch('https://ipecho.net/plain')
+      const ip = await result.text()
+      console.log({ ip })
+      term.log(ip)
+      return ip
+    }
+  }
 
   bin.set = {
     args: ['namespace', 'key', 'value'],
-    description: `Set a kernel value`, //: ${colors.info('set namespace key value')}, eg. ${colors.muted('set user name hosk')}`,
+    description: 'Set a kernel value', // : ${colors.info('set namespace key value')}, eg. ${colors.muted('set user name hosk')}`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -554,7 +582,7 @@ async function registerKernelBins () {
 
   bin.get = {
     args: ['namespace', 'key'],
-    description: `Get a kernel value`, //: ${colors.info('get namespace key')} or ${colors.info('get namespace')}, eg. ${colors.info('get user name')} or ${colors.info('get user')}`,
+    description: 'Get a kernel value', // : ${colors.info('get namespace key')} or ${colors.info('get namespace')}, eg. ${colors.info('get user name')} or ${colors.info('get user')}`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -579,9 +607,12 @@ async function registerKernelBins () {
     }
   }
 
-  bin.history = { description: 'Show command history', run: term => {
-    term.log(JSON.stringify(term.history))
-  }}
+  bin.history = {
+    description: 'Show command history',
+    run: term => {
+      term.log(JSON.stringify(term.history))
+    }
+  }
 
   bin.eval = {
     args: ['filename'],
@@ -590,20 +621,20 @@ async function registerKernelBins () {
       if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
       filename = path.resolve(term.cwd, filename)
       const code = fs.readFileSync(filename, 'utf-8')
-      eval(code)
+      eval(code) // eslint-disable-line
     }
   }
 
   bin.height = {
     args: ['css-height'],
     description: 'Set body height',
-    run: (term, context) => document.body.style.height = context
+    run: (term, context) => { document.body.style.height = context }
   }
 
   bin.width = {
     args: ['css-width'],
     description: 'Set body width',
-    run: (term, context) => document.body.style.width = context
+    run: (term, context) => { document.body.style.width = context }
   }
 
   bin.objectUrl = {
@@ -618,54 +649,46 @@ async function registerKernelBins () {
   }
 }
 
-async function registerBuiltinApps () {
-  const apps = process.env.BUILTIN_APPS ? process.env.BUILTIN_APPS.split(',') : builtinApps
+async function registerBuiltinModules () {
+  const mods = process.env.BUILTIN_MODULES ? process.env.BUILTIN_MODULES.split(',') : builtinModules
 
-  builtinApps.forEach(async app => {
-    const appBin = await import(`./bin/${app}`)
-    addBin(appBin)
+  mods.forEach(async mod => {
+    const modBin = await import(`./bin/${mod}`)
+    addBin(modBin)
   })
 }
 
 export function loadModule (mod) {
-  console.log('load', mod)
+  console.debug('Loading module', mod)
   addBin(mod)
 }
 
-export function loadPackage (exe) {
-  return new Promise((resolve, reject) => {
-    const packages = JSON.parse(fs.readFileSync('/config/packages', 'utf8'))
-    const pkg = packages.find(p => p.exe === exe)
-    const code = fs.readFileSync(`/var/packages/${exe}`, 'utf-8')
-    const blob = new Blob([code], { type: 'text/javascript' })
-    const url = URL.createObjectURL(blob)
-    const script = document.createElement('script')
+export async function loadModuleUrl (url) {
+  const mod = await import(/* webpackIgnore: true */ url)
+  loadModule(mod)
+}
 
-    script.textContent = `
-      import * as app from '${url}'
-      console.log({ app })
-    `
-
-    script.type = 'module'
-    script.onload = () => {
-      URL.revokeObjectURL(url)
-      resolve()
-    }
-
-    document.body.appendChild(script)
+export async function loadPackages () {
+  const packages = JSON.parse(fs.readFileSync('/config/packages').toString())
+  packages.forEach(pkg => {
+    const pkgJson = JSON.parse(fs.readFileSync(`/var/packages/${pkg}/package.json`))
+    loadModuleUrl(`${pkgJson.web3osData.url}`)
   })
 }
 
-async function loadPackages () {
-  const packages = JSON.parse(fs.readFileSync('/config/packages', 'utf8'))
-  packages.forEach(async pkg => await loadPackage(pkg.exe))
-}
+export function addBin (mod) {
+  if (!mod) throw new Error('Invalid module provided to kernel.addBin')
+  if (bin[mod.name]) delete bin[mod.name]
+  bin[mod.name] = mod
 
-export function addBin (app) {
-  if (!app) throw new Error('Invalid app provided to kernel.addBin')
-  if (bin[app.name]) throw new Error('App is already loaded')
-  bin[app.name] = app
-  fs.writeFileSync(path.resolve('/bin', app.name), '')
+  const modInfo = {
+    name: mod.name,
+    version: mod.version,
+    description: mod.description,
+    help: mod.help
+  }
+
+  if (mod.run) fs.writeFileSync(path.resolve('/bin', mod.name), JSON.stringify(modInfo, null, 2))
 }
 
 export async function showSplash (msg, options = {}) {
@@ -745,7 +768,7 @@ export async function showSplash (msg, options = {}) {
   container.style.height = '100vh'
   container.style.width = '100vw'
   container.style.zIndex = 100002
-  container.style.backgroundColor = `rgba(0, 0, 0, 0.5)`
+  container.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
 
   container.appendChild(title)
   container.appendChild(subtitle)
@@ -758,7 +781,7 @@ export async function showSplash (msg, options = {}) {
   // TODO: Make flexible
   if (!options.disableAnimation) {
     let index = 0
-    let icons = ['hourglass_empty', 'hourglass_bottom', 'hourglass_top']
+    const icons = ['hourglass_empty', 'hourglass_bottom', 'hourglass_top']
 
     setTimeout(() => {
       icon.classList.remove('animate__animated', 'animate__zoomIn')
@@ -799,20 +822,20 @@ export async function boot () {
     if (window.innerWidth < 768) {
       document.querySelector('#terminal').style.display = 'none'
       setTimeout(() => execute('desktop'), 2100)
-      setTimeout(() => kernel.dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
+      setTimeout(() => dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
     } else {
       document.querySelector('#terminal').style.display = 'block'
-      setTimeout(terminal.fit, 50)
-      terminal.focus()
+      setTimeout(window.terminal?.fit, 50)
+      window.terminal?.focus()
     }
   } else {
     document.querySelector('#terminal').style.display = 'block'
-    setTimeout(terminal.fit, 50)
+    setTimeout(window.terminal?.fit, 50)
     execute('confetti --startVelocity 90 --particleCount 150')
-    terminal.focus()
+    window.terminal?.focus()
   }
 
-  setInterval(() => terminal.fit(), 200)
+  setInterval(() => window.terminal?.fit(), 200)
 
   figlet.parseFont(figletFontName, figletFont)
   figlet.text('web3os', { font: figletFontName }, async (err, data) => {
@@ -820,11 +843,24 @@ export async function boot () {
     if (data && window.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
     else log(`\n${colors.green.bold('web3os')}`)
 
+    console.log(`%cweb3os %c${pkg.version}`, `
+      font-family: "Lucida Console", Monaco, monospace;
+      font-size: 25px;
+      letter-spacing: 2px;
+      word-spacing: 2px;
+      color: #028550;
+      font-weight: 700;
+      font-style: normal;
+      font-variant: normal;
+      text-transform: none;`, null)
+
+    console.log('%chttps://github.com/web3os-org/kernel', 'font-size:14px;')
+
     await showBootIntro()
     await loadLocalStorage()
     await setupFilesystem()
     await registerKernelBins()
-    await registerBuiltinApps()
+    await registerBuiltinModules()
     await loadPackages()
 
     // Check for notification permission and request if necessary
@@ -862,7 +898,7 @@ let idleTimer
 const resetIdleTime = () => {
   clearTimeout(idleTimer)
   if (!bin.screensaver) return
-  idleTimer = setTimeout(() => bin.screensaver.run(terminal, kernel.get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || kernel.get('user', 'screensaver-timeout') || 90000)
+  idleTimer = setTimeout(() => bin.screensaver.run(window.terminal, get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
 }
 
 window.addEventListener('load', resetIdleTime)

@@ -1,10 +1,12 @@
 /// <reference types="cypress" />
+/* global before, cy, describe, it */
+/* eslint-disable no-unused-expressions */
 
 const { expect } = require('chai')
 
 describe('bin/account', () => {
   before(() => {
-    cy.setupMetamask();
+    cy.setupMetamask()
     cy.changeMetamaskNetwork('localhost')
     cy.visit('https://localhost:8080')
   })
