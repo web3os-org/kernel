@@ -26,7 +26,9 @@ module.exports = {
     }
   },
   experiments: {
-    topLevelAwait: true
+    topLevelAwait: true,
+    asyncWebAssembly: true,
+    lazyCompilation: true
   },
   externals: {
     'wasmer_wasi_js_bg.wasm': true
@@ -61,7 +63,7 @@ module.exports = {
     _loader: './src/_loader.js',
     kernel: './src/index.js',
     'service-worker': './src/service-worker.js',
-    ...glob.sync('./src/bin/**/*.js').reduce((obj, el) => { obj['bin/' + path.parse(el).dir.split('/').at(-1)] = el; return obj }, {})
+    ...glob.sync('./src/modules/**/*.js').reduce((obj, el) => { obj['modules/' + path.parse(el).dir.split('/').at(-1)] = el; return obj }, {})
   },
 
   output: {
@@ -124,7 +126,7 @@ module.exports = {
         test: /\.(png|jpe?g|webp|svg|)$/i,
         use: [
           {
-            loader: `img-optimize-loader`,
+            loader: 'img-optimize-loader',
             options: {
               compress: {
                 mode: 'lossless',

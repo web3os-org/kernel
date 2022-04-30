@@ -40,7 +40,7 @@ class Web3osTerminal extends Terminal {
   prompt (value) {
     if (value) this.promptFormat = value
     const format = this.promptFormat
-      .replace(/\{cwd\}/g, colors.muted(path.resolve(this.cwd)))
+      .replace(/\{cwd\}/g, colors.muted(this.cwd))
 
     this.write(format)
     this.listen()

@@ -224,10 +224,10 @@ This (and everything else) is subject to change before version 1.0.
 
 Also, expect undocumented features for now.
 
-`window.kernel.bin` = { name: app }
+`window.kernel.modules` = { name: app }
 
 - Contains all apps registered in the kernel
-- e.g., `window.kernel.bin.desktop.run()`
+- e.g., `window.kernel.modules.desktop.run()`
 
 `window.kernel.wallet.web3` = :Web3Provider
 
@@ -236,8 +236,8 @@ Also, expect undocumented features for now.
 `window.kernel.wallet.account` = { address: '0x..', chainId: 1 }
 
 - You may also interact directly with the account app.
-  - e.g., `window.kernel.bin.account.connect()`
-  - e.g., `window.kernel.bin.account.account.address`
+  - e.g., `window.kernel.modules.account.connect()`
+  - e.g., `window.kernel.modules.account.account.address`
 
 `window.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
 
@@ -292,7 +292,7 @@ export async function run (terminal, context) {
 }
 ```
 
-A good example of a more full-featured app can be found in [src/bin/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/bin/confetti/index.js).
+A good example of a more full-featured app can be found in [src/modules/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/modules/confetti/index.js).
 
 </details>
 
@@ -331,7 +331,7 @@ Usage:
     --version              Print the version information
 ```
 
-Access the array of devices within an app: `kernel.bin.usb.devices`
+Access the array of devices within an app: `kernel.modules.usb.devices`
 
 </details>
 
