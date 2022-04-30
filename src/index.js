@@ -15,6 +15,7 @@ import bytes from 'bytes'
 import colors from 'ansi-colors'
 import figlet from 'figlet'
 import figletFont from 'figlet/importable-fonts/Graffiti'
+import topbar from 'topbar'
 import columnify from 'columnify'
 import sweetalert from 'sweetalert2'
 import pathUtil from 'path'
@@ -36,9 +37,12 @@ import theme from './themes/default/index.js'
 
 const figletFontName = 'Graffiti'
 
+window.topbar = topbar
+topbar.show()
+
 // TODO: Make this configurable via env or querystring
 // TODO: Also all of these core modules will eventually be extracted into their own packages
-const builtinModules = [
+export const builtinModules = [
   'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
   'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver', 'torrent',
   'usb', 'view', 'wasm', 'wolfenstein', 'wpm', 'www'
@@ -899,6 +903,7 @@ export async function boot () {
     if (Notification?.permission === 'denied') log(colors.warning('Notification permission denied'))
 
     await autostart()
+    topbar.hide()
   })
 }
 
