@@ -27,12 +27,12 @@ module.exports = {
   },
   experiments: {
     topLevelAwait: true,
-    asyncWebAssembly: true,
-    lazyCompilation: true
+    asyncWebAssembly: true
+    // lazyCompilation: true
   },
-  externals: {
-    'wasmer_wasi_js_bg.wasm': true
-  },
+  // externals: {
+  //   'wasmer_wasi_js_bg.wasm': true
+  // },
   plugins: [
     // new WebpackBundleAnalyzer(),
 
