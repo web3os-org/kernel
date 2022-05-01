@@ -11,14 +11,17 @@
 
 /* global fetch, File, FileReader, localStorage, location, Notification */
 
+import arg from 'arg'
 import bytes from 'bytes'
 import colors from 'ansi-colors'
+import columnify from 'columnify'
 import figlet from 'figlet'
 import figletFont from 'figlet/importable-fonts/Graffiti'
-import topbar from 'topbar'
-import columnify from 'columnify'
-import sweetalert from 'sweetalert2'
 import pathUtil from 'path'
+import sweetalert from 'sweetalert2'
+import topbar from 'topbar'
+
+import { parse as cliParse } from 'shell-quote'
 import { unzip } from 'unzipit'
 
 import 'animate.css'
@@ -51,7 +54,7 @@ export const builtinModules = [
 // TODO: i18n this (and everything else)
 const configDescriptions = {
   'autostart.sh': 'Executed at startup line by line',
-  packages: 'Master local package list for wpm'
+  packages: 'Master local package list'
 }
 
 export const utils = { path: pathUtil }
@@ -564,7 +567,8 @@ async function setupFilesystem () {
 
 async function registerKernelBins () {
   const kernelBins = []
-  kernelBins.sh = { args: ['filename'], description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
+  kernelBins.sh = await import('./modules/sh')
+  // kernelBins.sh = { args: ['filename'], description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
   kernelBins.wait = { args: ['ms'], description: 'Wait for the specified number of milliseconds', run: (term, context) => wait(context) }
   kernelBins.clear = { description: 'Clear the terminal', run: term => term.clear() }
   kernelBins.reboot = { description: 'Reload the shell', run: () => location.reload() }
