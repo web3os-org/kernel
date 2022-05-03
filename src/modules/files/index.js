@@ -186,32 +186,34 @@ async function loadFolder (browser, url) {
           }
         }
       )
-  
+
       entry.addEventListener('contextmenu', e => {
         e.preventDefault()
         e.stopPropagation()
         ctxmenu.show(entryContextMenu, e.target.closest('.web3os-files-explorer-entry').querySelector('mwc-icon'))
       })
-  
+
       entry.addEventListener('click', e => {
         const { file } = e.target.dataset
 
-        const location =kernel.utils.path.resolve(addressBar.value, file)
+        const location = kernel.utils.path.resolve(addressBar.value, file)
         const stat = kernel.fs.statSync(location)
-        const fileParts =kernel.utils.path.parse(file)
+        const fileParts = kernel.utils.path.parse(file)
         const extension = fileParts.ext
-  
-        if (stat.isDirectory()) {          
+
+        if (stat.isDirectory()) {
           history.push(location)
           historyPosition = history.length - 1
           addressBar.value = location
           return loadFolder(browser, location)
         }
 
+        if (location.match(/^\/bin\//)) return kernel.execute(location)
+
         const promptExecute = async allow => {
           const { isConfirmed } = await kernel.dialog({
             title: `Execute Script: ${location}`,
-            text: `Executing scripts can be dangerous. Are you sure?`,
+            text: 'Executing scripts can be dangerous. Are you sure?',
             icon: 'warning',
             showDenyButton: true,
             denyButtonColor: 'green',
@@ -347,15 +349,14 @@ export async function run (terminal, url) {
 
   upIcon.addEventListener('click', () => {
     if (addressBar.value === '/') return
-    const newUrl =kernel.utils.path.resolve(addressBar.value, '..')
+    const newUrl = kernel.utils.path.resolve(addressBar.value, '..')
     history.push(newUrl)
     historyPosition = history.length - 1
     gotoHistory()
   })
 
   terminalIcon.addEventListener('click', async () => {
-    const win = await kernel.modules.desktop.launchTerminal({ path: addressBar.value })
-    console.log(win)
+    await kernel.modules.desktop.launchTerminal({ path: addressBar.value })
   })
 
   buttonWrapper.appendChild(backIcon)

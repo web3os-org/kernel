@@ -50,8 +50,8 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'manifest.json' },
-        { from: 'node_modules/js-dos/dist/wdosbox.wasm' },
-        { from: 'node_modules/js-dos/dist/wdosbox.js' },
+        // { from: 'node_modules/js-dos/dist/wdosbox.wasm' },
+        // { from: 'node_modules/js-dos/dist/wdosbox.js' },
         { from: 'src/assets/icon-512.png', to: 'assets/icon.png' },
         { from: 'src/assets/icon-192.png', to: 'assets' },
         { from: 'src/assets/maskable_icon_x192.png', to: 'assets' }

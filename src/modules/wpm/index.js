@@ -4,6 +4,8 @@ import arg from 'arg'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
 
+export const DefaultPackageRegistry = 'https://unpkg.com'
+
 export const name = 'wpm'
 export const version = '0.1.0'
 export const description = 'web3os Package Manager'
@@ -25,8 +27,8 @@ const spec = {
   '-v': '--version'
 }
 
-let kernel
-let terminal
+let kernel = window.kernel
+let terminal = window.terminal
 
 export async function install (args) {
   const warned = localStorage.getItem('web3os_wpm_install_warning_hidden')
@@ -38,7 +40,9 @@ export async function install (args) {
     return false
   }
 
-  const url = args[0]
+  let url = args[0]
+  if (!url.match(/^http/i)) url = `${DefaultPackageRegistry}/${url}`
+
   const pkgJson = await (await fetch(`${url}/package.json`)).json()
   const pkgName = pkgJson.name.split('/')
   const main = pkgJson.main || 'index.js'
@@ -55,23 +59,23 @@ export async function install (args) {
   pkgJson.web3osData = { pkgFolder, url, main }
   kernel.fs.writeFileSync(`${pkgFolder}/package.json`, JSON.stringify(pkgJson, null, 2), 'utf8')
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
+  const index = packages.indexOf(url)
+  if (index > -1) packages.splice(index, 1)
   packages.push(`${pkgJson.name}@${pkgJson.version}`)
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(packages, null, 2))
-  kernel.loadModule(mod)
+  await kernel.loadModule(mod)
+  return { url, pkgJson, mod }
 }
 
 export async function uninstall (args) {
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-  const pkg = packages.find(p => p.name === args[0])
+  const pkg = packages.find(p => p.match(new RegExp(`^${args[0]}@`)))
   if (!pkg) throw new Error('Package not found')
-
-  // const pkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
-
-  // const newPackages = packages.filter(p => p.name !== pkgJson.name)
-  // kernel.fs.writeFileSync('/config/packages', JSON.stringify(newPackages, null, 2))
-  // kernel.fs.unlinkSync(`/var/packages/${pkgJson.web3osData.pkgFolder}/package.json`)
-  // kernel.fs.unlinkSync(`/bin/${pkgJson.name}`)
-  // delete kernel.modules[pkgJson.name]
+  const pkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
+  const newPackages = packages.filter(p => p !== `${pkgJson.name}@${pkgJson.version}`)
+  kernel.fs.writeFileSync('/config/packages', JSON.stringify(newPackages, null, 2))
+  kernel.fs.unlinkSync(`/bin/${pkgJson.name}`)
+  delete kernel.modules[pkgJson.name]
 }
 
 export async function update (args) {

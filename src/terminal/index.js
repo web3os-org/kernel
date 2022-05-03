@@ -18,10 +18,12 @@ class Web3osTerminal extends Terminal {
   cmd = ''
   cwd = '/'
   env = {}
-  history = []
-  historyPosition = 0
+  aliases = {}
   customCommands = []
+  historyPosition = 0
+  binSearchPath = ['@web3os-core', '@web3os-apps', '@web3os-utils']
   promptFormat = `${colors.blue('{cwd}')}${colors.green('#')} `
+  history = []
 
   constructor (options = {}) {
     super(options)
@@ -96,11 +98,29 @@ class Web3osTerminal extends Terminal {
         this.historyPosition = 0
 
         if (this.cmd !== '') {
+          this.interruptListener = this.onKey(this.interruptHandler.bind(this))
           this.history.push(this.cmd)
+
+          let exec = this.aliases[this.cmd] ? this.aliases[this.cmd] : this.cmd
+          const options = { terminal: this, doPrompt: true }
+
           const customCommand = this.customCommands?.find(c => c.name === this.cmd)
           if (customCommand) customCommand.run(this.cmd)
-          else this.kernel.execute(this.cmd, { terminal: this, doPrompt: true })
-          this.interruptListener = this.onKey(this.interruptHandler.bind(this))
+          else {
+            if (this.cwd.match(/^\/bin\/.+/)) {
+              const scopedBin = path.join(this.cwd, this.cmd)
+              if (this.kernel.fs.existsSync(scopedBin)) {
+                this.kernel.execute(scopedBin.replace('/bin/', ''), options)
+              } else {
+                this.kernel.execute(exec, options)
+              }
+            } else {
+              const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
+              const match = searchPaths.find(p => this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
+              if (match) exec = path.join(match, exec)
+              this.kernel.execute(exec, options)
+            }
+          }
         } else {
           return this.prompt()
         }

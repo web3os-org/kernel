@@ -1,12 +1,11 @@
 import arg from 'arg'
-import path from 'path'
-import colors, { blue } from 'ansi-colors'
+import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
 
-import './www.css'
+import classes from './www.module.css'
 
 export const name = 'www'
-export const version = '1.0.0'
+export const version = '0.1.0'
 export const description = 'WWW Browser'
 export const help = `
   ${colors.danger.bold('NOTE:')} This app is not designed to be a full-featured browser,
@@ -73,16 +72,25 @@ export async function run (terminal, context) {
   iframe.src = url
   addressBar.value = url
 
-  toolbar.classList.add('web3os-www-browser-toolbar')
-  addressBar.classList.add('web3os-www-browser-toolbar-addressbar-input')
-  buttonWrapper.classList.add('web3os-www-browser-toolbar-button-wrapper')
+  // toolbar.classList.add('web3os-www-browser-toolbar')
+  // addressBar.classList.add('web3os-www-browser-toolbar-addressbar-input')
+  // buttonWrapper.classList.add('web3os-www-browser-toolbar-button-wrapper')
+
+  toolbar.classList.add(classes['web3os-www-browser-toolbar'])
+  addressBar.classList.add(classes['web3os-www-browser-toolbar-addressbar-input'])
+  buttonWrapper.classList.add(classes['web3os-www-browser-toolbar-button-wrapper'])
 
   addressBar.addEventListener('focus', () => addressBar.select())
   addressBar.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       let newUrl = addressBar.value
-      newUrl = newUrl.match(/^about\:/) ? newUrl :
-                (newUrl.match(/^https?\:\/\//) ? newUrl : `https://${newUrl}`)
+      newUrl = newUrl.match(/^about:/)
+        ? newUrl
+        : (
+            newUrl.match(/^https?:\/\//)
+              ? newUrl
+              : `https://${newUrl}`
+          )
 
       history.push(newUrl)
       historyPosition = history.length - 1

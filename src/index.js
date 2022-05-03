@@ -11,7 +11,6 @@
 
 /* global fetch, File, FileReader, localStorage, location, Notification */
 
-import arg from 'arg'
 import bytes from 'bytes'
 import colors from 'ansi-colors'
 import columnify from 'columnify'
@@ -21,7 +20,6 @@ import pathUtil from 'path'
 import sweetalert from 'sweetalert2'
 import topbar from 'topbar'
 
-import { parse as cliParse } from 'shell-quote'
 import { unzip } from 'unzipit'
 
 import 'animate.css'
@@ -43,12 +41,16 @@ const figletFontName = 'Graffiti'
 window.topbar = topbar
 topbar.show()
 
-// TODO: Make this configurable via env or querystring
-// TODO: Also all of these core modules will eventually be extracted into their own packages
+// TODO: Make this configurable
 export const builtinModules = [
-  'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'doom', 'edit', 'etherscan',
-  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver', 'torrent',
-  'usb', 'view', 'wasm', 'wolfenstein', 'wpm', 'www'
+  'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'edit', 'etherscan',
+  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver',
+  'torrent', 'usb', 'view', 'wasm', 'wpm', 'www'
+]
+
+export const defaultPackages = [
+  'https://unpkg.com/@web3os-apps/doom',
+  'https://unpkg.com/@web3os-apps/wolfenstein'
 ]
 
 // TODO: i18n this (and everything else)
@@ -160,21 +162,25 @@ export async function dialog (options = {}) {
 }
 
 export async function execute (cmd, options = {}) {
-  options.doPrompt = options.doPrompt || false
-  let command = modules[cmd.split(' ')[0]]
+  const exec = cmd.split(' ')[0]
   const term = options.terminal || window.terminal
-
-  // console.log({ cmd, options, command })
+  let command = term.aliases[exec] ? modules[term.aliases[exec]] : modules[exec]
 
   if (!command) {
     try {
-      command = await import(`./modules/${cmd.split(' ')[0]}`)
+      if (fs.existsSync(exec)) {
+        const data = JSON.parse(fs.readFileSync(exec).toString())
+        command = modules[data?.name]
+      } else {
+        command = await import(`./modules/${exec}`)
+      }
     } catch (err) {
       console.error(err)
     }
   }
 
   if (!command) { term.log(colors.danger('Invalid command')); return term.prompt() }
+  options.doPrompt = options.doPrompt || false
 
   try {
     const args = cmd.split(' ').slice(1).join(' ')
@@ -204,7 +210,7 @@ export async function executeScript (filename, options = {}) {
 
 export async function autostart () {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', '#account connect\n#desktop\n#markdown docs/README.md\n') // Setup default autostart.sh
+    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'alias doom @web3os-org/doom\n#account connect\n#desktop\n#markdown docs/README.md\n') // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)
@@ -212,10 +218,6 @@ export async function autostart () {
   } finally {
     window.terminal?.prompt()
   }
-}
-
-export async function wait (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export async function download (term, context) {
@@ -376,7 +378,7 @@ async function setupFilesystem () {
       if (!fs.existsSync('/var')) fs.mkdirSync('/var')
       if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
       if (!fs.existsSync('/config')) fs.mkdirSync('/config')
-      if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', '[]')
+      if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
 
       // Populate /docs
       const docs = fs.readdirSync('/docs')
@@ -558,28 +560,39 @@ async function setupFilesystem () {
       }
 
       // FS command aliases
-      modules.cat = { args: ['path'], description: 'Alias of read', run: modules.read.run }
-      modules.dir = { args: ['path'], description: 'Alias of ls', run: modules.ls.run }
-      modules.rename = { args: ['from', 'to'], description: 'Alias of mv', run: modules.mv.run }
+      modules.cat = { description: 'Alias of read', run: modules.read.run }
+      modules.dir = { description: 'Alias of ls', run: modules.ls.run }
+      modules.rename = { description: 'Alias of mv', run: modules.mv.run }
     }
   })
 }
 
 async function registerKernelBins () {
   const kernelBins = []
-  kernelBins.sh = await import('./modules/sh')
-  // kernelBins.sh = { args: ['filename'], description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
-  kernelBins.wait = { args: ['ms'], description: 'Wait for the specified number of milliseconds', run: (term, context) => wait(context) }
+  kernelBins.alert = { description: 'Show an alert', run: (term, context) => dialog({ text: context }) }
   kernelBins.clear = { description: 'Clear the terminal', run: term => term.clear() }
-  kernelBins.reboot = { description: 'Reload the shell', run: () => location.reload() }
-  kernelBins.dump = { description: 'Dump the shell state', run: term => term.log(dump()) }
-  kernelBins.restore = { args: ['json'], description: 'Restore the shell state', run: (term, context) => restore(context) }
-  kernelBins.echo = { args: ['text'], description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }
-  kernelBins.alert = { args: ['message'], description: 'Show an alert', run: (term, context) => dialog({ text: context }) }
-  kernelBins.notify = { args: ['title', 'body'], description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
-  kernelBins.snackbar = { args: ['message'], description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
-  kernelBins.man = { args: ['command'], description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
-  kernelBins.import = { args: ['url'], description: 'Import a module from a URL', run: (term, context) => loadModuleUrl(context) }
+  kernelBins.dump = { description: 'Dump the memory state', run: term => term.log(dump()) }
+  kernelBins.echo = { description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }
+  kernelBins.history = { description: 'Show command history', run: term => { term.log(JSON.stringify(term.history)) } }
+  kernelBins.import = { description: 'Import a module from a URL', run: (term, context) => loadModuleUrl(context) }
+  kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
+  kernelBins.notify = { description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
+  kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
+  kernelBins.reboot = { description: 'Reload web3os', run: () => location.reload() }
+  kernelBins.restore = { description: 'Restore the memory state', run: (term, context) => restore(context) }
+  kernelBins.snackbar = { description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
+  kernelBins.wait = { description: 'Wait for the specified number of milliseconds', run: (term, context) => wait(context) }
+
+  kernelBins.alias = {
+    description: 'Set or list command aliases',
+    help: 'Usage: alias [src] [dest]',
+    run: (term, context) => {
+      if (!context || context === '') return term.log(term.aliases)
+      const command = context.split(' ')
+      if (command.length !== 2) throw new Error('You must specify the src and dest commands')
+      term.aliases[command[0]] = command[1]
+    }
+  }
 
   kernelBins.ipecho = {
     description: 'Echo your public IP address',
@@ -593,8 +606,8 @@ async function registerKernelBins () {
   }
 
   kernelBins.set = {
-    args: ['namespace', 'key', 'value'],
-    description: 'Set a kernel value', // : ${colors.info('set namespace key value')}, eg. ${colors.muted('set user name hosk')}`,
+    description: 'Set a kernel memory value',
+    help: 'Usage: set <namespace> <key> <value>',
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -605,8 +618,8 @@ async function registerKernelBins () {
   }
 
   kernelBins.get = {
-    args: ['namespace', 'key'],
-    description: 'Get a kernel value', // : ${colors.info('get namespace key')} or ${colors.info('get namespace')}, eg. ${colors.info('get user name')} or ${colors.info('get user')}`,
+    description: 'Get a kernel memory namespace or key',
+    help: 'Usage: get <namespace> [key]',
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -616,9 +629,9 @@ async function registerKernelBins () {
     }
   }
 
-  kernelBins.deleteKernelKey = {
-    args: ['namespace', 'key'],
-    description: 'Delete specified key, or entire namespace if no key is specified',
+  kernelBins.unset = {
+    description: 'Delete specified memory namespace or key',
+    help: 'Usage: delkey <namespace> [key]',
     run: (term, context = '') => {
       try {
         const parts = context.split(' ')
@@ -631,16 +644,8 @@ async function registerKernelBins () {
     }
   }
 
-  kernelBins.history = {
-    description: 'Show command history',
-    run: term => {
-      term.log(JSON.stringify(term.history))
-    }
-  }
-
   kernelBins.eval = {
-    args: ['filename'],
-    description: `Load and evaluate a Javascript file; ${colors.danger.bold('be very careful!')}`,
+    description: 'Load and evaluate a Javascript file',
     run: (term, filename) => {
       if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
       filename = utils.path.resolve(term.cwd, filename)
@@ -649,20 +654,25 @@ async function registerKernelBins () {
     }
   }
 
+  kernelBins.clip = {
+    description: 'Copy output of command to clipboard',
+    run: async (term, context) => {
+      const result = await execute(context)
+      console.log(result)
+    }
+  }
+
   kernelBins.height = {
-    args: ['css-height'],
     description: 'Set body height',
     run: (term, context) => { document.body.style.height = context }
   }
 
   kernelBins.width = {
-    args: ['css-width'],
     description: 'Set body width',
     run: (term, context) => { document.body.style.width = context }
   }
 
   kernelBins.objectUrl = {
-    args: ['file'],
     description: 'Create an ObjectURL for a file',
     run: (term, filename) => {
       const data = fs.readFileSync(utils.path.join(term.cwd, filename))
@@ -680,14 +690,16 @@ async function registerKernelBins () {
 async function registerBuiltinModules () {
   const mods = process.env.BUILTIN_MODULES ? process.env.BUILTIN_MODULES.split(',') : builtinModules
 
-  mods.forEach(async mod => {
+  // return mods.forEach(async mod => {
+  for (const mod of mods) {
     const modBin = await import(`./modules/${mod}`)
-    loadModule(modBin, { name: mod })
-  })
+    await loadModule(modBin, { name: mod })
+  }
 }
 
-export function loadModule (mod, { name, web3osData }) {
+export async function loadModule (mod, options = {}) {
   if (!mod) throw new Error('Invalid module provided to kernel.loadModule')
+  let { name, web3osData } = options
   name = name || mod.name
   if (!name || name === '') name = 'module_' + Math.random().toString(36).slice(2)
 
@@ -722,22 +734,40 @@ export async function loadModuleUrl (url) {
 
 export async function loadPackages () {
   const packages = JSON.parse(fs.readFileSync('/config/packages').toString())
-  packages.forEach(async pkg => {
-    const pkgJson = JSON.parse(fs.readFileSync(`/var/packages/${pkg}/package.json`))
-    const main = pkgJson.web3osData.main || pkgJson.main
-    const mod = await loadModuleUrl(`${pkgJson.web3osData.url}/${main}`)
-    loadModule(mod, pkgJson)
-  })
+  for (const pkg of packages) {
+    try {
+      if (pkg.match(/^http/i)) {
+        const { url } = await modules.wpm.install([pkg])
+        // const newPkgs = [...packages].filter(p => p !== url)
+        // const index = newPkgs.indexOf(pkg)
+        // packages.splice(index, 1)
+        // console.log({ packages, newPkgs })
+
+        // fs.writeFileSync('/config/packages',
+        //   JSON.stringify(packages.filter(p => p !== url), null, 2)
+        // )
+
+        continue
+      }
+
+      const pkgJson = JSON.parse(fs.readFileSync(`/var/packages/${pkg}/package.json`))
+      const main = pkgJson.web3osData.main || pkgJson.main
+      const mod = await loadModuleUrl(`${pkgJson.web3osData.url}/${main}`)
+      await loadModule(mod, pkgJson)
+    } catch (err) {
+      console.error(err)
+      window.terminal.log(colors.danger(err.message))
+    }
+  }
 }
 
 export async function showSplash (msg, options = {}) {
   document.querySelector('#web3os-splash')?.remove()
 
-  // TODO: I'll move a lot of this to the css eventually.. or scrap it entirely.
   const icon = document.createElement('mwc-icon')
   icon.id = 'web3os-splash-icon'
   icon.style.color = options.iconColor || '#03A062'
-  icon.style.fontSize = options.iconFontSize || '20rem'
+  icon.style.fontSize = options.iconFontSize || '10em'
   icon.style.marginTop = '2rem'
   icon.innerText = options.icon || 'hourglass_empty'
   if (!options.disableAnimation) icon.classList.add('animate__animated', 'animate__zoomIn')
@@ -792,7 +822,7 @@ export async function showSplash (msg, options = {}) {
   message.id = 'web3os-splash-message'
   message.style.color = 'silver'
   message.style.fontSize = '2.5rem'
-  message.innerText = msg || 'Please hold 😅'
+  message.innerText = msg || '💾 Booting... 💾'
 
   const container = document.createElement('div')
   container.id = 'web3os-splash'
@@ -853,24 +883,26 @@ export async function boot () {
   // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
     const closeSplash = await showSplash()
-    await execute('confetti --startVelocity 90 --particleCount 150')
     setTimeout(closeSplash, 2000) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
 
     // Automatically start the desktop on small screens since xterm struggles with the keyboard
     // TODO: Fix everything on small screens
     if (window.innerWidth < 768) {
-      document.querySelector('#terminal').style.display = 'none'
-      setTimeout(() => execute('desktop'), 2100)
+      // document.querySelector('#terminal').style.display = 'none'
+      // setTimeout(() => execute('desktop'), 2100)
       setTimeout(() => dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
     } else {
-      document.querySelector('#terminal').style.display = 'block'
-      setTimeout(window.terminal?.fit, 50)
-      window.terminal?.focus()
+      // document.querySelector('#terminal').style.display = 'block'
+      // setTimeout(window.terminal?.fit, 50)
+      // window.terminal?.focus()
     }
+
+    document.querySelector('#terminal').style.display = 'block'
+    setTimeout(window.terminal?.fit, 50)
+    window.terminal?.focus()
   } else {
     document.querySelector('#terminal').style.display = 'block'
     setTimeout(window.terminal?.fit, 50)
-    execute('confetti --startVelocity 90 --particleCount 150')
     window.terminal?.focus()
   }
 
@@ -907,8 +939,13 @@ export async function boot () {
     if (Notification?.permission === 'denied') log(colors.warning('Notification permission denied'))
 
     await autostart()
+    await execute('confetti --startVelocity 90 --particleCount 150')
     topbar.hide()
   })
+}
+
+export async function wait (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 // Integrate basic wallet functionality within the kernel

@@ -103,6 +103,7 @@ export async function launchTerminal (options = {}) {
 
   win.term = newTerm
   termKernel.modules.account?.setPrompt(newTerm)
+  if (options.startup) termKernel.execute(options.startup, { terminal: newTerm })
   newTerm.prompt()
   newTerm.focus()
 
@@ -129,10 +130,10 @@ async function createFileLayer () {
   files.forEach(filename => {
     const file = {
       name: filename,
-      location:kernel.utils.path.resolve('/desktop', filename),
+      location: kernel.utils.path.resolve('/desktop', filename),
       type: kernel.fs.statSync(path.resolve('/desktop', filename)).isDirectory() ? 'dir' : 'file'
     }
-  
+
     const entry = document.createElement('div')
     const icon = document.createElement('mwc-icon')
     const title = document.createElement('h1')
