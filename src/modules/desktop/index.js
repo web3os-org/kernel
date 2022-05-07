@@ -137,7 +137,7 @@ async function createFileLayer () {
     const entry = document.createElement('div')
     const icon = document.createElement('mwc-icon')
     const title = document.createElement('h1')
-    
+
     let fileIcon
     switch (file.type) {
       case 'dir':
@@ -159,7 +159,7 @@ async function createFileLayer () {
     entry.appendChild(icon)
     entry.appendChild(title)
     fileLayer.appendChild(entry)
-    
+
     entry.draggable = true
 
     entry.addEventListener('dragstart', e => {

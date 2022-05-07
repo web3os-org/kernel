@@ -55,8 +55,9 @@ async function loadFolder (browser, url) {
           fileIcon = 'text_snippet'
       }
 
-      const extension =kernel.utils.path.extname(file)
+      const extension = kernel.utils.path.extname(file)
       const mime = lookup(extension)
+      const isBin = !!(!mime && fileData.type === 'file' && fileData.location.match(/^\/bin\//))
 
       switch (extension) {
         case '.js':
@@ -100,6 +101,8 @@ async function loadFolder (browser, url) {
           break
       }
 
+      if (isBin) fileIcon = 'terminal'
+
       icon.textContent = fileIcon
       title.textContent = file
       entry.dataset.file = file
@@ -107,7 +110,7 @@ async function loadFolder (browser, url) {
       title.dataset.file = entry.dataset.file
 
       let divider = false
-      const entryContextMenu = []
+      let entryContextMenu = []
       const setAriaLabel = label => [icon, title].forEach(el => { el.setAttribute('aria-label', label) }) // .ariaLabel isn't yet supported in firefox
 
       switch (extension) {
@@ -129,15 +132,18 @@ async function loadFolder (browser, url) {
         case '.link':
           divider = true
           setAriaLabel('Open link in new tab')
-          entryContextMenu.push({ text: 'Open', action: () => {
-            try {
-              const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
-              window.open(url, '_blank')
-            } catch (err) {
-              console.error(err)
-              kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
+          entryContextMenu.push({
+            text: 'Open',
+            action: () => {
+              try {
+                const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
+                window.open(url, '_blank')
+              } catch (err) {
+                console.error(err)
+                kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
+              }
             }
-          }})
+          })
           break
         case '.jpg':
         case '.png':
@@ -154,12 +160,12 @@ async function loadFolder (browser, url) {
       if (title.getAttribute('aria-label')) title.classList.add('hint--right', 'hint--info')
       if (divider) entryContextMenu.push({ isDivider: true })
 
-      if (fileData.type !== 'dir') entryContextMenu.push(
-        {
+      if (fileData.type !== 'dir') {
+        entryContextMenu.push({
           text: 'Edit',
           action: () => kernel.execute(`edit ${location}`)
-        }
-      )
+        })
+      }
 
       entryContextMenu.push(
         {
@@ -186,6 +192,19 @@ async function loadFolder (browser, url) {
         }
       )
 
+      if (isBin) {
+        entryContextMenu = [
+          {
+            text: 'Run',
+            action: () => kernel.execute(location)
+          },
+          {
+            text: 'Run in new terminal',
+            action: () => kernel.modules.desktop.launchTerminal({ startup: location })
+          }
+        ]
+      }
+
       entry.addEventListener('contextmenu', e => {
         e.preventDefault()
         e.stopPropagation()
@@ -207,7 +226,7 @@ async function loadFolder (browser, url) {
           return loadFolder(browser, location)
         }
 
-        if (location.match(/^\/bin\//)) return kernel.execute(location)
+        if (isBin) return kernel.execute(location)
 
         const promptExecute = async allow => {
           const { isConfirmed } = await kernel.dialog({
@@ -223,7 +242,7 @@ async function loadFolder (browser, url) {
 
           if (isConfirmed) allow()
         }
-  
+
         switch (extension) {
           case '.sh':
             return promptExecute(() => kernel.executeScript(location))
@@ -233,7 +252,7 @@ async function loadFolder (browser, url) {
           case '.txt':
             return kernel.execute(`edit ${location}`)
           case '.md':
-            return kernel.execute(`markdown ${location}`)          
+            return kernel.execute(`markdown ${location}`)
           case '.link':
             try {
               const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
@@ -245,7 +264,7 @@ async function loadFolder (browser, url) {
             break
           default:
             if (mime?.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
-            kernel.execute(`alert I'm not sure how to handle this file!`)
+            kernel.execute("alert I'm not sure how to handle this file!")
         }
       })
 
@@ -262,7 +281,7 @@ async function loadFolder (browser, url) {
     backIcon.style.color = historyPosition === 0 ? 'darkslateblue' : 'white'
     forwardIcon.style.color = historyPosition === history.length - 1 ? 'darkslateblue' : 'white'
 
-    upIcon.style.cursor = addressBar.value === '/' ? 'initial': 'pointer'
+    upIcon.style.cursor = addressBar.value === '/' ? 'initial' : 'pointer'
     backIcon.style.cursor = historyPosition === 0 ? 'initial' : 'pointer'
     forwardIcon.style.cursor = historyPosition === history.length - 1 ? 'initial' : 'pointer'
   } catch (err) {
@@ -273,11 +292,8 @@ async function loadFolder (browser, url) {
 }
 
 export async function run (terminal, url) {
-  term = terminal
   kernel = terminal.kernel
-
   url = (!url || url === '') ? '/' : url
-
   history = [url]
   historyPosition = 0
 

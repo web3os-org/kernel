@@ -84,6 +84,7 @@ const showBootIntro = () => {
   log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun\n`))
 
   log('Learn how to interact with smart contracts:')
+  log(`\t${colors.blue.underline('contract --help')}`)
   log(`\t${colors.blue('https://github.com/web3os-org/sample-scripts')}\n`)
 
   // log('https://docs.web3os.sh')
@@ -165,6 +166,7 @@ export async function execute (cmd, options = {}) {
   const exec = cmd.split(' ')[0]
   const term = options.terminal || window.terminal
   let command = term.aliases[exec] ? modules[term.aliases[exec]] : modules[exec]
+  if (options.topbar) topbar.show()
 
   if (!command) {
     try {
@@ -179,12 +181,15 @@ export async function execute (cmd, options = {}) {
     }
   }
 
+  if (options.topbar) topbar.hide()
   if (!command?.run) { term.log(colors.danger('Invalid command')); return term.prompt() }
   options.doPrompt = options.doPrompt || false
 
   try {
+    if (options.topbar) topbar.show()
     const args = cmd.split(' ').slice(1).join(' ')
     const result = await command.run(term, args)
+    if (options.topbar) topbar.hide()
     if (options.doPrompt) term.prompt()
     return result
   } catch (err) {
@@ -668,6 +673,7 @@ async function registerKernelBins () {
   kernelBins.objectUrl = {
     description: 'Create an ObjectURL for a file',
     run: (term, filename) => {
+      if (!filename || filename === '') throw new Error('Invalid filename')
       const data = fs.readFileSync(utils.path.join(term.cwd, filename))
       const file = new File([data], utils.path.parse(filename).base, { type: 'application/octet-stream' })
       const url = URL.createObjectURL(file)

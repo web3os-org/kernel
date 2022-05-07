@@ -1,4 +1,3 @@
-import path from 'path'
 import colors from 'ansi-colors'
 import CodeMirror from 'codemirror'
 
