@@ -3,7 +3,6 @@ import { lookup } from 'mime-types'
 import colors from 'ansi-colors'
 
 export const name = 'view'
-export const args = ['filename']
 export const description = 'File viewer for images, videos, audio, and PDF documents'
 export const help = `
   Usage:

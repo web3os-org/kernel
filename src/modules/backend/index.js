@@ -2,7 +2,6 @@ import colors from 'ansi-colors'
 import { create as createTerminal } from '../../terminal'
 
 export const name = 'backend'
-export const args = ['command', 'arguments']
 export const description = 'Manages the connection to a Backend server'
 export const help = `
   Usage:

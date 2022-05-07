@@ -66,6 +66,7 @@ The project is still very young, and proper documentation and organization is Co
 - Optional desktop environment
 - Optional backend environment runs in Docker container
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
+- [Web3os Package Manager](#web3os-package-manager)
 - Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
   - Interact with smart contracts
   - Programmatically switch chains
@@ -84,6 +85,7 @@ The project is still very young, and proper documentation and organization is Co
 - It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
 - WebUSB support *(Chrome only; very experimental)*
 - WebAssembly executable support *(very experimental - incomplete)*:
+  - [Native](https://developer.mozilla.org/en-US/docs/WebAssembly)
   - [WASI](https://wasi.dev/)
   - [Emscripten](https://emscripten.org/)
   - [AssemblyScript](https://www.assemblyscript.org/)
@@ -94,7 +96,6 @@ The project is still very young, and proper documentation and organization is Co
 - Developer-friendly:
   - Easily scriptable and hookable ecosystem of modules
   - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
-  - A package manager, wpm, is in development but not yet functional
 
 </details>
 
@@ -213,6 +214,33 @@ To run a Javascript script: `eval /path/to/script.js`
 
 See some sample scripts at: [https://github.com/web3os-org/sample-scripts](https://github.com/web3os-org/sample-scripts)
 
+## Web3os Package Manager
+
+<details>
+<summary><strong>Expand Web3os Package Manager</strong></summary>
+
+---
+
+The `wpm` command can be used to manage installed packages. Installing a package adds an entry to `/config/packages` and all packages in this file are loaded on startup.
+
+Packages are generally ES Modules, located at a url that contains a `package.json`.
+
+You may also just use the `import` command to directly import an ES module from a URL.
+
+This means you can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com). This doesn't mean the package will work as expected, but here are a few examples of npm libraries that can be loaded in web3os:
+
+- [lodash](https://www.npmjs.com/package/lodash)
+  - `wpm install https://unpkg.com/lodash`
+  - This doesn't add an executable, but `_` is now available in the global scope.
+
+- [umbrellajs](https://umbrellajs.com/)
+  - `wpm install https://unpkg.com/umbrellajs --main umbrella.esm.js`
+  - Now you can use it by accessing:
+    - `const u = kernel.modules.umbrellajs.default`
+    - `const body = u('body')`
+
+</details>
+
 ## Kernel Interface
 
 <details>
@@ -272,16 +300,43 @@ Also, expect undocumented features for now.
 
 Developers should be able to create apps in any way they like, with as few requirements as possible. Remember, your app is simply running in a browser - you have access to everything that any other script does.
 
-Here is the structure of a very minimal app:
+The best way to create applications for web3os is to create an `npm` package, using any bundler you'd like.
+
+For example, to create an application with [snowpack](https://www.snowpack.dev):
+
+`package.json`:
+
+```json
+{
+  "name": "@yourorg/yourapp",
+  "description": "A sample application",
+  "version": "1.2.3",
+  "license": "MIT",
+  "main": "build/index.js",
+  "module": "src/index.js",
+  "scripts": {
+    "start": "snowpack dev",
+    "build": "snowpack build",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "snowpack": "^3.8.8"
+  }
+}
+```
+
+`index.js`:
 
 ```js
-export const name = 'myapp'
-export const version = '0.1.0'
-export const description = 'My application'
-export const help = `
-  Myapp enables developers to Do An App!
+import pkg from './package.json'
 
-  Usage: myapp <options>        Run myapp with some options!
+export const name = pkg.name
+export const version = pkg.version
+export const description = pkg.description
+export const help = `
+  This app enables developers to Do An App!
+
+  Usage: @yourorg/yourapp [options]        Run yourapp with some options!
 `
 
 export async function run (terminal, context) {
@@ -292,7 +347,11 @@ export async function run (terminal, context) {
 }
 ```
 
-A good example of a more full-featured app can be found in [src/modules/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/modules/confetti/index.js).
+A good example of some more full-featured apps can be found at:
+
+[src/modules/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/modules/confetti/index.js)
+
+[]
 
 </details>
 
@@ -342,17 +401,15 @@ Access the array of devices within an app: `kernel.modules.usb.devices`
 
 - There's a lot to do... please help. 😅
 - Decoupling of built-in apps into their own packages
-- Fix desktop icon issues
 - Unified WASM handling
 - Finish development of backend Node.js web3os-server API
-- Finish the packaging system to be able to install apps
-- Rewrite most core modules in Rust
-- Increase inter-module security/isolation
-- Some apps are basically just placeholders
+- Rewrite expensive core modules in Rust
+- Improve security/isolation
+- Some apps are just placeholders
 - Modify command interfaces to conform to IEEE Std 1003.1-2017
 - Flesh out rm command and remove rmdir; allow recursive delete
 - Migrate all global CSS to CSS modules
-- Adding more things to the TODO list
+- Add more things to the TODO list
 
 </details>
 

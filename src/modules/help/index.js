@@ -1,7 +1,6 @@
 import colors from 'ansi-colors'
 
 export const name = 'help'
-export const args = ['command']
 export const description = 'Prints this help information, or help for the specified command'
 export const help = `
   Usage:
@@ -15,7 +14,7 @@ export async function run (term, context) {
   const { kernel, log } = term
   if (context !== '') return term.log(showHelp(term, context))
 
-  log(`
+  return log(`
     ${colors.underline.info('Web3os Help:')}
     
     web3os has many commands, which you can list by typing ${colors.green('ls /bin')}

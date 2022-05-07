@@ -25,10 +25,10 @@ export const help = `
     sign <message>                   ${colors.gray('Sign a message using your wallet')}
     send <amount> <address>          ${colors.gray('Send <amount> of native coin to <address>')}
 
-    Options:
-      --help                         Print this help message
-      --version                      Print the version information
-      --wallet                       {metamask},walletconnect
+  Options:
+    --help                         Print this help message
+    --version                      Print the version information
+    --wallet                       {metamask},walletconnect
 `
 
 export const spec = {
@@ -121,6 +121,8 @@ export async function connect () {
   provider.on('disconnect', error => {
     console.error('disconnect', error)
   })
+
+  return account.address
 }
 
 export async function switchChain (args) {

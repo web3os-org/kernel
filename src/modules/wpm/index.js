@@ -8,19 +8,28 @@ export const DefaultPackageRegistry = 'https://unpkg.com'
 
 export const name = 'wpm'
 export const version = '0.1.0'
-export const description = 'web3os Package Manager'
+export const description = 'Web3os Package Manager'
 export const help = `
   Usage:
-    ${colors.blue('Installation URL Examples:')}
-    https://unpkg.com/@web3os-org/sample.snowpack
+    wpm <command> <args> [options]
 
-    wpm install <url>         Install the package located at <url>
-    wpm update <name>         Update package
-    wpm uninstall <name>      Uninstall package
+  Commands:
+    install <url>          Install the package located at <url>
+    uninstall <name>       Uninstall package
+
+  Options:
+    --help                 Show this help message
+    --main                 Override a package's main entrypoint
+    --registry             Package registry {https://unpkg.com}
+    --umd                  Install the package as a UMD module
+    --version              Show version information
 `
 
 const spec = {
   '--help': Boolean,
+  '--main': String,
+  '--registry': String,
+  '--umd': Boolean,
   '--version': Boolean,
 
   '-h': '--help',
@@ -30,9 +39,12 @@ const spec = {
 let kernel = window.kernel
 let terminal = window.terminal
 
-export async function install (args) {
+const importUMD = async (url, module = {exports:{}}) =>
+  (Function('module', 'exports', await (await fetch(url)).text()).call(module, module, module.exports), module).exports
+
+export async function install (url, args = { warn: true }) {
   const warned = localStorage.getItem('web3os_wpm_install_warning_hidden')
-  if (!warned) {
+  if (!warned && args.warn) {
     localStorage.setItem('web3os_wpm_install_warning_hidden', true)
     terminal.log(`\n${colors.bgRed.white('WARNING')}: Do not install any packages unless you trust them completely.`)
     terminal.log(colors.bold(`All apps run in an inherently insecure context. ${colors.danger('This will be your last warning!')}`))
@@ -40,13 +52,18 @@ export async function install (args) {
     return false
   }
 
-  let url = args[0]
-  if (!url.match(/^http/i)) url = `${DefaultPackageRegistry}/${url}`
+  if (!url.match(/^http/i)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
 
   const pkgJson = await (await fetch(`${url}/package.json`)).json()
-  const pkgName = pkgJson.name.split('/')
-  const main = pkgJson.main || 'index.js'
-  const mod = await import(/* webpackIgnore: true */ `${url}/${main}`)
+  const name = pkgJson.name
+  const pkgName = name.split('/')
+  const main = args['--main'] || pkgJson.main || 'index.js'
+
+  const mod = args['--umd']
+    ? await importUMD(`${url}/${main}`)
+    : await import(/* webpackIgnore: true */ `${url}/${main}`)
+
+  console.log({ name, main, mod })
 
   if (pkgName.length > 1) {
     if (!kernel.fs.existsSync(`/var/packages/${pkgName[0]}`)) kernel.fs.mkdirSync(`/var/packages/${pkgName[0]}`)
@@ -63,24 +80,24 @@ export async function install (args) {
   if (index > -1) packages.splice(index, 1)
   packages.push(`${pkgJson.name}@${pkgJson.version}`)
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(packages, null, 2))
-  await kernel.loadModule(mod)
-  return { url, pkgJson, mod }
+  await kernel.loadModule(mod, { name })
+  return { mod, name, pkgJson, url }
 }
 
-export async function uninstall (args) {
+export async function uninstall (name, args = {}) {
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-  const pkg = packages.find(p => p.match(new RegExp(`^${args[0]}@`)))
+  const pkg = packages.find(p => p.match(new RegExp(`^${name}@`)))
   if (!pkg) throw new Error('Package not found')
   const pkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
   const newPackages = packages.filter(p => p !== `${pkgJson.name}@${pkgJson.version}`)
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(newPackages, null, 2))
-  kernel.fs.unlinkSync(`/bin/${pkgJson.name}`)
+  if (kernel.fs.existsSync(`/bin/${pkgJson.name}`)) kernel.fs.unlinkSync(`/bin/${pkgJson.name}`)
   delete kernel.modules[pkgJson.name]
 }
 
-export async function update (args) {
+export async function update (name, args) {
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-  const pkg = packages.find(p => p.exe === args[0])
+  const pkg = packages.find(p => p.exe === name)
   if (!pkg) throw new Error('Package not found')
 
   // const updatedPackages = packages.filter(p => p.exe !== pkg.exe)
@@ -105,11 +122,11 @@ export async function run (term, context) {
 
   switch (cmd) {
     case 'install':
-      return await install(args._?.slice(1))
+      return await install(args._?.slice(1)[0], args)
     case 'uninstall':
-      return await uninstall(args._?.slice(1))
+      return await uninstall(args._?.slice(1)[0], args)
     case 'update':
-      return await update(args._?.slice(1))
+      return await update(args._?.slice(1)[0], args)
     default:
       return term.log(help)
   }

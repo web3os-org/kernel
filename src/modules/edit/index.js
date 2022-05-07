@@ -22,7 +22,6 @@ import 'codemirror/addon/dialog/dialog.css'
 import 'codemirror/addon/search/matchesonscrollbar.css'
 
 export const name = 'edit'
-export const args = ['filename']
 export const description = 'GUI File Editor'
 export const help = `
   Usage:

@@ -7,7 +7,6 @@ import { lookup } from 'mime-types'
 import './files.css'
 
 export const name = 'files'
-export const args = ['path']
 export const description = 'File Explorer'
 export const help = `
   Usage:

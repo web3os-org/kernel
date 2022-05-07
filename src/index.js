@@ -179,7 +179,7 @@ export async function execute (cmd, options = {}) {
     }
   }
 
-  if (!command) { term.log(colors.danger('Invalid command')); return term.prompt() }
+  if (!command?.run) { term.log(colors.danger('Invalid command')); return term.prompt() }
   options.doPrompt = options.doPrompt || false
 
   try {
@@ -413,7 +413,6 @@ async function setupFilesystem () {
       // Setup FS commands
       modules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
       modules.cd = {
-        args: ['path'],
         description: 'Change the current working directory',
         run: (term, context) => {
           const newCwd = utils.path.resolve(term.cwd, context)
@@ -424,24 +423,21 @@ async function setupFilesystem () {
       }
 
       modules.read = {
-        args: ['path'],
         description: 'Read contents of file',
         run: (term, context) => {
           const dir = utils.path.resolve(term.cwd, context)
           if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
-          term.log(fs.readFileSync(dir, 'utf8'))
+          return term.log(fs.readFileSync(dir, 'utf8'))
         }
       }
 
       modules.upload = { description: 'Upload files', run: upload }
       modules.download = {
-        args: ['filename_or_url', 'save_as_filename'],
         description: 'Download URL to CWD, or download FILE to PC',
         run: download
       }
 
       modules.mkdir = {
-        args: ['path'],
         description: 'Create a directory',
         run: (term, context) => {
           if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
@@ -450,7 +446,6 @@ async function setupFilesystem () {
       }
 
       modules.rm = {
-        args: ['path'],
         description: 'Remove a file',
         run: (term, context) => {
           const target = utils.path.resolve(term.cwd, context)
@@ -461,7 +456,6 @@ async function setupFilesystem () {
       }
 
       modules.rmdir = {
-        args: ['path'],
         description: 'Remove a directory',
         run: (term, context) => {
           const target = utils.path.resolve(term.cwd, context)
@@ -472,7 +466,6 @@ async function setupFilesystem () {
       }
 
       modules.mv = {
-        args: ['from', 'to'],
         description: 'Move a file or directory',
         run: (term, context) => {
           const [fromStr, toStr] = context.split(' ')
@@ -485,7 +478,6 @@ async function setupFilesystem () {
       }
 
       modules.cp = {
-        args: ['from', 'to'],
         description: 'Copy a file or directory',
         run: (term, context) => {
           const [fromStr, toStr] = context.split(' ')
@@ -498,7 +490,6 @@ async function setupFilesystem () {
       }
 
       modules.ls = {
-        args: ['path'],
         description: 'List directory contents',
         run: (term, context) => {
           if (!context || context === '') context = term.cwd
@@ -549,7 +540,7 @@ async function setupFilesystem () {
             }
           })
 
-          term.log(columnify(data, {
+          return term.log(columnify(data, {
             config: {
               name: { minWidth: 20 },
               type: { minWidth: 8 },
@@ -573,8 +564,8 @@ async function registerKernelBins () {
   kernelBins.clear = { description: 'Clear the terminal', run: term => term.clear() }
   kernelBins.dump = { description: 'Dump the memory state', run: term => term.log(dump()) }
   kernelBins.echo = { description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }
-  kernelBins.history = { description: 'Show command history', run: term => { term.log(JSON.stringify(term.history)) } }
-  kernelBins.import = { description: 'Import a module from a URL', run: (term, context) => loadModuleUrl(context) }
+  kernelBins.history = { description: 'Show command history', run: term => { return term.log(JSON.stringify(term.history)) } }
+  kernelBins.import = { description: 'Import a module from a URL', run: async (term, context) => await loadModuleUrl(context) }
   kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
   kernelBins.notify = { description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
@@ -657,8 +648,10 @@ async function registerKernelBins () {
   kernelBins.clip = {
     description: 'Copy output of command to clipboard',
     run: async (term, context) => {
-      const result = await execute(context)
-      console.log(result)
+      const parts = context.split(' ')
+      const mod = modules[parts[0]]
+      const result = await mod.run(term, parts.splice(1).join(' '))
+      return await navigator.clipboard.writeText(JSON.stringify(result, null, 2))
     }
   }
 
@@ -678,7 +671,7 @@ async function registerKernelBins () {
       const data = fs.readFileSync(utils.path.join(term.cwd, filename))
       const file = new File([data], utils.path.parse(filename).base, { type: 'application/octet-stream' })
       const url = URL.createObjectURL(file)
-      term.log(url)
+      return term.log(url)
     }
   }
 
@@ -690,7 +683,6 @@ async function registerKernelBins () {
 async function registerBuiltinModules () {
   const mods = process.env.BUILTIN_MODULES ? process.env.BUILTIN_MODULES.split(',') : builtinModules
 
-  // return mods.forEach(async mod => {
   for (const mod of mods) {
     const modBin = await import(`./modules/${mod}`)
     await loadModule(modBin, { name: mod })
@@ -699,19 +691,21 @@ async function registerBuiltinModules () {
 
 export async function loadModule (mod, options = {}) {
   if (!mod) throw new Error('Invalid module provided to kernel.loadModule')
-  let { name, web3osData } = options
+  let { description, help, name, run, version, web3osData } = options
+  help = help || mod.help || 'Help is not exported from this module'
   name = name || mod.name
+  run = run || mod.run || mod.default
   if (!name || name === '') name = 'module_' + Math.random().toString(36).slice(2)
 
   if (modules[name]) delete modules[name]
-  modules[name] = mod
+  modules[name] = { ...mod, run }
 
   const modInfo = {
     name,
-    version: mod.version,
-    description: mod.description,
+    version,
+    description,
     web3osData,
-    help: mod.help
+    help
   }
 
   if (mod.run) {
@@ -729,7 +723,7 @@ export async function loadModule (mod, options = {}) {
 }
 
 export async function loadModuleUrl (url) {
-  return import(/* webpackIgnore: true */ url)
+  return await import(/* webpackIgnore: true */ url)
 }
 
 export async function loadPackages () {
@@ -737,16 +731,7 @@ export async function loadPackages () {
   for (const pkg of packages) {
     try {
       if (pkg.match(/^http/i)) {
-        const { url } = await modules.wpm.install([pkg])
-        // const newPkgs = [...packages].filter(p => p !== url)
-        // const index = newPkgs.indexOf(pkg)
-        // packages.splice(index, 1)
-        // console.log({ packages, newPkgs })
-
-        // fs.writeFileSync('/config/packages',
-        //   JSON.stringify(packages.filter(p => p !== url), null, 2)
-        // )
-
+        await modules.wpm.install(pkg, { warn: false })
         continue
       }
 
@@ -890,7 +875,7 @@ export async function boot () {
     if (window.innerWidth < 768) {
       // document.querySelector('#terminal').style.display = 'none'
       // setTimeout(() => execute('desktop'), 2100)
-      setTimeout(() => dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
+      // setTimeout(() => dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
     } else {
       // document.querySelector('#terminal').style.display = 'block'
       // setTimeout(window.terminal?.fit, 50)

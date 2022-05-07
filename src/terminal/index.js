@@ -33,10 +33,12 @@ class Web3osTerminal extends Terminal {
   }
 
   log (...args) {
-    args.forEach(msg => {
-      msg = typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2)
-      this.writeln(msg)
-    })
+    for (let arg of args) {
+      arg = typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)
+      if (arg) this.writeln(arg)
+    }
+
+    return args
   }
   
   prompt (value) {

@@ -1,7 +1,6 @@
 import * as monaco from 'monaco-editor'
 
 export const name = 'code'
-export const args = ['filename']
 export const description = 'Monaco-powered Code Editor'
 export const help = `
   Usage:
