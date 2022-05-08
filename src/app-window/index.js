@@ -9,7 +9,7 @@ const defaults = {
 
 class AppWindow {
   constructor (options = {}) {
-    this.options = {...defaults, ...options}
+    this.options = { ...defaults, ...options }
     this.window = new WinBox(this.options)
     return this
   }

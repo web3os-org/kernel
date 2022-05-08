@@ -36,8 +36,8 @@ const spec = {
   '-v': '--version'
 }
 
-let kernel = window.kernel
-let terminal = window.terminal
+let kernel = globalThis.kernel
+let terminal = globalThis.terminal
 
 const importUMD = async (url, module = {exports:{}}) =>
   (Function('module', 'exports', await (await fetch(url)).text()).call(module, module, module.exports), module).exports
@@ -57,7 +57,7 @@ export async function install (url, args = { warn: true }) {
   const pkgJson = await (await fetch(`${url}/package.json`)).json()
   const name = pkgJson.name
   const pkgName = name.split('/')
-  const main = args['--main'] || pkgJson.main || 'index.js'
+  const main = args['--main'] || pkgJson.module || pkgJson.main || 'index.js'
 
   const mod = args['--umd']
     ? await importUMD(`${url}/${main}`)

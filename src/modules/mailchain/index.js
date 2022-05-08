@@ -55,7 +55,7 @@ export const spec = {
 }
 
 export async function install () {
-  window.open('https://docs.mailchain.xyz/getting-started', '_blank')
+  globalThis.open('https://docs.mailchain.xyz/getting-started', '_blank')
 }
 
 export async function send (args) {

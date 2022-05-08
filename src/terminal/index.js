@@ -27,7 +27,7 @@ class Web3osTerminal extends Terminal {
 
   constructor (options = {}) {
     super(options)
-    this.kernel = options.kernel || window.kernel
+    this.kernel = options.kernel || globalThis.kernel
     this.customCommands = options.customCommands || []
     this.log = this.log.bind(this)
   }
@@ -118,7 +118,7 @@ class Web3osTerminal extends Terminal {
               }
             } else {
               const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
-              const match = searchPaths.find(p => this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
+              const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
               if (match) exec = path.join(match, exec)
               this.kernel.execute(exec, options)
             }

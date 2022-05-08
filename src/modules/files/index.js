@@ -137,7 +137,7 @@ async function loadFolder (browser, url) {
             action: () => {
               try {
                 const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
-                window.open(url, '_blank')
+                globalThis.open(url, '_blank')
               } catch (err) {
                 console.error(err)
                 kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
@@ -256,7 +256,7 @@ async function loadFolder (browser, url) {
           case '.link':
             try {
               const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
-              window.open(url, '_blank')
+              globalThis.open(url, '_blank')
             } catch (err) {
               console.error(err)
               kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })

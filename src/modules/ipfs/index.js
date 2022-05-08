@@ -12,10 +12,21 @@ export const help = `
     ipfs <command> <args> [options]
 
   Commands:
-    download <cid> [path]                Download CID to path or {cwd}
-    ls <cid>                             List contents of CID
-    status                               Display node status
-    upload <path>                        Upload path to IPFS
+    download <cid> [path]                    Download CID to path or {cwd}
+    ls <cid>                                 List contents of CID
+    mfs <mfs-command> [args]                 Interact with the IPFS Mutable File System
+    status                                   Display node status
+    upload <path>                            Upload path to IPFS
+
+  MFS Commands:
+    cp <from> <to>                           Copy a file or directory (<from> may be IPFS or MFS path)
+    ls <mfs-path>                            List contents of mfs-path
+    mv <from> <to>                           Move a file or directory
+    mkdir <mfs-path>                         Create a directory
+    read <mfs-path>                          Read the contents of file at <mfs-path>
+    rm <mfs-path>                            Delete a file or directory
+    stat <mfs-path>                          Get directory stats
+    upload <mfs-path> <local-file>           Upload <local-file> to <mfs-path>
 `
 
 const spec = {
@@ -26,8 +37,16 @@ const spec = {
   '-v': '--version'
 }
 
-export let ipfs
-export let instance
+let ipfs
+let inst
+
+export function core () {
+  return ipfs
+}
+
+export function instance () {
+  return inst
+}
 
 export async function upload (filename, args) {
   const data = args.terminal.kernel.fs.readFileSync(path.join(args.terminal.cwd, filename))
@@ -46,21 +65,19 @@ export async function download (cid, args) {
 }
 
 export async function ls (cid) {
-  const data = await ipfs.ls(cid)
-  console.log(data)
+  for await (const file of inst.ls(cid)) {
+    console.log(file.path)
+  }
 }
 
-export async function run (terminal = window.terminal, context = '') {
+export async function run (terminal = globalThis.terminal, context = '') {
   const args = arg(spec, { argv: context.split(' ') })
   const cmd = args._?.[0]
 
   if (args['--help']) return terminal.log(help)
   if (args['--version']) return terminal.log(version)
-  console.log('before', { ipfs, instance })
   if (!ipfs) ipfs = await import('ipfs-core')
-  if (!instance) instance = await ipfs.create()
-  console.log('after', { ipfs, instance })
-
+  if (!inst) inst = await ipfs.create()
   args.terminal = terminal
 
   switch (cmd) {

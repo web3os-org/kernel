@@ -38,7 +38,7 @@ import theme from './themes/default/index.js'
 
 const figletFontName = 'Graffiti'
 
-window.topbar = topbar
+globalThis.topbar = topbar
 topbar.show()
 
 // TODO: Make this configurable
@@ -144,7 +144,7 @@ export function log (msg, options = {}) {
   if (!msg) return
   msg = msg.replace(/\\n/gm, '\n')
   if (options.console) console.log(msg)
-  const term = options.terminal || window.terminal
+  const term = options.terminal || globalThis.terminal
   term.writeln(msg)
 }
 
@@ -164,7 +164,7 @@ export async function dialog (options = {}) {
 
 export async function execute (cmd, options = {}) {
   const exec = cmd.split(' ')[0]
-  const term = options.terminal || window.terminal
+  const term = options.terminal || globalThis.terminal
   let command = term.aliases[exec] ? modules[term.aliases[exec]] : modules[exec]
   if (options.topbar) topbar.show()
 
@@ -201,7 +201,7 @@ export async function execute (cmd, options = {}) {
 }
 
 export async function executeScript (filename, options = {}) {
-  const term = options.terminal || window.terminal
+  const term = options.terminal || globalThis.terminal
   if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
   filename = utils.path.resolve(term.cwd, filename)
 
@@ -221,7 +221,7 @@ export async function autostart () {
     console.error(err)
     log(colors.danger('Failed to complete autostart script'))
   } finally {
-    window.terminal?.prompt()
+    globalThis.terminal?.prompt()
   }
 }
 
@@ -304,7 +304,7 @@ async function setupFilesystem () {
   const filesystem = {}
 
   let initfs
-  const bootArgs = new URLSearchParams(window.location.search)
+  const bootArgs = new URLSearchParams(globalThis.location.search)
   const initfsUrl = bootArgs.get('initfs')
 
   if (bootArgs.has('initfs')) {
@@ -329,7 +329,7 @@ async function setupFilesystem () {
           } catch (err) {
             console.error(err)
             // await alert('Failed to unzip initfsUrl at ' + initfsUrl)
-            window.terminal?.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
+            globalThis.terminal?.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
             return true
           }
         }
@@ -338,10 +338,10 @@ async function setupFilesystem () {
       if (result.isDenied) throw new Error('User rejected using initfs')
       const { entries } = result.value
       initfs = entries
-      window.history.replaceState(null, null, '/') // prevent reload with initfs
+      globalThis.history.replaceState(null, null, '/') // prevent reload with initfs
     } catch (err) {
-      window.terminal?.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
-      window.terminal?.log(colors.danger(err.message))
+      globalThis.terminal?.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
+      globalThis.terminal?.log(colors.danger(err.message))
       console.error(err)
     }
   }
@@ -363,7 +363,7 @@ async function setupFilesystem () {
     } else {
       BrowserFS = filesystem
       fs = filesystem.require('fs')
-      window.fs = fs
+      globalThis.fs = fs
 
       // Use an initfs if available
       if (initfs) {
@@ -601,6 +601,20 @@ async function registerKernelBins () {
     }
   }
 
+  kernelBins.lsmod = {
+    description: 'List loaded kernel modules',
+    run: async term => {
+      const mods = {
+        ...modules,
+        ...module.exports,
+        ...exports
+      }
+
+      term.log(Object.keys(mods).sort())
+      return Object.keys(mods).sort()
+    }
+  }
+
   kernelBins.set = {
     description: 'Set a kernel memory value',
     help: 'Usage: set <namespace> <key> <value>',
@@ -698,13 +712,13 @@ async function registerBuiltinModules () {
 export async function loadModule (mod, options = {}) {
   if (!mod) throw new Error('Invalid module provided to kernel.loadModule')
   let { description, help, name, run, version, web3osData } = options
+  description = description || mod.description
   help = help || mod.help || 'Help is not exported from this module'
   name = name || mod.name
   run = run || mod.run || mod.default
   if (!name || name === '') name = 'module_' + Math.random().toString(36).slice(2)
-
-  if (modules[name]) delete modules[name]
-  modules[name] = { ...mod, run }
+  if (!modules[name]) modules[name] = {}
+  modules[name] = { ...modules[name], ...mod, run, name, description, help }
 
   const modInfo = {
     name,
@@ -747,7 +761,7 @@ export async function loadPackages () {
       await loadModule(mod, pkgJson)
     } catch (err) {
       console.error(err)
-      window.terminal.log(colors.danger(err.message))
+      globalThis.terminal.log(colors.danger(err.message))
     }
   }
 }
@@ -813,7 +827,15 @@ export async function showSplash (msg, options = {}) {
   message.id = 'web3os-splash-message'
   message.style.color = 'silver'
   message.style.fontSize = '2.5rem'
-  message.innerText = msg || '💾 Booting... 💾'
+  message.textContent = msg || '💾 Booting... 💾'
+
+  const versionInfo = document.createElement('h4')
+  versionInfo.id = 'web3os-splash-version'
+  versionInfo.style.color = '#333'
+  versionInfo.style.position = 'fixed'
+  versionInfo.style.bottom = '0.5rem'
+  versionInfo.style.right = '1rem'
+  versionInfo.textContent = `v${pkg.version}`
 
   const container = document.createElement('div')
   container.id = 'web3os-splash'
@@ -834,6 +856,7 @@ export async function showSplash (msg, options = {}) {
   container.appendChild(subtitle)
   container.appendChild(icon)
   container.appendChild(message)
+  container.appendChild(versionInfo)
 
   document.body.appendChild(background)
   document.body.appendChild(container)
@@ -865,8 +888,8 @@ export async function showSplash (msg, options = {}) {
 }
 
 export async function boot () {
-  const bootArgs = new URLSearchParams(window.location.search)
-  window.addEventListener('beforeunload', async () => {
+  const bootArgs = new URLSearchParams(globalThis.location.search)
+  globalThis.addEventListener('beforeunload', async () => {
     await showSplash('Rebooting...', { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })
     document.querySelector('#web3os-splash-icon').classList.add('rotating')
   })
@@ -878,31 +901,31 @@ export async function boot () {
 
     // Automatically start the desktop on small screens since xterm struggles with the keyboard
     // TODO: Fix everything on small screens
-    if (window.innerWidth < 768) {
+    if (globalThis.innerWidth < 768) {
       // document.querySelector('#terminal').style.display = 'none'
       // setTimeout(() => execute('desktop'), 2100)
       // setTimeout(() => dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
     } else {
       // document.querySelector('#terminal').style.display = 'block'
-      // setTimeout(window.terminal?.fit, 50)
-      // window.terminal?.focus()
+      // setTimeout(globalThis.terminal?.fit, 50)
+      // globalThis.terminal?.focus()
     }
 
     document.querySelector('#terminal').style.display = 'block'
-    setTimeout(window.terminal?.fit, 50)
-    window.terminal?.focus()
+    setTimeout(globalThis.terminal?.fit, 50)
+    globalThis.terminal?.focus()
   } else {
     document.querySelector('#terminal').style.display = 'block'
-    setTimeout(window.terminal?.fit, 50)
-    window.terminal?.focus()
+    setTimeout(globalThis.terminal?.fit, 50)
+    globalThis.terminal?.focus()
   }
 
-  setInterval(() => window.terminal?.fit(), 200)
+  setInterval(() => globalThis.terminal?.fit(), 200)
 
   figlet.parseFont(figletFontName, figletFont)
   figlet.text('web3os', { font: figletFontName }, async (err, data) => {
     if (err) log(err)
-    if (data && window.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
+    if (data && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
     else log(`\n${colors.green.bold('web3os')}`)
 
     console.log(`%cweb3os %c${pkg.version}`, `
@@ -957,19 +980,47 @@ let idleTimer
 const resetIdleTime = () => {
   clearTimeout(idleTimer)
   if (!modules.screensaver) return
-  idleTimer = setTimeout(() => modules.screensaver.run(window.terminal, get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
+  idleTimer = setTimeout(() => modules.screensaver.run(globalThis.terminal, get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
 }
 
-window.addEventListener('load', resetIdleTime)
+globalThis.addEventListener('load', resetIdleTime)
 document.addEventListener('mousemove', resetIdleTime)
 document.addEventListener('keydown', resetIdleTime)
 document.addEventListener('keyup', resetIdleTime)
 document.addEventListener('keypress', resetIdleTime)
 document.addEventListener('pointerdown', resetIdleTime)
 
+class KernelModule {
+  constructor () {
+    this._exports = {}
+  }
+
+  get exports () {
+    return {
+      ...modules,
+      ...this._exports,
+      ...exports
+    }
+  }
+
+  set exports (value) {
+    const name = value?.name || 'module_' + Math.random().toString(36).slice(2)
+    globalThis[name] = value
+    if (!modules[name]) modules[name] = {}
+    modules[name][name] = value
+    this._exports[name] = value
+  }
+}
+
+globalThis.global = globalThis.global || globalThis
+globalThis.module = new KernelModule()
+globalThis.require = data => {
+  // console.log({ require: data })
+}
+
 // Register service worker
 // if ('serviceWorker' in navigator) {
-//   window.addEventListener('load', () => {
+//   globalThis.addEventListener('load', () => {
 //     navigator.serviceWorker.register('/service-worker.js')
 //   })
 // }

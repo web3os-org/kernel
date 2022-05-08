@@ -123,7 +123,7 @@ export async function run (terminal, context) {
   })
 
   openIcon.addEventListener('click', () => {
-    window.open(url, '_blank')
+    globalThis.open(url, '_blank')
   })
 
   buttonWrapper.appendChild(backIcon)

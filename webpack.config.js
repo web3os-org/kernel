@@ -4,18 +4,18 @@ const webpack = require('webpack')
 
 const CopyPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const WebpackBundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+// const WebpackBundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
   mode: process.env.NODE_ENV || 'production',
   devtool: 'inline-source-map',
   devServer: {
-    // hot: 'only',
+    hot: 'only',
     static: './dist',
-    // devMiddleware: { writeToDisk: true },
+    devMiddleware: { writeToDisk: true },
     client: {
-      // logging: 'info',
-      // progress: true
+      logging: 'info',
+      progress: true
     },
     server: {
       type: 'https',

@@ -204,11 +204,11 @@ Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js)
 
 To run a web3os script: `sh /path/to/script.sh`
 
-- Or from an app: `window.kernel.executeScript('/path/to/script.sh')`
+- Or from an app: `globalThis.kernel.executeScript('/path/to/script.sh')`
 
 To run a Javascript script: `eval /path/to/script.js`
 
-- Or from an app: `window.kernel.execute('eval /path/to/script.js')`
+- Or from an app: `globalThis.kernel.execute('eval /path/to/script.js')`
 
 </details>
 
@@ -252,40 +252,40 @@ This (and everything else) is subject to change before version 1.0.
 
 Also, expect undocumented features for now.
 
-`window.kernel.modules` = { name: app }
+`globalThis.kernel.modules` = { name: app }
 
 - Contains all apps registered in the kernel
-- e.g., `window.kernel.modules.desktop.run()`
+- e.g., `globalThis.kernel.modules.desktop.run()`
 
-`window.kernel.wallet.web3` = :Web3Provider
+`globalThis.kernel.wallet.web3` = :Web3Provider
 
 - The web3 provider setup with the `account` command
 
-`window.kernel.wallet.account` = { address: '0x..', chainId: 1 }
+`globalThis.kernel.wallet.account` = { address: '0x..', chainId: 1 }
 
 - You may also interact directly with the account app.
-  - e.g., `window.kernel.modules.account.connect()`
-  - e.g., `window.kernel.modules.account.account.address`
+  - e.g., `globalThis.kernel.modules.account.connect()`
+  - e.g., `globalThis.kernel.modules.account.account.address`
 
-`window.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
+`globalThis.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
 
 - Convenience method to create a sweetalert2 dialog with appropriate defaults
-- e.g., `window.kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
+- e.g., `globalThis.kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
 
-`window.kernel.set` ('namespace', 'key', :any)
+`globalThis.kernel.set` ('namespace', 'key', :any)
 
 - Sets a value in the kernel "memory" - persists in localStorage
-- e.g., `window.kernel.set('user', 'name', 'hosk')`
-- e.g., `window.kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
+- e.g., `globalThis.kernel.set('user', 'name', 'hosk')`
+- e.g., `globalThis.kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
 
-`window.kernel.get` ('namespace', 'key') = value
+`globalThis.kernel.get` ('namespace', 'key') = value
 
 - Gets a value from the kernel "memory" - loaded from localStorage
-- e.g., `window.kernel.get('user')`
-- e.g., `window.kernel.get('user', 'name')`
-- e.g., `const { color } = window.kernel.get('myapp', 'theme')`
+- e.g., `globalThis.kernel.get('user')`
+- e.g., `globalThis.kernel.get('user', 'name')`
+- e.g., `const { color } = globalThis.kernel.get('myapp', 'theme')`
 
-`window.kernel.appWindow` (options) = { options, window }
+`globalThis.kernel.appWindow` (options) = { options, window }
 
 - Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
 

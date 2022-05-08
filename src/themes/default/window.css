@@ -8,7 +8,7 @@
 }
 
 @media (hover: hover) {
-  .winbox.web3os-window.min:not(:hover) {
+  .winbox.web3os-globalThis.min:not(:hover) {
     background: #333;
   }
 
@@ -22,12 +22,12 @@
 }
 
 @media (hover: none) {
-  .winbox.web3os-window.min {
+  .winbox.web3os-globalThis.min {
     background: #666;
   }
 }
 
-.winbox.web3os-window.max {
+.winbox.web3os-globalThis.max {
   border-radius: 0;
 }
 

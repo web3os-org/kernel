@@ -47,12 +47,12 @@ export function saveDesktopIconPositions () {
     positions[location] = { x, y }
   })
 
-  window.localStorage.setItem('web3os_desktop_icon_positions', JSON.stringify(positions))
+  globalThis.localStorage.setItem('web3os_desktop_icon_positions', JSON.stringify(positions))
 }
 
 export function loadDesktopIconPositions () {
   try {
-    const positions = JSON.parse(window.localStorage.getItem('web3os_desktop_icon_positions'))
+    const positions = JSON.parse(globalThis.localStorage.getItem('web3os_desktop_icon_positions'))
 
     document.querySelectorAll('.web3os-desktop-entry').forEach(entry => {
       try {
@@ -74,7 +74,7 @@ export async function launchTerminal (options = {}) {
   let win = null
 
   const customCommands = options.customCommands || []
-  customCommands.push({ name: 'exit', run: () => win.window.close() })
+  customCommands.push({ name: 'exit', run: () => win.globalThis.close() })
 
   const newTerm = createTerminal({
     fontFamily: options.fontFamily || "'Fira Mono', monospace",
@@ -90,7 +90,7 @@ export async function launchTerminal (options = {}) {
   newTerm.open(container)
   newTerm.cwd = options.path || '/'
 
-  const termKernel = options.kernel ? options.kernel : (kernel || window.kernel)
+  const termKernel = options.kernel ? options.kernel : (kernel || globalThis.kernel)
 
   win = termKernel.appWindow({
     title: options.windowTitle || options.command || 'web3os.sh',
@@ -112,7 +112,7 @@ export async function launchTerminal (options = {}) {
   // TODO: There's gotta be a better way, but for now we'll just setInterval
   // Running .fit in win.onresize doesn't work
   setInterval(newTerm.fit, 100)
-  setTimeout(() => win.window.focus(), 10)
+  setTimeout(() => win.globalThis.focus(), 10)
 
   return win
 }
@@ -325,7 +325,7 @@ export async function start (args) {
       if (e.key === 'Tab' && e.shiftKey) toggleRunner()
     }
 
-    window.addEventListener('keydown', metaListener)
+    globalThis.addEventListener('keydown', metaListener)
 
     desktop.append(menuButton)
     desktop.append(shellButton)
@@ -456,8 +456,8 @@ export async function toggleLauncher (args) {
 export async function exitDesktop () {
   desktop.remove()
   document.querySelector('#terminal').style.display = 'block'
-  window.terminal.focus()
-  window.terminal.fit()
+  globalThis.terminal.focus()
+  globalThis.terminal.fit()
 }
 
 export async function run (term, context) {
