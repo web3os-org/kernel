@@ -47,6 +47,7 @@ The project is still very young, and proper documentation and organization is Co
 - [Developer Quickstart](#developer-quickstart)
 - [Autostart](#autostart)
 - [Scripting](#scripting)
+- [Web3os Package Manager](#web3os-package-manager)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
 - [Backend (web3os-server)](#backend-web3os-server)
@@ -82,7 +83,7 @@ The project is still very young, and proper documentation and organization is Co
 - Moralis integration with [Moralis](https://moralis.io)
 - P2P communication with [PeerJS](https://peerjs.com)
 - Torrent integration with [WebTorrent](https://webtorrent.io)
-- It runs Doom (and Wolfenstein 3D!) with [JS-DOS](https://js-dos.com/)
+- It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/)
 - WebUSB support *(Chrome only; very experimental)*
 - WebAssembly executable support *(very experimental - incomplete)*:
   - [Native](https://developer.mozilla.org/en-US/docs/WebAssembly)

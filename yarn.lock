@@ -13313,13 +13313,6 @@ join-path@^1.1.1:
     url-join "0.0.1"
     valid-url "^1"
 
-js-dos@^7.2.6:
-  version "7.2.6"
-  resolved "https://registry.yarnpkg.com/js-dos/-/js-dos-7.2.6.tgz#d20966329953954304bbe6c0a5f79d3c11ca3d05"
-  integrity sha512-kv7A1S4mnUfxTsd8+5RZBPNCWcudCGQMP+nP7r1wtVVdBwDqto+JaBXN4ZUhe4L32jJxa56d4bqHLwBdY9YMCA==
-  dependencies:
-    nanoid "^3.1.30"
-
 js-levenshtein@^1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/js-levenshtein/-/js-levenshtein-1.1.6.tgz#c6cee58eb3550372df8deb85fad5ce66ce01d59d"
@@ -19912,6 +19905,11 @@ synthetix@2.66.2:
     pretty-error "^2.1.1"
     solidity-parser-antlr "^0.4.11"
     web3-utils "1.2.2"
+
+systemjs@^6.12.1:
+  version "6.12.1"
+  resolved "https://registry.yarnpkg.com/systemjs/-/systemjs-6.12.1.tgz#47cdd23a6ec9f1b01cf5b5f70562c8550da229d3"
+  integrity sha512-hqTN6kW+pN6/qro6G9OZ7ceDQOcYno020zBQKpZQLsJhYTDMCMNfXi/Y8duF5iW+4WWZr42ry0MMkcRGpbwG2A==
 
 table@^6.0.4:
   version "6.8.0"

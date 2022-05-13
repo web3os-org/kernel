@@ -40,19 +40,17 @@ const spec = {
 let kernel = globalThis.kernel
 let terminal = globalThis.terminal
 
-// Dark magic stolen from a lost tome of stackoverflow
-export const importUMD = async (url, module = { exports: {} }) =>
-  (Function('module', 'exports', await (await fetch(url)).text()).call(module, module, module.exports), module).exports
-
 export async function install (url, args = { warn: true }) {
-  const warned = localStorage.getItem('web3os_wpm_install_warning_hidden')
+  const warned = localStorage.getItem('web3os_jspm_install_warning_hidden')
   if (!warned && args.warn) {
-    localStorage.setItem('web3os_wpm_install_warning_hidden', true)
+    localStorage.setItem('web3os_jspm_install_warning_hidden', true)
     terminal.log(`\n${colors.bgRed.white('WARNING')}: Do not install any packages unless you trust them completely.`)
     terminal.log(colors.bold(`All apps run in an inherently insecure context. ${colors.danger('This will be your last warning!')}`))
     terminal.log(colors.underline('Repeat the command to continue with the installation\n'))
     return false
   }
+
+  return console.log('jspm:install', { url, args })
 
   if (!url.match(/^http/i)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
 

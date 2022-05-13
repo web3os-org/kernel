@@ -136,8 +136,9 @@ async function loadFolder (browser, url) {
             text: 'Open',
             action: () => {
               try {
-                const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
-                globalThis.open(url, '_blank')
+                const { url, useWeb3osBrowser } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
+                if (!useWeb3osBrowser) globalThis.open(url, '_blank')
+                else kernel.execute(`www ${url}`)
               } catch (err) {
                 console.error(err)
                 kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
@@ -255,8 +256,9 @@ async function loadFolder (browser, url) {
             return kernel.execute(`markdown ${location}`)
           case '.link':
             try {
-              const { url } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
-              globalThis.open(url, '_blank')
+              const { url, useWeb3osBrowser } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
+              if (!useWeb3osBrowser) globalThis.open(url, '_blank')
+              else kernel.execute(`www ${url}`)
             } catch (err) {
               console.error(err)
               kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })

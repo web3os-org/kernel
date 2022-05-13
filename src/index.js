@@ -666,6 +666,7 @@ async function registerKernelBins () {
 
   kernelBins.clip = {
     description: 'Copy output of command to clipboard',
+    help: 'Usage: clip <command>',
     run: async (term, context) => {
       const parts = context.split(' ')
       const mod = modules[parts[0]]
@@ -740,6 +741,8 @@ export async function loadModule (mod, options = {}) {
 
     fs.writeFileSync(modBin, JSON.stringify(modInfo, null, 2))
   }
+
+  mod.web3osInstall?.(modInfo)
 }
 
 export async function loadModuleUrl (url) {
@@ -1012,8 +1015,9 @@ class KernelModule {
   }
 }
 
+// TODO: Oof. Work to be done. Later :/
 globalThis.global = globalThis.global || globalThis
-globalThis.module = new KernelModule()
+// globalThis.module = new KernelModule()
 globalThis.require = data => {
   // console.log({ require: data })
 }

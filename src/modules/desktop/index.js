@@ -74,7 +74,7 @@ export async function launchTerminal (options = {}) {
   let win = null
 
   const customCommands = options.customCommands || []
-  customCommands.push({ name: 'exit', run: () => win.globalThis.close() })
+  customCommands.push({ name: 'exit', run: () => win.window.close() })
 
   const newTerm = createTerminal({
     fontFamily: options.fontFamily || "'Fira Mono', monospace",
@@ -112,7 +112,7 @@ export async function launchTerminal (options = {}) {
   // TODO: There's gotta be a better way, but for now we'll just setInterval
   // Running .fit in win.onresize doesn't work
   setInterval(newTerm.fit, 100)
-  setTimeout(() => win.globalThis.focus(), 10)
+  setTimeout(() => win.window.focus(), 10)
 
   return win
 }
