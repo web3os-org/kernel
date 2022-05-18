@@ -9,6 +9,7 @@
   Entry-point of the web3os kernel
 */
 
+/* global Kernel, Terminal, System */
 /* global fetch, File, FileReader, localStorage, location, Notification */
 
 import bytes from 'bytes'
@@ -22,6 +23,7 @@ import topbar from 'topbar'
 
 import { unzip } from 'unzipit'
 
+import 'systemjs'
 import 'animate.css'
 import './css/index.css'
 import './themes/default/index.css'
@@ -144,7 +146,7 @@ export function log (msg, options = {}) {
   if (!msg) return
   msg = msg.replace(/\\n/gm, '\n')
   if (options.console) console.log(msg)
-  const term = options.terminal || globalThis.terminal
+  const term = options.terminal || globalThis.Terminal
   term.writeln(msg)
 }
 
@@ -164,7 +166,7 @@ export async function dialog (options = {}) {
 
 export async function execute (cmd, options = {}) {
   const exec = cmd.split(' ')[0]
-  const term = options.terminal || globalThis.terminal
+  const term = options.terminal || globalThis.Terminal
   let command = term.aliases[exec] ? modules[term.aliases[exec]] : modules[exec]
   if (options.topbar) topbar.show()
 
@@ -201,7 +203,7 @@ export async function execute (cmd, options = {}) {
 }
 
 export async function executeScript (filename, options = {}) {
-  const term = options.terminal || globalThis.terminal
+  const term = options.terminal || globalThis.Terminal
   if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
   filename = utils.path.resolve(term.cwd, filename)
 
@@ -221,7 +223,7 @@ export async function autostart () {
     console.error(err)
     log(colors.danger('Failed to complete autostart script'))
   } finally {
-    globalThis.terminal?.prompt()
+    globalThis.Terminal?.prompt()
   }
 }
 
@@ -229,7 +231,7 @@ export async function download (term, context) {
   let filename = context
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
 
-  if (context.match(/^http/i) || context.match(/^blob/i)) {
+  if (context.match(/^(http|ftp|blob)\:/i) || context.match(/^blob/i)) {
     const url = new URL(context.split(' ')[0])
     filename = utils.path.parse(url.pathname).base
     if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
@@ -328,8 +330,7 @@ async function setupFilesystem () {
             return await unzip(initfsUrl)
           } catch (err) {
             console.error(err)
-            // await alert('Failed to unzip initfsUrl at ' + initfsUrl)
-            globalThis.terminal?.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
+            globalThis.Terminal?.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
             return true
           }
         }
@@ -340,8 +341,8 @@ async function setupFilesystem () {
       initfs = entries
       globalThis.history.replaceState(null, null, '/') // prevent reload with initfs
     } catch (err) {
-      globalThis.terminal?.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
-      globalThis.terminal?.log(colors.danger(err.message))
+      globalThis.Terminal?.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
+      globalThis.Terminal?.log(colors.danger(err.message))
       console.error(err)
     }
   }
@@ -363,7 +364,6 @@ async function setupFilesystem () {
     } else {
       BrowserFS = filesystem
       fs = filesystem.require('fs')
-      globalThis.fs = fs
 
       // Use an initfs if available
       if (initfs) {
@@ -416,8 +416,9 @@ async function setupFilesystem () {
       // terminal.addEventListener('drop', drop)
 
       // Setup FS commands
-      modules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
-      modules.cd = {
+      const fsModules = {}
+      fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
+      fsModules.cd = {
         description: 'Change the current working directory',
         run: (term, context) => {
           const newCwd = utils.path.resolve(term.cwd, context)
@@ -427,7 +428,7 @@ async function setupFilesystem () {
         }
       }
 
-      modules.read = {
+      fsModules.read = {
         description: 'Read contents of file',
         run: (term, context) => {
           const dir = utils.path.resolve(term.cwd, context)
@@ -436,13 +437,13 @@ async function setupFilesystem () {
         }
       }
 
-      modules.upload = { description: 'Upload files', run: upload }
-      modules.download = {
+      fsModules.upload = { description: 'Upload files', run: upload }
+      fsModules.download = {
         description: 'Download URL to CWD, or download FILE to PC',
         run: download
       }
 
-      modules.mkdir = {
+      fsModules.mkdir = {
         description: 'Create a directory',
         run: (term, context) => {
           if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
@@ -450,7 +451,7 @@ async function setupFilesystem () {
         }
       }
 
-      modules.rm = {
+      fsModules.rm = {
         description: 'Remove a file',
         run: (term, context) => {
           const target = utils.path.resolve(term.cwd, context)
@@ -460,7 +461,7 @@ async function setupFilesystem () {
         }
       }
 
-      modules.rmdir = {
+      fsModules.rmdir = {
         description: 'Remove a directory',
         run: (term, context) => {
           const target = utils.path.resolve(term.cwd, context)
@@ -470,7 +471,7 @@ async function setupFilesystem () {
         }
       }
 
-      modules.mv = {
+      fsModules.mv = {
         description: 'Move a file or directory',
         run: (term, context) => {
           const [fromStr, toStr] = context.split(' ')
@@ -482,7 +483,7 @@ async function setupFilesystem () {
         }
       }
 
-      modules.cp = {
+      fsModules.cp = {
         description: 'Copy a file or directory',
         run: (term, context) => {
           const [fromStr, toStr] = context.split(' ')
@@ -494,7 +495,7 @@ async function setupFilesystem () {
         }
       }
 
-      modules.ls = {
+      fsModules.ls = {
         description: 'List directory contents',
         run: (term, context) => {
           if (!context || context === '') context = term.cwd
@@ -522,7 +523,11 @@ async function setupFilesystem () {
               case '/bin':
                 data.push({
                   name: colors.cyanBright(entry),
-                  description: colors.muted(modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
+                  description: colors.muted(
+                    stat.isDirectory()
+                      ? `Packages in the ${entry} namespace`
+                      : (modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
+                  )
                 })
 
                 break
@@ -556,9 +561,13 @@ async function setupFilesystem () {
       }
 
       // FS command aliases
-      modules.cat = { description: 'Alias of read', run: modules.read.run }
-      modules.dir = { description: 'Alias of ls', run: modules.ls.run }
-      modules.rename = { description: 'Alias of mv', run: modules.mv.run }
+      fsModules.cat = { description: 'Alias of read', run: fsModules.read.run }
+      fsModules.dir = { description: 'Alias of ls', run: fsModules.ls.run }
+      fsModules.rename = { description: 'Alias of mv', run: fsModules.mv.run }
+
+      for (const [name, mod] of Object.entries(fsModules)) {
+        loadModule(mod, { name: `@web3os-fs/${name}` })
+      }
     }
   })
 }
@@ -570,7 +579,7 @@ async function registerKernelBins () {
   kernelBins.dump = { description: 'Dump the memory state', run: term => term.log(dump()) }
   kernelBins.echo = { description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }
   kernelBins.history = { description: 'Show command history', run: term => { return term.log(JSON.stringify(term.history)) } }
-  kernelBins.import = { description: 'Import a module from a URL', run: async (term, context) => await loadModuleUrl(context) }
+  kernelBins.import = { description: 'Import a module from a URL', run: async (term, context) => await importModuleUrl(context) }
   kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
   kernelBins.notify = { description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
@@ -696,9 +705,9 @@ async function registerKernelBins () {
     }
   }
 
-  Object.entries(kernelBins).forEach(bin => {
-    loadModule(bin[1], { name: bin[0] })
-  })
+  for (const [name, mod] of Object.entries(kernelBins)) {
+    loadModule(mod, { name: `@web3os-core/${name}` })
+  }
 }
 
 async function registerBuiltinModules () {
@@ -706,20 +715,22 @@ async function registerBuiltinModules () {
 
   for (const mod of mods) {
     const modBin = await import(`./modules/${mod}`)
-    await loadModule(modBin, { name: mod })
+    await loadModule(modBin, { name: `@web3os-core/${mod}` })
   }
 }
 
 export async function loadModule (mod, options = {}) {
   if (!mod) throw new Error('Invalid module provided to kernel.loadModule')
-  let { description, help, name, run, version, web3osData } = options
+  let { description, help, name, run, version, pkgJson } = options
   description = description || mod.description
+  version = version || pkgJson?.version || mod.version
   help = help || mod.help || 'Help is not exported from this module'
-  name = name || mod.name
+  name = name || mod.name || 'module_' + Math.random().toString(36).slice(2)
   run = run || mod.run || mod.default
-  if (!name || name === '') name = 'module_' + Math.random().toString(36).slice(2)
   if (!modules[name]) modules[name] = {}
-  modules[name] = { ...modules[name], ...mod, run, name, description, help }
+  modules[name] = { ...modules[name], ...mod, run, name, version, description, help }
+
+  const web3osData = pkgJson?.web3osData
 
   const modInfo = {
     name,
@@ -729,7 +740,7 @@ export async function loadModule (mod, options = {}) {
     help
   }
 
-  if (mod.run) {
+  if (run) {
     let modBin
 
     if (name.includes('/')) {
@@ -741,34 +752,58 @@ export async function loadModule (mod, options = {}) {
 
     fs.writeFileSync(modBin, JSON.stringify(modInfo, null, 2))
   }
-
-  mod.web3osInstall?.(modInfo)
 }
 
-export async function loadModuleUrl (url) {
+export async function importModuleUrl (url) {
   return await import(/* webpackIgnore: true */ url)
+}
+
+export async function importUMDModule (url, name, module = { exports: {} }) {
+  // Dark magic stolen from a lost tome of stackoverflow
+  const mod = (Function('module', 'exports', await (await fetch(url)).text())
+    .call(module, module, module.exports), module).exports
+
+  mod.default = mod.default || mod
+  return mod
 }
 
 export async function loadPackages () {
   const packages = JSON.parse(fs.readFileSync('/config/packages').toString())
-  for (const pkg of packages) {
+  for await (const pkg of packages) {
     try {
-      if (pkg.match(/^http/i)) {
-        await modules.wpm.install(pkg, { warn: false })
+      if (pkg.match(/^(http|ftp).*\:/i)) {
+        if (modules?.wpm) {
+          await modules.wpm.install(pkg, { warn: false })
+        } else {
+          const waitForWpm = async () => {
+            if (!modules?.wpm) return setTimeout(waitForWpm, 500)
+            await modules.wpm.install(pkg, { warn: false })
+          }
+
+          setTimeout(waitForWpm, 500)
+        }
+
         continue
       }
 
       const pkgJson = JSON.parse(fs.readFileSync(`/var/packages/${pkg}/package.json`))
-      const main = pkgJson.web3osData.main || pkgJson.main
-      const mod = await loadModuleUrl(`${pkgJson.web3osData.url}/${main}`)
+      const main = pkgJson.web3osData.main || pkgJson.main || 'index.js'
+      const type = pkgJson.web3osData.type || 'es'
+      const mainUrl = `${pkgJson.web3osData.url}/${main}`
+
+      const mod = type === 'umd'
+        ? await importUMDModule(mainUrl)
+        : await importModuleUrl(mainUrl)
+
       await loadModule(mod, pkgJson)
     } catch (err) {
       console.error(err)
-      globalThis.terminal.log(colors.danger(err.message))
+      globalThis.Terminal.log(colors.danger(err.message))
     }
   }
 }
 
+// TODO: Make splashes more customizable
 export async function showSplash (msg, options = {}) {
   document.querySelector('#web3os-splash')?.remove()
 
@@ -900,30 +935,17 @@ export async function boot () {
   // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
     const closeSplash = await showSplash()
-    setTimeout(closeSplash, 2000) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
-
-    // Automatically start the desktop on small screens since xterm struggles with the keyboard
-    // TODO: Fix everything on small screens
-    if (globalThis.innerWidth < 768) {
-      // document.querySelector('#terminal').style.display = 'none'
-      // setTimeout(() => execute('desktop'), 2100)
-      // setTimeout(() => dialog({ icon: 'warning', title: 'Limited Mobile Support', text: 'web3os alpha is currently quite broken on mobile devices. Please consider running on a larger screen.' }), 2500)
-    } else {
-      // document.querySelector('#terminal').style.display = 'block'
-      // setTimeout(globalThis.terminal?.fit, 50)
-      // globalThis.terminal?.focus()
-    }
-
+    setTimeout(closeSplash, 500) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
     document.querySelector('#terminal').style.display = 'block'
-    setTimeout(globalThis.terminal?.fit, 50)
-    globalThis.terminal?.focus()
+    setTimeout(globalThis.Terminal?.fit, 50)
+    globalThis.Terminal?.focus()
   } else {
     document.querySelector('#terminal').style.display = 'block'
-    setTimeout(globalThis.terminal?.fit, 50)
-    globalThis.terminal?.focus()
+    setTimeout(globalThis.Terminal?.fit, 50)
+    globalThis.Terminal?.focus()
   }
 
-  setInterval(() => globalThis.terminal?.fit(), 200)
+  setInterval(() => globalThis.Terminal?.fit(), 200)
 
   figlet.parseFont(figletFontName, figletFont)
   figlet.text('web3os', { font: figletFontName }, async (err, data) => {
@@ -943,6 +965,7 @@ export async function boot () {
       text-transform: none;`, null)
 
     console.log('%chttps://github.com/web3os-org/kernel', 'font-size:14px;')
+    console.log({ Kernel, Terminal, System })
 
     await showBootIntro()
     await loadLocalStorage()
@@ -950,6 +973,13 @@ export async function boot () {
     await registerKernelBins()
     await registerBuiltinModules()
     await loadPackages()
+
+    // Copy namespaced core modules onto root object
+    const web3osNamespaces = ['@web3os-core', '@web3os-fs']
+    for (const mod of Object.values(modules)) {
+      const [namespace, name] = mod.name.split('/')
+      if (web3osNamespaces.includes(namespace)) modules[name] = mod
+    }
 
     // Check for notification permission and request if necessary
     if (Notification?.permission === 'default') Notification.requestPermission()
@@ -983,7 +1013,7 @@ let idleTimer
 const resetIdleTime = () => {
   clearTimeout(idleTimer)
   if (!modules.screensaver) return
-  idleTimer = setTimeout(() => modules.screensaver.run(globalThis.terminal, get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
+  idleTimer = setTimeout(() => modules.screensaver.run(globalThis.Terminal, get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
 }
 
 globalThis.addEventListener('load', resetIdleTime)
@@ -993,34 +1023,7 @@ document.addEventListener('keyup', resetIdleTime)
 document.addEventListener('keypress', resetIdleTime)
 document.addEventListener('pointerdown', resetIdleTime)
 
-class KernelModule {
-  constructor () {
-    this._exports = {}
-  }
-
-  get exports () {
-    return {
-      ...modules,
-      ...this._exports,
-      ...exports
-    }
-  }
-
-  set exports (value) {
-    const name = value?.name || 'module_' + Math.random().toString(36).slice(2)
-    globalThis[name] = value
-    if (!modules[name]) modules[name] = {}
-    modules[name][name] = value
-    this._exports[name] = value
-  }
-}
-
-// TODO: Oof. Work to be done. Later :/
 globalThis.global = globalThis.global || globalThis
-// globalThis.module = new KernelModule()
-globalThis.require = data => {
-  // console.log({ require: data })
-}
 
 // Register service worker
 // if ('serviceWorker' in navigator) {

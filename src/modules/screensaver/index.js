@@ -41,7 +41,7 @@ function listenForKeypress (callback) {
   keyTrap.focus()
 }
 
-export async function run (term = globalThis.terminal, context = '') {
+export async function run (term = globalThis.Terminal, context = '') {
   terminal = term
   kernel = term.kernel
 

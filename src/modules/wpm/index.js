@@ -37,12 +37,8 @@ const spec = {
   '-v': '--version'
 }
 
-let kernel = globalThis.kernel
-let terminal = globalThis.terminal
-
-// Dark magic stolen from a lost tome of stackoverflow
-export const importUMD = async (url, module = { exports: {} }) =>
-  (Function('module', 'exports', await (await fetch(url)).text()).call(module, module, module.exports), module).exports
+let kernel = globalThis.Kernel
+let terminal = globalThis.Terminal
 
 export async function install (url, args = { warn: true }) {
   const warned = localStorage.getItem('web3os_wpm_install_warning_hidden')
@@ -54,18 +50,32 @@ export async function install (url, args = { warn: true }) {
     return false
   }
 
-  if (!url.match(/^http/i)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
+  if (typeof url === 'object') url = url.url || url.pattern
+  if (!url) throw new Error('Invalid package name or URL')
 
+  if (!url.match(/^(http|ftp).*\:/i)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
   const pkgJson = await (await fetch(`${url}/package.json`)).json()
   const name = pkgJson.name
   const pkgName = name.split('/')
   const main = args['--main'] || pkgJson.module || pkgJson.main || 'index.js'
+  const type = args['--umd'] ? 'umd' : 'es'
+  const mainUrl = `${url}/${main}`
 
-  const mod = args['--umd']
-    ? await importUMD(`${url}/${main}`)
-    : await import(/* webpackIgnore: true */ `${url}/${main}`)
-
-  console.log({ name, main, mod, pkgJson })
+  let mod
+  try {
+    switch (type) {
+      case 'umd':
+        mod = await kernel.importUMDModule(mainUrl)
+        break
+      case 'systemjs':
+        mod = await globalThis.System.import(mainUrl)
+        break
+      default:
+        mod = await import(/* webpackIgnore: true */ mainUrl)
+    }
+  } catch (err) {
+    console.error('IMPORT ERROR:', { name, type, main, mod, pkgJson })
+  }
 
   if (pkgName.length > 1) {
     if (!kernel.fs.existsSync(`/var/packages/${pkgName[0]}`)) kernel.fs.mkdirSync(`/var/packages/${pkgName[0]}`)
@@ -74,17 +84,24 @@ export async function install (url, args = { warn: true }) {
     if (!kernel.fs.existsSync(`/var/packages/${pkgName[0]}@${pkgJson.version}`)) kernel.fs.mkdirSync(`/var/packages/${pkgName[0]}@${pkgJson.version}`)
   }
 
-  const type = args['--umd'] ? 'umd' : 'es'
   const pkgFolder = pkgName.length > 1 ? `/var/packages/${pkgName[0]}/${pkgName[1]}@${pkgJson.version}` : `/var/packages/${pkgName[0]}@${pkgJson.version}`
   pkgJson.web3osData = { pkgFolder, url, main, type }
   kernel.fs.writeFileSync(`${pkgFolder}/package.json`, JSON.stringify(pkgJson, null, 2), 'utf8')
+
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
   const index = packages.indexOf(url)
   if (index > -1) packages.splice(index, 1)
   packages.push(`${pkgJson.name}@${pkgJson.version}`)
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(packages, null, 2))
-  await kernel.loadModule(mod, { name })
-  return { type, mod, name, pkgJson, url }
+
+  const description = pkgJson.description || mod.description
+  const help = pkgJson.help || mod.help
+  const modInfo = { description, help, name, url, pkgJson }
+  await kernel.loadModule(mod, modInfo)
+  await mod.web3osInstall?.(modInfo)
+
+  terminal.log(`Installed ${modInfo.name}@${pkgJson.version}`)
+  return modInfo
 }
 
 export async function uninstall (name, args = {}) {

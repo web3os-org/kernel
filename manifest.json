@@ -1,4 +1,5 @@
 {
+  "id": "com.web3os.kernel",
   "short_name": "web3os",
   "name": "web3os",
   "description": "The operating system for Web3",

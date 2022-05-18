@@ -90,7 +90,7 @@ export async function launchTerminal (options = {}) {
   newTerm.open(container)
   newTerm.cwd = options.path || '/'
 
-  const termKernel = options.kernel ? options.kernel : (kernel || globalThis.kernel)
+  const termKernel = options.kernel ? options.kernel : (kernel || globalThis.Kernel)
 
   win = termKernel.appWindow({
     title: options.windowTitle || options.command || 'web3os.sh',
@@ -456,8 +456,8 @@ export async function toggleLauncher (args) {
 export async function exitDesktop () {
   desktop.remove()
   document.querySelector('#terminal').style.display = 'block'
-  globalThis.terminal.focus()
-  globalThis.terminal.fit()
+  globalThis.Terminal.focus()
+  globalThis.Terminal.fit()
 }
 
 export async function run (term, context) {

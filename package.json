@@ -1,11 +1,11 @@
 {
-  "name": "@web3os-org/kernel",
+  "name": "@web3os-core/kernel",
   "description": "A developer-friendly ecosystem of apps designed to build a crypto-focused web-based operating system",
   "homepage": "https://web3os.sh",
   "funding": "https://github.com/sponsors/mathiscode",
   "version": "0.2.1",
   "license": "MIT",
-  "main": "src/index.js",
+  "main": "dist/kernel.js",
   "author": {
     "name": "Jay Mathis",
     "email": "code@mathis.network",
@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
+    "@babel/eslint-parser": "^7.17.0",
     "@babel/preset-env": "^7.16.5",
     "assemblyscript": "^0.19.22",
     "babel-loader": "^8.2.3",
@@ -49,6 +50,11 @@
     "css-loader": "^6.5.1",
     "cypress": "^9.5.3",
     "cypress-metamask-v2": "^1.6.10",
+    "eslint": "^8.0.1",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
     "esm": "^3.2.25",
     "file-loader": "^6.2.0",
     "generate-template-files": "^3.2.0",

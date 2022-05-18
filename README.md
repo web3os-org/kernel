@@ -205,11 +205,11 @@ Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js)
 
 To run a web3os script: `sh /path/to/script.sh`
 
-- Or from an app: `globalThis.kernel.executeScript('/path/to/script.sh')`
+- Or from an app: `globalThis.Kernel.executeScript('/path/to/script.sh')`
 
 To run a Javascript script: `eval /path/to/script.js`
 
-- Or from an app: `globalThis.kernel.execute('eval /path/to/script.js')`
+- Or from an app: `globalThis.Kernel.execute('eval /path/to/script.js')`
 
 </details>
 
@@ -237,7 +237,7 @@ This means you can attempt to install any package from npm using a CDN such as [
 - [umbrellajs](https://umbrellajs.com/)
   - `wpm install https://unpkg.com/umbrellajs --main umbrella.esm.js`
   - Now you can use it by accessing:
-    - `const u = kernel.modules.umbrellajs.default`
+    - `const u = Kernel.modules.umbrellajs.default`
     - `const body = u('body')`
 
 </details>
@@ -253,40 +253,40 @@ This (and everything else) is subject to change before version 1.0.
 
 Also, expect undocumented features for now.
 
-`globalThis.kernel.modules` = { name: app }
+`globalThis.Kernel.modules` = { name: app }
 
 - Contains all apps registered in the kernel
-- e.g., `globalThis.kernel.modules.desktop.run()`
+- e.g., `globalThis.Kernel.modules.desktop.run()`
 
-`globalThis.kernel.wallet.web3` = :Web3Provider
+`globalThis.Kernel.wallet.web3` = :Web3Provider
 
 - The web3 provider setup with the `account` command
 
-`globalThis.kernel.wallet.account` = { address: '0x..', chainId: 1 }
+`globalThis.Kernel.wallet.account` = { address: '0x..', chainId: 1 }
 
 - You may also interact directly with the account app.
-  - e.g., `globalThis.kernel.modules.account.connect()`
-  - e.g., `globalThis.kernel.modules.account.account.address`
+  - e.g., `globalThis.Kernel.modules.account.connect()`
+  - e.g., `globalThis.Kernel.modules.account.account.address`
 
-`globalThis.kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
+`globalThis.Kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
 
 - Convenience method to create a sweetalert2 dialog with appropriate defaults
-- e.g., `globalThis.kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
+- e.g., `globalThis.Kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
 
-`globalThis.kernel.set` ('namespace', 'key', :any)
+`globalThis.Kernel.set` ('namespace', 'key', :any)
 
 - Sets a value in the kernel "memory" - persists in localStorage
-- e.g., `globalThis.kernel.set('user', 'name', 'hosk')`
-- e.g., `globalThis.kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
+- e.g., `globalThis.Kernel.set('user', 'name', 'hosk')`
+- e.g., `globalThis.Kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
 
-`globalThis.kernel.get` ('namespace', 'key') = value
+`globalThis.Kernel.get` ('namespace', 'key') = value
 
 - Gets a value from the kernel "memory" - loaded from localStorage
-- e.g., `globalThis.kernel.get('user')`
-- e.g., `globalThis.kernel.get('user', 'name')`
-- e.g., `const { color } = globalThis.kernel.get('myapp', 'theme')`
+- e.g., `globalThis.Kernel.get('user')`
+- e.g., `globalThis.Kernel.get('user', 'name')`
+- e.g., `const { color } = globalThis.Kernel.get('myapp', 'theme')`
 
-`globalThis.kernel.appWindow` (options) = { options, window }
+`globalThis.Kernel.appWindow` (options) = { options, window }
 
 - Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
 
@@ -391,7 +391,7 @@ Usage:
     --version              Print the version information
 ```
 
-Access the array of devices within an app: `kernel.modules.usb.devices`
+Access the array of devices within an app: `Kernel.modules.usb.devices`
 
 </details>
 

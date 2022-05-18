@@ -1,7 +1,6 @@
-import path from 'path'
-import colors from 'ansi-colors'
+/* global FileReader */
+
 import { ctxmenu } from 'ctxmenu'
-import sweetalert from 'sweetalert2'
 import { lookup } from 'mime-types'
 
 import './files.css'
@@ -13,7 +12,6 @@ export const help = `
     files <path>         Open a window at <url>
 `
 
-let term
 let kernel
 let history = []
 let historyPosition = 0
@@ -117,17 +115,17 @@ async function loadFolder (browser, url) {
         case '.js':
           divider = true
           setAriaLabel('Run script')
-          entryContextMenu.push({ text: 'Run', action: () => kernel.execute(`eval ${location}`)})
+          entryContextMenu.push({ text: 'Run', action: () => kernel.execute(`eval ${location}`) })
           break
         case '.sh':
           divider = true
           setAriaLabel('Run script')
-          entryContextMenu.push({ text: 'Run', action: () => kernel.execute(`sh ${location}`)})
+          entryContextMenu.push({ text: 'Run', action: () => kernel.execute(`sh ${location}`) })
           break
         case '.md':
           divider = true
           setAriaLabel('View Markdown')
-          entryContextMenu.push({ text: 'View', action: () => kernel.execute(`markdown ${location}`)})
+          entryContextMenu.push({ text: 'View', action: () => kernel.execute(`markdown ${location}`) })
           break
         case '.link':
           divider = true
@@ -153,7 +151,7 @@ async function loadFolder (browser, url) {
         case '.gif':
           divider = true
           setAriaLabel('View image')
-          entryContextMenu.push({ text: 'View', action: () => kernel.execute(`view ${location}`)})
+          entryContextMenu.push({ text: 'View', action: () => kernel.execute(`view ${location}`) })
           break
       }
 
@@ -294,7 +292,7 @@ async function loadFolder (browser, url) {
 }
 
 export async function run (terminal, url) {
-  kernel = terminal.kernel
+  kernel = terminal.kernel || globalThis.Kernel
   url = (!url || url === '') ? '/' : url
   history = [url]
   historyPosition = 0
@@ -339,7 +337,7 @@ export async function run (terminal, url) {
   addressBar.addEventListener('focus', () => addressBar.select())
   addressBar.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
-      addressBar.style.color = '#121212'
+      addressBar.style.color = 'white'
       const newUrl = addressBar.value
       history.push(newUrl)
       historyPosition = history.length - 1

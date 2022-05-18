@@ -12,7 +12,7 @@ module.exports = {
   devServer: {
     hot: 'only',
     static: './dist',
-    devMiddleware: { writeToDisk: true },
+    // devMiddleware: { writeToDisk: true },
     client: {
       logging: 'info',
       progress: true
@@ -50,6 +50,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'manifest.json' },
+        { from: 'src/assets/dosbox' },
         { from: 'src/assets/icon-512.png', to: 'assets/icon.png' },
         { from: 'src/assets/icon-192.png', to: 'assets' },
         { from: 'src/assets/maskable_icon_x192.png', to: 'assets' }
@@ -67,7 +68,8 @@ module.exports = {
   output: {
     clean: true,
     filename: '[name].js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: ''
   },
 
   resolve: {

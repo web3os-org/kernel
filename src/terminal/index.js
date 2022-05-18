@@ -21,13 +21,13 @@ class Web3osTerminal extends Terminal {
   aliases = {}
   customCommands = []
   historyPosition = 0
-  binSearchPath = ['@web3os-core', '@web3os-apps', '@web3os-utils']
+  binSearchPath = ['@web3os-core', '@web3os-fs', '@web3os-apps', '@web3os-utils']
   promptFormat = `${colors.blue('{cwd}')}${colors.green('#')} `
   history = []
 
   constructor (options = {}) {
     super(options)
-    this.kernel = options.kernel || globalThis.kernel
+    this.kernel = options.kernel || globalThis.Kernel
     this.customCommands = options.customCommands || []
     this.log = this.log.bind(this)
   }

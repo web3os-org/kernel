@@ -6,6 +6,7 @@
 
   margin-top: -1em;
   display: flex;
+  gap: 0.5rem;
   justify-content: flex-start;
   align-items: flex-start;
   flex-wrap: wrap;
@@ -105,9 +106,10 @@
   border-top-left-radius: 20px;
   border-bottom-left-radius: 20px;
   padding-left: 1rem;
-  max-width: 50%;
+  width: 65%;
   font-weight: bolder;
-  font-size: 1.25rem;
+  font-size: 1rem;
+  color: white;
 }
 
 .web3os-files-explorer-entry {
@@ -127,13 +129,11 @@
 .web3os-files-explorer-entry h1 {
   font-size: 1.25rem;
   margin: auto;
-  width: 10ch;
   word-break: break-all;
 }
 
-
-@media screen and (max-width: 600px) {
-  /* .web3os-files-explorer-toolbar-addressbar-input {
-    max-width: 50%;
-  } */
+@media screen and (max-width: 460px) {
+  .web3os-files-explorer-toolbar-addressbar-input {
+    width: 55%;
+  }
 }

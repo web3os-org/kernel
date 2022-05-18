@@ -70,7 +70,7 @@ export async function ls (cid) {
   }
 }
 
-export async function run (terminal = globalThis.terminal, context = '') {
+export async function run (terminal = globalThis.Terminal, context = '') {
   const args = arg(spec, { argv: context.split(' ') })
   const cmd = args._?.[0]
 
