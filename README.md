@@ -33,7 +33,12 @@
 [![Watchers](https://img.shields.io/github/watchers/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
 [![Stars](https://img.shields.io/github/stars/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
 
-A developer-friendly ecosystem of apps designed to build a crypto-focused web-based operating system. The goal is for the entire system to run within any modern browser, while having the capability to connect to backend systems for more features.
+A crypto-enhanced web-based operating system empowering users with a variety of uses:
+
+- Easily install virtually any npm package
+- Write scripts using these packages to perform any tasks
+- Write full applications that hook into the Web3OS Kernel
+- Write modules that can be imported to alter how the system operates
 
 The project is still very young, and proper documentation and organization is Coming Soon™.
 
@@ -48,6 +53,7 @@ The project is still very young, and proper documentation and organization is Co
 - [Autostart](#autostart)
 - [Scripting](#scripting)
 - [Web3os Package Manager](#web3os-package-manager)
+- [Official Apps](#official-apps)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
 - [Backend (web3os-server)](#backend-web3os-server)
@@ -63,17 +69,16 @@ The project is still very young, and proper documentation and organization is Co
 <details open>
 <summary><strong>Expand Features</strong></summary>
 
-- Runs completely in the browser
+- Runs completely in the browser (Chromium-based browsers are ideal)
 - Optional desktop environment
 - Optional backend environment runs in Docker container
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
-- [Web3os Package Manager](#web3os-package-manager)
+- [Web3OS Package Manager](#web3os-package-manager)
+- Modules may also be imported with [SystemJS](https://github.com/systemjs/systemjs)
 - Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
-  - Interact with smart contracts
-  - Programmatically switch chains
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
-  - Built-in IPFS video search and player; type `help flix`
+  - Built-in IPFS video search (WIP) and player; type `help flix`
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Decentralized messaging support with [Mailchain](https://mailchain.xyz)
@@ -87,15 +92,16 @@ The project is still very young, and proper documentation and organization is Co
 - WebUSB support *(Chrome only; very experimental)*
 - WebAssembly executable support *(very experimental - incomplete)*:
   - [Native](https://developer.mozilla.org/en-US/docs/WebAssembly)
-  - [WASI](https://wasi.dev/)
-  - [Emscripten](https://emscripten.org/)
-  - [AssemblyScript](https://www.assemblyscript.org/)
+  - [WIP] [WASI](https://wasi.dev/)
+  - [WIP] [Emscripten](https://emscripten.org/)
+  - [WIP] [AssemblyScript](https://www.assemblyscript.org/)
 - Decentralized:
   - Open source to run your own copy
   - Backup site hosted on IPFS
-    - *(soon, there are still some issues to resolve)*
+    - *(soon, there are still some issues to resolve)* 😅
 - Developer-friendly:
-  - Easily scriptable and hookable ecosystem of modules
+  - Easily scriptable
+  - Install nearly any browser package from npm
   - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
 
 </details>
@@ -158,6 +164,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 - Switch to another network: `account chain polygon`, `account chain bsc`, `account chain 0x2`
 - Interact with a smart contract: `contract --help`
 - 🎉 Fire the Confetti Gun: `confetti`
+- See the list of [official apps](#official-apps)
 
 </details>
 
@@ -205,11 +212,11 @@ Web3os scripts (.sh) are a simple line-by-line execution, while Javascript (.js)
 
 To run a web3os script: `sh /path/to/script.sh`
 
-- Or from an app: `globalThis.Kernel.executeScript('/path/to/script.sh')`
+- Or from an app: `window.Kernel.executeScript('/path/to/script.sh')`
 
 To run a Javascript script: `eval /path/to/script.js`
 
-- Or from an app: `globalThis.Kernel.execute('eval /path/to/script.js')`
+- Or from an app: `window.Kernel.execute('eval /path/to/script.js')`
 
 </details>
 
@@ -242,6 +249,19 @@ This means you can attempt to install any package from npm using a CDN such as [
 
 </details>
 
+## Official Apps
+
+<details>
+<summary><strong>Expand Official Apps</strong></summary>
+
+---
+
+- [@web3os-apps/doom](https://npmjs.org/@web3os-apps/doom)
+- [@web3os-apps/wolfenstein](https://npmjs.org/@web3os-apps/wolfenstein)
+- [@web3os-apps/minipaint](https://npmjs.org/@web3os-apps/minipaint)
+
+</details>
+
 ## Kernel Interface
 
 <details>
@@ -253,40 +273,40 @@ This (and everything else) is subject to change before version 1.0.
 
 Also, expect undocumented features for now.
 
-`globalThis.Kernel.modules` = { name: app }
+`window.Kernel.modules` = { name: app }
 
 - Contains all apps registered in the kernel
-- e.g., `globalThis.Kernel.modules.desktop.run()`
+- e.g., `window.Kernel.modules.desktop.run()`
 
-`globalThis.Kernel.wallet.web3` = :Web3Provider
+`window.Kernel.wallet.web3` = :Web3Provider
 
 - The web3 provider setup with the `account` command
 
-`globalThis.Kernel.wallet.account` = { address: '0x..', chainId: 1 }
+`window.Kernel.wallet.account` = { address: '0x..', chainId: 1 }
 
 - You may also interact directly with the account app.
-  - e.g., `globalThis.Kernel.modules.account.connect()`
-  - e.g., `globalThis.Kernel.modules.account.account.address`
+  - e.g., `window.Kernel.modules.account.connect()`
+  - e.g., `window.Kernel.modules.account.account.address`
 
-`globalThis.Kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
+`window.Kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
 
 - Convenience method to create a sweetalert2 dialog with appropriate defaults
-- e.g., `globalThis.Kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
+- e.g., `window.Kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
 
-`globalThis.Kernel.set` ('namespace', 'key', :any)
+`window.Kernel.set` ('namespace', 'key', :any)
 
 - Sets a value in the kernel "memory" - persists in localStorage
-- e.g., `globalThis.Kernel.set('user', 'name', 'hosk')`
-- e.g., `globalThis.Kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
+- e.g., `window.Kernel.set('user', 'name', 'hosk')`
+- e.g., `window.Kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
 
-`globalThis.Kernel.get` ('namespace', 'key') = value
+`window.Kernel.get` ('namespace', 'key') = value
 
 - Gets a value from the kernel "memory" - loaded from localStorage
-- e.g., `globalThis.Kernel.get('user')`
-- e.g., `globalThis.Kernel.get('user', 'name')`
-- e.g., `const { color } = globalThis.Kernel.get('myapp', 'theme')`
+- e.g., `window.Kernel.get('user')`
+- e.g., `window.Kernel.get('user', 'name')`
+- e.g., `const { color } = window.Kernel.get('myapp', 'theme')`
 
-`globalThis.Kernel.appWindow` (options) = { options, window }
+`window.Kernel.appWindow` (options) = { options, window }
 
 - Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
 
