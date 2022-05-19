@@ -77,18 +77,22 @@ const showBootIntro = () => {
   log(colors.heading.success.bold(`\t    web3os kernel v${pkg.version}    `))
   log(colors.warning('\t⚠           ALPHA          ⚠\n'))
 
+  if (!localStorage.getItem('web3os_first_boot_complete')) {
+    log(colors.danger('⚠ The first boot will take the longest, please be patient! ⚠\n'))
+  }
+
   if (navigator.deviceMemory) log(`${colors.info('RAM >=')} ${colors.muted(navigator.deviceMemory + 'GB')}`)
   if (navigator.userAgentData) {
     const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
     const browser = `${brand} v${version}`
-    log(`${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform)}`)
-    log(`${colors.info('Browser:')} ${colors.muted(browser)}`)
+
+    log(`${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform)} \t ${colors.info('Browser:')} ${colors.muted(browser)}`)
   }
 
-  log(colors.warning(`\nIf things get wacky, just ${colors.bold.underline('reboot')}!`))
-  log(colors.warning("If they're still wacky, clear local storage!\n"))
+  // log(colors.warning(`\nIf things get wacky, just ${colors.bold.underline('reboot')}!`))
+  // log(colors.warning("If they're still wacky, clear local storage!\n"))
 
-  log(colors.danger(`Type ${colors.bold.underline('help')} for help`))
+  log(colors.danger(`\nType ${colors.bold.underline('help')} for help`))
   log(colors.gray(`Type ${colors.bold.underline('markdown /docs/README.md')} to view the README`))
   log(colors.info(`Type ${colors.bold.underline('desktop')} to launch the desktop`))
   log(colors.primary(`Type ${colors.bold.underline('account connect')} to connect your wallet`))
@@ -998,6 +1002,7 @@ export async function boot () {
     if (Notification?.permission === 'default') Notification.requestPermission()
     if (Notification?.permission === 'denied') log(colors.warning('Notification permission denied'))
 
+    localStorage.setItem('web3os_first_boot_complete', 'true')
     await autostart()
     await execute('confetti --startVelocity 90 --particleCount 150')
     topbar.hide()
