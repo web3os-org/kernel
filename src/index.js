@@ -52,7 +52,9 @@ export const builtinModules = [
 
 export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/doom',
-  'https://unpkg.com/@web3os-apps/wolfenstein'
+  'https://unpkg.com/@web3os-apps/wolfenstein',
+  'https://unpkg.com/@web3os-apps/minipaint',
+  'https://unpkg.com/@web3os-apps/rubikscube',
 ]
 
 // TODO: i18n this (and everything else)
@@ -75,19 +77,29 @@ const showBootIntro = () => {
   log(colors.heading.success.bold(`\t    web3os kernel v${pkg.version}    `))
   log(colors.warning('\t⚠           ALPHA          ⚠\n'))
 
-  log(colors.warning(`If things get wacky, just ${colors.bold.underline('reboot')}!`))
+  if (navigator.deviceMemory) log(`${colors.info('RAM >=')} ${colors.muted(navigator.deviceMemory + 'GB')}`)
+  if (navigator.userAgentData) {
+    const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
+    const browser = `${brand} v${version}`
+    log(`${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform)}`)
+    log(`${colors.info('Browser:')} ${colors.muted(browser)}`)
+  }
+
+  log(colors.warning(`\nIf things get wacky, just ${colors.bold.underline('reboot')}!`))
   log(colors.warning("If they're still wacky, clear local storage!\n"))
 
   log(colors.danger(`Type ${colors.bold.underline('help')} for help`))
   log(colors.gray(`Type ${colors.bold.underline('markdown /docs/README.md')} to view the README`))
   log(colors.info(`Type ${colors.bold.underline('desktop')} to launch the desktop`))
   log(colors.primary(`Type ${colors.bold.underline('account connect')} to connect your wallet`))
-  log(colors.success(`Type ${colors.bold.underline('ls /bin')} to see all commands`))
-  log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun\n`))
+  log(colors.success(`Type ${colors.bold.underline('files /bin')} to explore all executable commands`))
+  log(colors.warning(`Type ${colors.bold.underline('lsmod')} to list all kernel modules`))
+  log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun 🎉`))
+  log(colors.muted(`Type ${colors.bold.underline('clip <command>')} to copy the output of a command to the clipboard\n`))
 
-  log('Learn how to interact with smart contracts:')
-  log(`\t${colors.blue.underline('contract --help')}`)
-  log(`\t${colors.blue('https://github.com/web3os-org/sample-scripts')}\n`)
+  // log('Learn how to interact with smart contracts:')
+  // log(`\t${colors.blue.underline('contract --help')}`)
+  // log(`\t${colors.blue('https://github.com/web3os-org/sample-scripts')}\n`)
 
   // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
@@ -677,6 +689,7 @@ async function registerKernelBins () {
     description: 'Copy output of command to clipboard',
     help: 'Usage: clip <command>',
     run: async (term, context) => {
+      if (!context || context === '') return
       const parts = context.split(' ')
       const mod = modules[parts[0]]
       const result = await mod.run(term, parts.splice(1).join(' '))
@@ -935,7 +948,7 @@ export async function boot () {
   // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
     const closeSplash = await showSplash()
-    setTimeout(closeSplash, 500) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
+    setTimeout(closeSplash, 1000) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
     document.querySelector('#terminal').style.display = 'block'
     setTimeout(globalThis.Terminal?.fit, 50)
     globalThis.Terminal?.focus()

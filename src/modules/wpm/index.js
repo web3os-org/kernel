@@ -15,8 +15,10 @@ export const help = `
     wpm <command> <args> [options]
 
   Commands:
-    install <url>          Install the package located at <url>
+    install <name>         Install package named <name>
+    install <url>          Install package located at <url>
     uninstall <name>       Uninstall package
+    update <name>          Update package
 
   Options:
     --help                 Show this help message
@@ -54,12 +56,14 @@ export async function install (url, args = { warn: true }) {
   if (!url) throw new Error('Invalid package name or URL')
 
   if (!url.match(/^(http|ftp).*\:/i)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
-  const pkgJson = await (await fetch(`${url}/package.json`)).json()
+  const pkgJson = await (await fetch(`${url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
   const name = pkgJson.name
   const pkgName = name.split('/')
   const main = args['--main'] || pkgJson.module || pkgJson.main || 'index.js'
   const type = args['--umd'] ? 'umd' : 'es'
   const mainUrl = `${url}/${main}`
+
+  if (kernel.modules[name]) await uninstall(name)
 
   let mod
   try {
@@ -74,7 +78,7 @@ export async function install (url, args = { warn: true }) {
         mod = await import(/* webpackIgnore: true */ mainUrl)
     }
   } catch (err) {
-    console.error('IMPORT ERROR:', { name, type, main, mod, pkgJson })
+    console.error('IMPORT ERROR:', err, { name, type, main, mod, pkgJson })
   }
 
   if (pkgName.length > 1) {
@@ -95,12 +99,12 @@ export async function install (url, args = { warn: true }) {
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(packages, null, 2))
 
   const description = pkgJson.description || mod.description
-  const help = pkgJson.help || mod.help
+  const help = pkgJson.help || mod?.help
   const modInfo = { description, help, name, url, pkgJson }
   await kernel.loadModule(mod, modInfo)
   await mod.web3osInstall?.(modInfo)
 
-  terminal.log(`Installed ${modInfo.name}@${pkgJson.version}`)
+  kernel.execute(`snackbar Installed ${modInfo.name}@${pkgJson.version}`)
   return modInfo
 }
 
@@ -112,13 +116,51 @@ export async function uninstall (name, args = {}) {
   const newPackages = packages.filter(p => p !== `${pkgJson.name}@${pkgJson.version}`)
   kernel.fs.writeFileSync('/config/packages', JSON.stringify(newPackages, null, 2))
   if (kernel.fs.existsSync(`/bin/${pkgJson.name}`)) kernel.fs.unlinkSync(`/bin/${pkgJson.name}`)
+  // TODO: Delete package folder
   delete kernel.modules[pkgJson.name]
 }
 
 export async function update (name, args) {
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-  const pkg = packages.find(p => p.exe === name)
+  const nameRegex = new RegExp(`^${name}@`)
+  const pkg = packages.find(p => p.match(nameRegex))
+  console.log({ packages, pkg, name })
   if (!pkg) throw new Error('Package not found')
+
+  const installedPkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
+  const { web3osData } = installedPkgJson
+  console.log({ web3osData })
+  const candidatePkgJson = await (await fetch(`${web3osData.url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
+
+  const { version: installedVersion } = installedPkgJson
+  const { version: candidateVersion } = candidatePkgJson
+
+  console.log({ installedVersion, candidateVersion })
+  if (installedVersion === candidateVersion) throw new Error('Package is already up-to-date')
+
+  await uninstall(name)
+
+  const main = candidatePkgJson.web3osData?.main || candidatePkgJson.main || 'index.js'
+  const type = candidatePkgJson.web3osData?.type || 'es'
+  const mainUrl = `${DefaultPackageRegistry}/${main}`
+
+  let mod
+  try {
+    switch (type) {
+      case 'umd':
+        mod = await kernel.importUMDModule(mainUrl)
+        break
+      case 'systemjs':
+        mod = await globalThis.System.import(mainUrl)
+        break
+      default:
+        mod = await import(/* webpackIgnore: true */ mainUrl)
+    }
+
+    console.log({ main, type, mod })
+  } catch (err) {
+    console.error('IMPORT ERROR:', err, { name, type, main, mod })
+  }
 
   // const updatedPackages = packages.filter(p => p.exe !== pkg.exe)
   // const { name, exe, version, description } = fetchedPkg
