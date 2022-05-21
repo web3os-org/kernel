@@ -24,6 +24,7 @@ export const help = `
     --help                 Show this help message
     --main                 Override a package's main entrypoint
     --registry             Package registry {https://unpkg.com}
+    --system               Install the package as a SystemJS module
     --umd                  Install the package as a UMD module
     --version              Show version information
 `
@@ -32,6 +33,7 @@ const spec = {
   '--help': Boolean,
   '--main': String,
   '--registry': String,
+  '--system': Boolean,
   '--umd': Boolean,
   '--version': Boolean,
 
@@ -59,9 +61,12 @@ export async function install (url, args = { warn: true }) {
   const pkgJson = await (await fetch(`${url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
   const name = pkgJson.name
   const pkgName = name.split('/')
-  const main = args['--main'] || pkgJson.module || pkgJson.main || 'index.js'
-  const type = args['--umd'] ? 'umd' : 'es'
+  const main = args['--main'] || pkgJson.browser || pkgJson.module || pkgJson.main || 'index.js'
   const mainUrl = `${url}/${main}`
+
+  let type = 'es'
+  if (args['--umd']) type = 'umd'
+  if (args['--system']) type = 'system'
 
   if (kernel.modules[name]) await uninstall(name)
 
@@ -80,6 +85,8 @@ export async function install (url, args = { warn: true }) {
   } catch (err) {
     console.error('IMPORT ERROR:', err, { name, type, main, mod, pkgJson })
   }
+
+  if (!mod) throw new Error('Failed to import module')
 
   if (pkgName.length > 1) {
     if (!kernel.fs.existsSync(`/var/packages/${pkgName[0]}`)) kernel.fs.mkdirSync(`/var/packages/${pkgName[0]}`)
@@ -121,56 +128,60 @@ export async function uninstall (name, args = {}) {
 }
 
 export async function update (name, args) {
-  const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-  const nameRegex = new RegExp(`^${name}@`)
-  const pkg = packages.find(p => p.match(nameRegex))
-  console.log({ packages, pkg, name })
-  if (!pkg) throw new Error('Package not found')
-
-  const installedPkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
-  const { web3osData } = installedPkgJson
-  console.log({ web3osData })
-  const candidatePkgJson = await (await fetch(`${web3osData.url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
-
-  const { version: installedVersion } = installedPkgJson
-  const { version: candidateVersion } = candidatePkgJson
-
-  console.log({ installedVersion, candidateVersion })
-  if (installedVersion === candidateVersion) throw new Error('Package is already up-to-date')
-
-  await uninstall(name)
-
-  const main = candidatePkgJson.web3osData?.main || candidatePkgJson.main || 'index.js'
-  const type = candidatePkgJson.web3osData?.type || 'es'
-  const mainUrl = `${DefaultPackageRegistry}/${main}`
-
-  let mod
-  try {
-    switch (type) {
-      case 'umd':
-        mod = await kernel.importUMDModule(mainUrl)
-        break
-      case 'systemjs':
-        mod = await globalThis.System.import(mainUrl)
-        break
-      default:
-        mod = await import(/* webpackIgnore: true */ mainUrl)
-    }
-
-    console.log({ main, type, mod })
-  } catch (err) {
-    console.error('IMPORT ERROR:', err, { name, type, main, mod })
-  }
-
-  // const updatedPackages = packages.filter(p => p.exe !== pkg.exe)
-  // const { name, exe, version, description } = fetchedPkg
-  // updatedPackages.push({ name, exe, version, description, url: pkg.url })
-  // kernel.fs.writeFileSync('/config/packages', JSON.stringify(updatedPackages, null, 2))
-  // kernel.fs.writeFile(`/var/packages/${exe}`, code)
-
-  // delete kernel.modules[exe]
-  // kernel.loadPackage(exe)
+  return await install(name, args)
 }
+
+// export async function update (name, args) {
+//   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
+//   const nameRegex = new RegExp(`^${name}@`)
+//   const pkg = packages.find(p => p.match(nameRegex))
+//   console.log({ packages, pkg, name })
+//   if (!pkg) throw new Error('Package not found')
+
+//   const installedPkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
+//   const { web3osData } = installedPkgJson
+//   console.log({ web3osData })
+//   const candidatePkgJson = await (await fetch(`${web3osData.url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
+
+//   const { version: installedVersion } = installedPkgJson
+//   const { version: candidateVersion } = candidatePkgJson
+
+//   console.log({ installedVersion, candidateVersion })
+//   if (installedVersion === candidateVersion) throw new Error('Package is already up-to-date')
+
+//   await uninstall(name)
+
+//   const main = candidatePkgJson.web3osData?.main || candidatePkgJson.main || 'index.js'
+//   const type = candidatePkgJson.web3osData?.type || 'es'
+//   const mainUrl = `${DefaultPackageRegistry}/${main}`
+
+//   let mod
+//   try {
+//     switch (type) {
+//       case 'umd':
+//         mod = await kernel.importUMDModule(mainUrl)
+//         break
+//       case 'systemjs':
+//         mod = await globalThis.System.import(mainUrl)
+//         break
+//       default:
+//         mod = await import(/* webpackIgnore: true */ mainUrl)
+//     }
+
+//     console.log({ main, type, mod })
+//   } catch (err) {
+//     console.error('IMPORT ERROR:', err, { name, type, main, mod })
+//   }
+
+//   // const updatedPackages = packages.filter(p => p.exe !== pkg.exe)
+//   // const { name, exe, version, description } = fetchedPkg
+//   // updatedPackages.push({ name, exe, version, description, url: pkg.url })
+//   // kernel.fs.writeFileSync('/config/packages', JSON.stringify(updatedPackages, null, 2))
+//   // kernel.fs.writeFile(`/var/packages/${exe}`, code)
+
+//   // delete kernel.modules[exe]
+//   // kernel.loadPackage(exe)
+// }
 
 export async function run (term, context) {
   terminal = term

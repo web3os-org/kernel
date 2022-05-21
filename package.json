@@ -123,6 +123,7 @@
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "peerjs": "^2.0.0-beta.3",
+    "process": "^0.11.10",
     "remark-html": "^15.0.1",
     "shell-quote": "^1.7.3",
     "simple-uniswap-sdk": "^3.6.2",

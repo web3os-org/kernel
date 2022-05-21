@@ -11,7 +11,8 @@ import { term } from '..'
 let defaults = {
   convertEol: true,
   cursorBlink: true,
-  macOptionIsMeta: true
+  macOptionIsMeta: true,
+  fontSize: 16
 }
 
 class Web3osTerminal extends Terminal {
@@ -119,7 +120,7 @@ class Web3osTerminal extends Terminal {
             } else {
               const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
               const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
-              if (match) exec = path.join(match, exec)
+              if (match) exec = path.join(`${match}/${exec.split(' ')[0]}`) + ' ' + exec.split(' ').slice(1).join(' ')
               this.kernel.execute(exec, options)
             }
           }

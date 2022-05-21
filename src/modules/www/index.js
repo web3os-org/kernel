@@ -34,7 +34,7 @@ export const spec = {
   '--title': String
 }
 
-export async function run (terminal, context) {
+export async function run (terminal, context = '') {
   const { kernel } = terminal
 
   const args = arg(spec, { argv: cliParse(context) })

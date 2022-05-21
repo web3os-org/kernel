@@ -12,6 +12,8 @@
 /* global Kernel, Terminal, System */
 /* global fetch, File, FileReader, localStorage, location, Notification */
 
+import rootPkgJson from '../package.json'
+
 import bytes from 'bytes'
 import colors from 'ansi-colors'
 import columnify from 'columnify'
@@ -35,15 +37,15 @@ import '@material/mwc-snackbar'
 
 import README from '../README.md'
 import AppWindow from './app-window'
-import pkg from '../package.json'
 import theme from './themes/default/index.js'
+
+export const version = rootPkgJson.version
 
 const figletFontName = 'Graffiti'
 
 globalThis.topbar = topbar
 topbar.show()
 
-// TODO: Make this configurable
 export const builtinModules = [
   'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'edit', 'etherscan',
   'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver',
@@ -54,7 +56,7 @@ export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/doom',
   'https://unpkg.com/@web3os-apps/wolfenstein',
   'https://unpkg.com/@web3os-apps/minipaint',
-  'https://unpkg.com/@web3os-apps/rubikscube',
+  'https://unpkg.com/@web3os-apps/rubikscube'
 ]
 
 // TODO: i18n this (and everything else)
@@ -74,23 +76,21 @@ colors.theme(theme)
 
 const showBootIntro = () => {
   log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
-  log(colors.heading.success.bold(`\t    web3os kernel v${pkg.version}    `))
-  log(colors.warning('\t⚠           ALPHA          ⚠\n'))
+  log(colors.heading.success.bold(`\t    web3os kernel v${rootPkgJson.version}    `))
+  log(colors.warning('\t⚠           ALPHA          ⚠'))
+  if (navigator.deviceMemory) log(`\t\t ${colors.info('RAM >=')} ${colors.muted(navigator.deviceMemory + 'GB')}`)
 
-  if (!localStorage.getItem('web3os_first_boot_complete')) {
-    log(colors.danger('⚠ The first boot will take the longest, please be patient! ⚠\n'))
-  }
-
-  if (navigator.deviceMemory) log(`${colors.info('RAM >=')} ${colors.muted(navigator.deviceMemory + 'GB')}`)
   if (navigator.userAgentData) {
     const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
     const browser = `${brand} v${version}`
 
-    log(`${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform)} \t ${colors.info('Browser:')} ${colors.muted(browser)}`)
+    Terminal.write(`${colors.info('Browser:')} ${colors.muted(browser)}`)
+    Terminal.write(`\t${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform || 'Unknown')}\n`)
   }
 
-  // log(colors.warning(`\nIf things get wacky, just ${colors.bold.underline('reboot')}!`))
-  // log(colors.warning("If they're still wacky, clear local storage!\n"))
+  if (!localStorage.getItem('web3os_first_boot_complete')) {
+    log(colors.danger('⚠ The first boot will take the longest, please be patient! ⚠\n'))
+  }
 
   log(colors.danger(`\nType ${colors.bold.underline('help')} for help`))
   log(colors.gray(`Type ${colors.bold.underline('markdown /docs/README.md')} to view the README`))
@@ -101,13 +101,7 @@ const showBootIntro = () => {
   log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun 🎉`))
   log(colors.muted(`Type ${colors.bold.underline('clip <command>')} to copy the output of a command to the clipboard\n`))
 
-  // log('Learn how to interact with smart contracts:')
-  // log(`\t${colors.blue.underline('contract --help')}`)
-  // log(`\t${colors.blue('https://github.com/web3os-org/sample-scripts')}\n`)
-
-  // log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
-
   log(colors.muted('\nBooting...'))
 }
 
@@ -116,7 +110,7 @@ function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(m
 function loadLocalStorage () {
   try {
     const storedMemory = localStorage.getItem('memory')
-    if (!storedMemory) memory = { version: pkg.version }
+    if (!storedMemory) memory = { firstBootVersion: rootPkgJson.version }
     else { memory = JSON.parse(storedMemory) }
   } catch (err) {
     console.error(err)
@@ -690,7 +684,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.clip = {
-    description: 'Copy output of command to clipboard',
+    description: 'Copy return value of command to clipboard',
     help: 'Usage: clip <command>',
     run: async (term, context) => {
       if (!context || context === '') return
@@ -890,7 +884,7 @@ export async function showSplash (msg, options = {}) {
   versionInfo.style.position = 'fixed'
   versionInfo.style.bottom = '0.5rem'
   versionInfo.style.right = '1rem'
-  versionInfo.textContent = `v${pkg.version}`
+  versionInfo.textContent = `v${rootPkgJson.version}`
 
   const container = document.createElement('div')
   container.id = 'web3os-splash'
@@ -968,9 +962,9 @@ export async function boot () {
   figlet.text('web3os', { font: figletFontName }, async (err, data) => {
     if (err) log(err)
     if (data && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
-    else log(`\n${colors.green.bold('web3os')}`)
+    else log(`\n${colors.green.bold('\t\t   web3os')}`)
 
-    console.log(`%cweb3os %c${pkg.version}`, `
+    console.log(`%cweb3os %c${rootPkgJson.version}`, `
       font-family: "Lucida Console", Monaco, monospace;
       font-size: 25px;
       letter-spacing: 2px;
@@ -1035,17 +1029,17 @@ const resetIdleTime = () => {
 }
 
 globalThis.addEventListener('load', resetIdleTime)
-document.addEventListener('mousemove', resetIdleTime)
-document.addEventListener('keydown', resetIdleTime)
-document.addEventListener('keyup', resetIdleTime)
-document.addEventListener('keypress', resetIdleTime)
-document.addEventListener('pointerdown', resetIdleTime)
+globalThis.addEventListener('mousemove', resetIdleTime)
+globalThis.addEventListener('keydown', resetIdleTime)
+globalThis.addEventListener('keyup', resetIdleTime)
+globalThis.addEventListener('keypress', resetIdleTime)
+globalThis.addEventListener('pointerdown', resetIdleTime)
 
 globalThis.global = globalThis.global || globalThis
 
 // Register service worker
-// if ('serviceWorker' in navigator) {
-//   globalThis.addEventListener('load', () => {
-//     navigator.serviceWorker.register('/service-worker.js')
-//   })
-// }
+if ('serviceWorker' in navigator) {
+  globalThis.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+  })
+}

@@ -238,11 +238,15 @@ You may also just use the `import` command to directly import an ES module from 
 This means you can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com). This doesn't mean the package will work as expected, but here are a few examples of npm libraries that can be loaded in web3os:
 
 - [lodash](https://www.npmjs.com/package/lodash)
-  - `wpm install https://unpkg.com/lodash`
+  - `wpm install lodash`
   - This doesn't add an executable, but `_` is now available in the global scope.
 
+- [moment](https://momentjs.com)
+  - `wpm install --umd moment`
+  - `const now = Kernel.modules.moment.run()`
+
 - [umbrellajs](https://umbrellajs.com/)
-  - `wpm install https://unpkg.com/umbrellajs --main umbrella.esm.js`
+  - `wpm install umbrellajs --main umbrella.esm.js`
   - Now you can use it by accessing:
     - `const u = Kernel.modules.umbrellajs.default`
     - `const body = u('body')`
