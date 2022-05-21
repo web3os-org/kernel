@@ -15,9 +15,9 @@ registerRoute(
   // Check to see if the request is a navigation to a new page
   ({ request }) => request.mode === 'navigate',
   // Use a Network First caching strategy
-  new NetworkFirst({
-    // Put all cached files in a cache named 'pages'
-    cacheName: 'pages',
+  new CacheFirst({
+    // Put all cached files in a cache named 'web3os_cache'
+    cacheName: 'web3os_cache',
     plugins: [
       // Ensure that only requests that result in a 200 status are cached
       new CacheableResponsePlugin({
