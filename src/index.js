@@ -48,7 +48,7 @@ topbar.show()
 
 export const builtinModules = [
   'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'edit', 'etherscan',
-  'files', 'flix', 'git', 'gun', 'help', 'ipfs', 'markdown', 'moralis', 'peer', 'ping', 'screensaver',
+  'files', 'flix', 'git', 'help', 'ipfs', 'markdown', 'peer', 'ping', 'screensaver',
   'torrent', 'usb', 'view', 'wasm', 'wpm', 'www'
 ]
 
@@ -56,7 +56,8 @@ export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/doom',
   'https://unpkg.com/@web3os-apps/wolfenstein',
   'https://unpkg.com/@web3os-apps/minipaint',
-  'https://unpkg.com/@web3os-apps/rubikscube'
+  'https://unpkg.com/@web3os-apps/rubikscube',
+  'https://unpkg.com/@web3os-apps/gun',
 ]
 
 // TODO: i18n this (and everything else)
@@ -225,9 +226,14 @@ export async function executeScript (filename, options = {}) {
   }
 }
 
-export async function autostart () {
+export async function autostart (defaultAutoStart) {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', 'alias doom @web3os-org/doom\n#account connect\n#desktop\n#markdown docs/README.md\n') // Setup default autostart.sh
+    defaultAutoStart = defaultAutoStart || `
+      account connect
+      markdown docs/README.md
+    `
+
+    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', defaultAutoStart) // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)

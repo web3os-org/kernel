@@ -1,13 +1,13 @@
 import arg from 'arg'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
-import Moralis from 'moralis'
+// import Moralis from 'moralis'
 
 // Interact with the Moralis instance directly
 // e.g., kernel.modules.moralis.instance.User.current()
 export const instance = Moralis
 
-export const name = 'moralis'
+export const name = 'moralisx'
 export const version = '0.1.0'
 export const description = 'Moralis.io Utility'
 export const help = `

@@ -216,12 +216,23 @@ async function createFileLayer () {
           return kernel.executeScript(data.location)
         case '.js':
           return kernel.execute(`eval ${data.location}`)
+        case '.json':
         case '.txt':
           return kernel.execute(`edit ${data.location}`)
         case '.md':
           return kernel.execute(`markdown ${data.location}`)
+        case '.link':
+          try {
+            const { url, useWeb3osBrowser } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
+            if (!useWeb3osBrowser) globalThis.open(url, '_blank')
+            else kernel.execute(`www ${url}`)
+          } catch (err) {
+            console.error(err)
+            kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
+          }
+          break
         default:
-          if (mime.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
+          if (mime?.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
           kernel.execute(`alert I'm not sure how to handle this file!`)
       }
     })
