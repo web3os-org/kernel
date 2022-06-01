@@ -40,16 +40,13 @@ import AppWindow from './app-window'
 import theme from './themes/default/index.js'
 
 export const version = rootPkgJson.version
-
 const figletFontName = 'Graffiti'
-
 globalThis.topbar = topbar
-topbar.show()
 
 export const builtinModules = [
-  'account', 'avax', 'backend', 'bitcoin', 'confetti', 'contract', 'desktop', 'edit', 'etherscan',
-  'files', 'flix', 'git', 'help', 'ipfs', 'markdown', 'peer', 'ping', 'screensaver',
-  'torrent', 'usb', 'view', 'wasm', 'wpm', 'www'
+  'account', 'backend', 'confetti', 'contract', 'desktop', 'edit',
+  'files', 'help', 'markdown', 'peer', 'ping', 'screensaver',
+  'usb', 'view', 'wasm', 'wpm', 'www'
 ]
 
 export const defaultPackages = [
@@ -57,7 +54,7 @@ export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/wolfenstein',
   'https://unpkg.com/@web3os-apps/minipaint',
   'https://unpkg.com/@web3os-apps/rubikscube',
-  'https://unpkg.com/@web3os-apps/gun',
+  'https://unpkg.com/@web3os-apps/gun'
 ]
 
 // TODO: i18n this (and everything else)
@@ -69,8 +66,7 @@ const configDescriptions = {
 export const utils = { path: pathUtil }
 export const modules = {}
 export let fs
-export let term
-export let BrowserFS
+let BrowserFS
 let memory
 
 colors.theme(theme)
@@ -219,10 +215,10 @@ export async function executeScript (filename, options = {}) {
   filename = utils.path.resolve(term.cwd, filename)
 
   const value = fs.readFileSync(filename, 'utf8')
-  const commands = value.split('\n')
+  const commands = value.split('\n').map(c => c.trim())
 
   for (const cmd of commands) {
-    if (cmd !== '' && cmd?.[0] !== '#' && cmd?.substr(0, 2) !== '//') await execute(cmd, { terminal: term, doPrompt: false })
+    if (cmd?.trim().length > 0 && cmd?.[0] !== '#' && cmd?.substr(0, 2) !== '//') await execute(cmd, { terminal: term, doPrompt: false })
   }
 }
 
@@ -943,6 +939,7 @@ export async function showSplash (msg, options = {}) {
 }
 
 export async function boot () {
+  topbar.show()
   const bootArgs = new URLSearchParams(globalThis.location.search)
   globalThis.addEventListener('beforeunload', async () => {
     await showSplash('Rebooting...', { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })

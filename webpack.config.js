@@ -8,14 +8,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   mode: process.env.NODE_ENV || 'production',
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
   devServer: {
     hot: 'only',
     static: './dist',
     // devMiddleware: { writeToDisk: true },
     client: {
       logging: 'info',
-      progress: true
+      // progress: true
     },
     server: {
       type: 'https',

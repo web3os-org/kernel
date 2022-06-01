@@ -38,7 +38,18 @@ class Web3osTerminal extends Terminal {
     this.binSearchPath = options.binSearchPath || ['@web3os-core', '@web3os-fs', '@web3os-apps', '@web3os-utils']
     this.debug = options.debug || false
     this.log = this.log.bind(this)
-    if (this.debug) console.log('New Terminal Created:', this, { options })
+    if (this.debug) console.log('New Terminal Created:', this, { options, kernel: this.kernel })
+
+    this.customCommands.push({
+      name: 'env',
+      run: (term, context) => {
+        const [key, value] = context.split(' ')
+        if (this.debug) console.log('ENV:', { key, value })
+        if (value) this.env[key] = isNaN(value) ? value : parseFloat(value)
+        term.log(this.env[key])
+        term.prompt()
+      }
+    })
   }
 
   log (...args) {
@@ -111,15 +122,15 @@ class Web3osTerminal extends Terminal {
         this.write('\n')
         this.unlisten()
 
-        if (this.cmd !== '') {
+        if (this.cmd.trim().length > 0) {
           this.interruptListener = this.onKey(this.interruptHandler.bind(this))
           this.history.push(this.cmd)
 
           let exec = this.aliases[this.cmd] ? this.aliases[this.cmd] : this.cmd
           const options = { terminal: this, doPrompt: true }
 
-          const customCommand = this.customCommands?.find(c => c.name === this.cmd)
-          if (customCommand) customCommand.run(this.cmd)
+          const customCommand = this.customCommands?.find(c => c.name === this.cmd.split(' ')[0])
+          if (customCommand) customCommand.run(this, this.cmd.split(' ').slice(1).join(' '))
           else {
             if (this.cwd.match(/^\/bin\/.+/)) {
               const scopedBin = path.join(this.cwd, this.cmd)
@@ -196,19 +207,43 @@ class Web3osTerminal extends Terminal {
         }
 
         break
+      case 'Home':
+        if (this.cursorPosition === 0) break
+        this.write(escapes.cursor.back(this.cursorPosition))
+        this.cursorPosition = 0
+        break
+      case 'End':
+        if (this.cursorPosition === this.cmd.length) break
+        if (this.cursorPosition > 0) this.write(escapes.cursor.back(this.cursorPosition))
+        this.write(escapes.cursor.forward(this.cmd.length))
+        this.cursorPosition = this.cmd.length
+        break
       case 'Escape':
         this.cmd = ''
         this.cursorPosition = 0
+        this.setOption('cursorStyle', 'block')
         this.writeln('')
         this.prompt()
         break
+      case 'Insert':
+        this.setOption('cursorStyle', this.getOption('cursorStyle') === 'block' ? 'underline' : 'block')
+        break
+      case 'PageUp':
+        this.scrollPages(-1)
+        break
+      case 'PageDown':
+        this.scrollPages(1)
+        break
       default:
-        this.cursorPosition++
         if (printable) {
-          // A bit of wackiness to handle cursor movement
-          this.cmd = `${this.cmd.slice(0, this.cursorPosition - 1)}${key}${this.cmd.slice(this.cursorPosition - 1)}`
+          const replaceMode = this.getOption('cursorStyle') === 'underline'
+          const remainderOffset = replaceMode && this.cursorPosition < this.cmd.length ? this.cursorPosition + 1: this.cursorPosition
+          this.cmd = `${this.cmd.slice(0, this.cursorPosition)}${key}${this.cmd.slice(remainderOffset)}`
+          const remainder = this.cmd.slice(remainderOffset)
+
+          this.cursorPosition++
           this.write(escapes.erase.inLine())
-          this.write(this.cmd.slice(this.cursorPosition - 1))
+          this.write(replaceMode && (this.cmd.length > this.cursorPosition || remainder === '') ? key + remainder : remainder)
           if (this.cmd.length > this.cursorPosition) this.write(escapes.cursor.back(this.cmd.length - this.cursorPosition))
         }
     }
@@ -220,8 +255,8 @@ class Web3osTerminal extends Terminal {
     const keyName = domEvent.key
 
     if (
-      (keyName === 'Escape') ||
-      (domEvent.ctrlKey && keyName.toLowerCase() === 'c')
+      keyName === 'Escape'
+      || domEvent.ctrlKey && keyName.toLowerCase() === 'c'
     ) {
       this.interruptListener.dispose()
       this.cursorPosition = 0
