@@ -444,24 +444,29 @@ export async function toggleLauncher (args) {
         kernel.log(err.message)
         kernel.dialog({ icon: 'error', title: 'Error', text: colors.unstyle(err.message) })
       } finally {
-        launcher.window.close()
+        if (launcher?.window) launcher.window.close()
       }
     })
   }
 
   launcher = kernel.appWindow({
-    title: 'web3os.sh',
+    class: 'no-min no-full web3os-desktop-launcher-window',
+    title: 'Web3oS',
     mount: template,
+    x: 'center',
+    y: 'center',
+    width: '70%',
+    height: '70%',
+    onblur: () => {
+      launcher.window.close()
+    },
     onclose: () => {
       launcher = null
     }
   })
 
   launcher.window.body.style.backgroundImage = `url(${args['--launcher-wallpaper'] || defaultLauncherWallpaper})`
-  // launcher.window.body.style.backgroundAttachment = 'fixed'
-  // launcher.window.body.style.backgroundSize = 'cover'
   launcher.window.body.id = 'web3os-desktop-launcher-wallpaper'
-  launcher.window.maximize()
 }
 
 export async function exitDesktop () {

@@ -18,9 +18,9 @@ import('./index').then(kernel => {
     globalThis.Terminal.focus()
 
     kernel.boot()
+
+    if (document.querySelector('#web3os-desktop')) document.querySelector('#terminal').style.display = 'none'
   })
 })
 
-if (module.hot) {
-  module.hot.accept()
-}
+if (module.hot) module.hot.accept()
