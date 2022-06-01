@@ -1013,19 +1013,6 @@ export async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Integrate basic wallet functionality within the kernel
-const kernelWalletInterface = {
-  get account () {
-    return modules.account?.account
-  },
-
-  get web3 () {
-    return modules.account?.web3
-  }
-}
-
-export const wallet = kernelWalletInterface
-
 // Setup screensaver interval
 let idleTimer
 const resetIdleTime = () => {
