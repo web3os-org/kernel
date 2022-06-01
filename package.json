@@ -6,6 +6,7 @@
   "version": "0.3.4",
   "license": "MIT",
   "main": "dist/kernel.js",
+  "module": "src/index.js",
   "author": {
     "name": "Jay Mathis",
     "email": "code@mathis.network",
