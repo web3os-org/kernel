@@ -6,7 +6,7 @@
 -Hal Finney
 
 [![Launch web3os.sh](https://img.shields.io/badge/launch-web3os.sh-blue?style=for-the-badge)](https://web3os.sh)
-[![Launch web3os.sh on IPFS](https://img.shields.io/badge/launch-web3os%20on%20ipfs-silver?style=for-the-badge)](https://ipfs.fleek.co/ipfs/QmRQrbvvH22sCioL7RbhPNVrXg65mQ2BEGs8pxKJoWVHe3/)
+[![Launch web3os.sh on IPFS](https://img.shields.io/badge/launch-web3os%20on%20ipfs-silver?style=for-the-badge)](https://ipfs.io/ipfs/QmRQrbvvH22sCioL7RbhPNVrXg65mQ2BEGs8pxKJoWVHe3/)
 [![Launch web3os.sh on Fleek](https://img.shields.io/badge/launch-web3os%20on%20Fleek-silver?style=for-the-badge)](https://web3os.on.fleek.co)
 
 ---

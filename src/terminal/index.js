@@ -108,6 +108,7 @@ class Web3osTerminal extends Terminal {
             this.cmd = ''
             this.write('^C\n')
             this.cursorPosition = 0
+            this.historyPosition = 0
             return this.prompt()
           }
 
@@ -182,14 +183,22 @@ class Web3osTerminal extends Terminal {
         break
       case 'ArrowUp':
         if (this.history.length > 0) this.historyPosition += 1
-        const previousCommand = this.history[this.history.length - this.historyPosition]
+        if (this.historyPosition > this.history.length) this.historyPosition = 0
+        if (this.historyPosition === 0 && this.cmd.length > 0) {
+          this.cmd = ''
+          this.write(escapes.cursor.back(this.cursorPosition))
+          this.write(escapes.erase.inLine())
+          this.cursorPosition = 0
+          break
+        }
 
+        const previousCommand = this.history[this.historyPosition - 1]
         if (previousCommand) {
-          this.write(escapes.cursor.back(this.cmd.length))
+          if (this.cursorPosition > 0) this.write(escapes.cursor.back(this.cmd.length))
           this.write(escapes.erase.inLine())
           this.write(previousCommand)
           this.cmd = previousCommand
-          this.cursorPosition = previousCmd.length
+          this.cursorPosition = this.cmd.length
         } else {
           this.historyPosition = 0
         }
@@ -197,15 +206,24 @@ class Web3osTerminal extends Terminal {
         break
       case 'ArrowDown':
         if (this.history.length > 0) this.historyPosition -= 1
-        if (this.historyPosition < 0) this.historyPosition = 0
-        const nextCommand = this.history[this.history.length - this.historyPosition]
+        if (this.historyPosition < 0) this.historyPosition = this.history.length
+        if (this.historyPosition === 0 && this.cmd.length > 0) {
+          this.cmd = ''
+          this.write(escapes.cursor.back(this.cursorPosition))
+          this.write(escapes.erase.inLine())
+          this.cursorPosition = 0
+          break
+        }
 
+        const nextCommand = this.history[this.historyPosition - 1]
         if (nextCommand) {
-          this.cmd.split('').forEach(() => this.write('\b \b'))
+          if (this.cursorPosition > 0) this.write(escapes.cursor.back(this.cmd.length))
+          this.write(escapes.erase.inLine())
           this.write(nextCommand)
           this.cmd = nextCommand
+          this.cursorPosition = this.cmd.length
         } else {
-          this.historyPosition = this.history.length
+          this.historyPosition = 0
         }
 
         break
@@ -261,6 +279,7 @@ class Web3osTerminal extends Terminal {
       || domEvent.ctrlKey && keyName.toLowerCase() === 'c'
     ) {
       this.interruptListener.dispose()
+      this.historyPosition = 0
       this.cursorPosition = 0
       this.cmd = ''
       this.write('^C\n')
