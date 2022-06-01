@@ -222,13 +222,8 @@ export async function executeScript (filename, options = {}) {
   }
 }
 
-export async function autostart (defaultAutoStart) {
+export async function autostart (defaultAutoStart = '') {
   try {
-    defaultAutoStart = defaultAutoStart || `
-      account connect
-      markdown docs/README.md
-    `
-
     if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', defaultAutoStart) // Setup default autostart.sh
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
