@@ -30,9 +30,6 @@ module.exports = {
     asyncWebAssembly: true
     // lazyCompilation: true
   },
-  // externals: {
-  //   'wasmer_wasi_js_bg.wasm': true
-  // },
   plugins: [
     new WebpackBundleAnalyzer(),
 

@@ -55,6 +55,7 @@
     "abort-controller": "^3.0.0",
     "animate.css": "^4.1.1",
     "ansi-colors": "^4.1.1",
+    "ansi-escape-sequences": "^6.2.1",
     "arg": "^5.0.1",
     "as-bind": "^0.8.2",
     "avalanche": "^3.13.3",

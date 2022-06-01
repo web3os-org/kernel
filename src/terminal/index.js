@@ -1,5 +1,6 @@
 import path from 'path'
 import colors from 'ansi-colors'
+import escapes from 'ansi-escape-sequences'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { AttachAddon } from 'xterm-addon-attach'
@@ -19,18 +20,25 @@ class Web3osTerminal extends Terminal {
   cmd = ''
   cwd = '/'
   env = {}
+  debug = false
   aliases = {}
-  customCommands = []
-  historyPosition = 0
-  binSearchPath = ['@web3os-core', '@web3os-fs', '@web3os-apps', '@web3os-utils']
-  promptFormat = `${colors.blue('{cwd}')}${colors.green('#')} `
   history = []
+  binSearchPath = []
+  customCommands = []
+  cursorPosition = 0
+  historyPosition = 0
+  promptFormat = `<${colors.cyan('3os')}>${colors.blue('{cwd}')}${colors.green('#')} `
+
+  escapes = escapes
 
   constructor (options = {}) {
-    super(options)
+    super(options) // 🦸‍♂️⚙
     this.kernel = options.kernel || globalThis.Kernel
     this.customCommands = options.customCommands || []
+    this.binSearchPath = options.binSearchPath || ['@web3os-core', '@web3os-fs', '@web3os-apps', '@web3os-utils']
+    this.debug = options.debug || false
     this.log = this.log.bind(this)
+    if (this.debug) console.log('New Terminal Created:', this, { options })
   }
 
   log (...args) {
@@ -41,13 +49,14 @@ class Web3osTerminal extends Terminal {
 
     return args
   }
+
+  promptCompile () {
+    return this.promptFormat.replace(/\{cwd\}/g, colors.muted(this.cwd))
+  }
   
   prompt (value) {
     if (value) this.promptFormat = value
-    const format = this.promptFormat
-      .replace(/\{cwd\}/g, colors.muted(this.cwd))
-
-    this.write(format)
+    this.write(this.promptCompile())
     this.listen()
   }
 
@@ -74,8 +83,10 @@ class Web3osTerminal extends Terminal {
     if (!key) return
     const keyName = domEvent.key
     const printable = this.isPrintable(domEvent)
+    const cursorPosition = this.cursorPosition
+    const cmd = this.cmd
 
-    // console.log({ keyName, domEvent, key, printable })
+    if (this.debug) console.log({ cursorPosition, cmd, keyName, domEvent, key, printable })
 
     if (domEvent.ctrlKey) {
       switch (keyName.toLowerCase()) {
@@ -85,6 +96,7 @@ class Web3osTerminal extends Terminal {
           if (this.getSelection() === '') {
             this.cmd = ''
             this.write('^C\n')
+            this.cursorPosition = 0
             return this.prompt()
           }
 
@@ -98,7 +110,6 @@ class Web3osTerminal extends Terminal {
       case 'Enter':
         this.write('\n')
         this.unlisten()
-        this.historyPosition = 0
 
         if (this.cmd !== '') {
           this.interruptListener = this.onKey(this.interruptHandler.bind(this))
@@ -129,16 +140,38 @@ class Web3osTerminal extends Terminal {
         }
 
         this.cmd = ''
+        this.cursorPosition = 0
+        this.historyPosition = 0
+        break
+      case 'Delete':
+        if (this.cursorPosition === this.cmd.length) break
+        this.cmd = `${this.cmd.slice(0, this.cursorPosition)}${this.cmd.slice(this.cursorPosition + 1)}`
+        this.write(escapes.erase.inLine())
+        this.write(this.cmd.slice(this.cursorPosition))
+        if (this.cmd.length > this.cursorPosition) this.write(escapes.cursor.back(this.cmd.length - this.cursorPosition))
         break
       case 'Backspace':
-        if (this.cmd === '') break
-        this.cmd = this.cmd.slice(0, -1)
-        this.write('\b \b')
+        if (this.cursorPosition === 0) break
+        this.cursorPosition--
+        this.write(escapes.cursor.back())
+        this.cmd = `${this.cmd.slice(0, this.cursorPosition)}${this.cmd.slice(this.cursorPosition + 1)}`
+        this.write(escapes.erase.inLine())
+        this.write(this.cmd.slice(this.cursorPosition))
+        if (this.cmd.length > this.cursorPosition) this.write(escapes.cursor.back(this.cmd.length - this.cursorPosition))
+        break
+      case 'ArrowLeft':
+        if (this.cursorPosition === 0) break
+        this.cursorPosition--
+        this.write(key)
+        break
+      case 'ArrowRight':
+        if (this.cursorPosition >= this.cmd.length) break
+        this.cursorPosition++
+        this.write(key)
         break
       case 'ArrowUp':
         if (this.history.length > 0) this.historyPosition += 1
         const previousCommand = this.history[this.history.length - this.historyPosition]
-        // console.log({ previousCommand, history: this.history, historyPosition: this.historyPosition, cmd: this.cmd })
 
         if (previousCommand) {
           this.cmd.split('').forEach(() => this.write('\b \b'))
@@ -165,13 +198,18 @@ class Web3osTerminal extends Terminal {
         break
       case 'Escape':
         this.cmd = ''
+        this.cursorPosition = 0
         this.writeln('')
         this.prompt()
         break
       default:
+        this.cursorPosition++
         if (printable) {
-          this.cmd += key
-          this.write(key)
+          // A bit of wackiness to handle cursor movement
+          this.cmd = `${this.cmd.slice(0, this.cursorPosition - 1)}${key}${this.cmd.slice(this.cursorPosition - 1)}`
+          this.write(escapes.erase.inLine())
+          this.write(this.cmd.slice(this.cursorPosition - 1))
+          if (this.cmd.length > this.cursorPosition) this.write(escapes.cursor.back(this.cmd.length - this.cursorPosition))
         }
     }
   }
@@ -186,6 +224,7 @@ class Web3osTerminal extends Terminal {
       (domEvent.ctrlKey && keyName.toLowerCase() === 'c')
     ) {
       this.interruptListener.dispose()
+      this.cursorPosition = 0
       this.cmd = ''
       this.write('^C\n')
       return this.prompt()

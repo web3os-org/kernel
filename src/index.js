@@ -952,7 +952,7 @@ export async function boot () {
   // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
     const closeSplash = await showSplash()
-    setTimeout(closeSplash, 1000) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
+    setTimeout(closeSplash, 1500) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
     document.querySelector('#terminal').style.display = 'block'
     setTimeout(globalThis.Terminal?.fit, 50)
     globalThis.Terminal?.focus()
