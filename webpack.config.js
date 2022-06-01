@@ -120,20 +120,20 @@ module.exports = {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: 'asset/resource'
       },
-      {
-        test: /\.(png|jpe?g|webp|svg|)$/i,
-        use: [
-          {
-            loader: 'img-optimize-loader',
-            options: {
-              compress: {
-                mode: 'lossless',
-                disableOnDevelopment: true
-              }
-            }
-          }
-        ]
-      }
+      // {
+      //   test: /\.(png|jpe?g|webp|svg|)$/i,
+      //   use: [
+      //     {
+      //       loader: 'img-optimize-loader',
+      //       options: {
+      //         compress: {
+      //           mode: 'lossless',
+      //           disableOnDevelopment: true
+      //         }
+      //       }
+      //     }
+      //   ]
+      // }
     ]
   }
 }
