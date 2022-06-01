@@ -5,7 +5,9 @@
 *"The computer can be used as a tool to liberate and protect people, rather than to control them."*
 -Hal Finney
 
-[![Launch web3os.sh](https://img.shields.io/badge/launch-web3os-blue?style=for-the-badge)](https://web3os.sh)
+[![Launch web3os.sh](https://img.shields.io/badge/launch-web3os.sh-blue?style=for-the-badge)](https://web3os.sh)
+[![Launch web3os.sh on IPFS](https://img.shields.io/badge/launch-web3os%20on%20ipfs-silver?style=for-the-badge)](https://ipfs.fleek.co/ipfs/QmRQrbvvH22sCioL7RbhPNVrXg65mQ2BEGs8pxKJoWVHe3/)
+[![Launch web3os.sh on Fleek](https://img.shields.io/badge/launch-web3os%20on%20Fleek-silver?style=for-the-badge)](https://web3os.on.fleek.co)
 
 ---
 
@@ -33,12 +35,14 @@
 [![Watchers](https://img.shields.io/github/watchers/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
 [![Stars](https://img.shields.io/github/stars/web3os-org/kernel?style=social)](https://github.com/web3os-org/kernel)
 
-A crypto-enhanced web-based operating system empowering users with a variety of uses:
+A decentralized web-based operating system for the next web, empowering users and developers to:
 
 - Easily install virtually any npm package
-- Write scripts using these packages to perform any tasks
-- Write full applications that hook into the Web3OS Kernel
-- Write modules that can be imported to alter how the system operates
+- Customize the OS to suit your individual needs
+- Write scripts to perform particular tasks
+- Write full applications that can create windows
+- Interact with crypto wallets and smart contracts
+- Utilize a number of P2P protocols within the browser
 
 The project is still very young, and proper documentation and organization is Coming Soon™.
 
@@ -97,8 +101,8 @@ The project is still very young, and proper documentation and organization is Co
   - [WIP] [AssemblyScript](https://www.assemblyscript.org/)
 - Decentralized:
   - Open source to run your own copy
+  - Main site hosted on [Fleek](https://fleek.co)
   - Backup site hosted on IPFS
-    - *(soon, there are still some issues to resolve)* 😅
 - Developer-friendly:
   - Easily scriptable
   - Install nearly any browser package from npm
@@ -355,9 +359,6 @@ For example, to create an application with [snowpack](https://www.snowpack.dev):
 ```js
 import pkg from './package.json'
 
-export const name = pkg.name
-export const version = pkg.version
-export const description = pkg.description
 export const help = `
   This app enables developers to Do An App!
 
@@ -369,14 +370,15 @@ export async function run (terminal, context) {
   console.log(context) // the plain string of arguments passed to your app
   terminal.log('Thanks for checking out myapp!')
   terminal.log(context)
+
+  // You may also access the web3os system terminal
+  window.Terminal.log('This is output to the root globalThis.Terminal')
 }
 ```
 
-A good example of some more full-featured apps can be found at:
+Apps can be written and bundled a number of different ways, for some ideas check out:
 
-[src/modules/confetti/index.js](https://github.com/web3os-org/kernel/blob/master/src/modules/confetti/index.js)
-
-[]
+[@web3os-apps](https://github.com/web3os-org/web3os-apps)
 
 </details>
 

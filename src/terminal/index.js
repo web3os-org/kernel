@@ -185,9 +185,11 @@ class Web3osTerminal extends Terminal {
         const previousCommand = this.history[this.history.length - this.historyPosition]
 
         if (previousCommand) {
-          this.cmd.split('').forEach(() => this.write('\b \b'))
+          this.write(escapes.cursor.back(this.cmd.length))
+          this.write(escapes.erase.inLine())
           this.write(previousCommand)
           this.cmd = previousCommand
+          this.cursorPosition = previousCmd.length
         } else {
           this.historyPosition = 0
         }

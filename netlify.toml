@@ -1,3 +1,4 @@
+# Migrated to Fleek officially, but leaving this for Netlify deploys
 [build]
   command = "yarn build"
   publish = "dist"
