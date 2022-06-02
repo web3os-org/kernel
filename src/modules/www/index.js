@@ -136,7 +136,7 @@ export async function run (terminal, context = '') {
   browser.appendChild(toolbar)
   browser.appendChild(iframe)
 
-  const appWindow = kernel.appWindow({
+  const appWindow = kernel.windows.create({
     mount: browser,
     title: args['--title'] || `WWW: ${url}`,
     class: ['web3os-window', 'web3os-www-browser'],

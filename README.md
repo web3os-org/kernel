@@ -37,7 +37,7 @@
 
 A decentralized web-based operating system for the next web, empowering users and developers to:
 
-- Easily install virtually any npm package
+- Easily install virtually any npm browser package
 - Customize the OS to suit your individual needs
 - Write scripts to perform particular tasks
 - Write full applications that can create windows
@@ -49,7 +49,6 @@ The project is still very young, and proper documentation and organization is Co
 ---
 
 - [Features](#features)
-- [Footage](#footage)
 - [Disclaimer](#disclaimer)
 - [Help Wanted](#help-wanted)
 - [User Quickstart](#user-quickstart)
@@ -82,11 +81,10 @@ The project is still very young, and proper documentation and organization is Co
 - Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
-  - Built-in IPFS video search (WIP) and player; type `help flix`
+  - Built-in IPFS video search (WIP) and player; type `flix`
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Decentralized messaging support with [Mailchain](https://mailchain.xyz)
-- IPFS integration with [ipfs-core](https://github.com/ipfs/js-ipfs)
 - Git integration with [isomorphic-git](https://isomorphic-git.org/)
 - GunJS integration with [GUN](https://gun.eco)
 - Moralis integration with [Moralis](https://moralis.io)
@@ -107,15 +105,6 @@ The project is still very young, and proper documentation and organization is Co
   - Easily scriptable
   - Install nearly any browser package from npm
   - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
-
-</details>
-
-## Footage
-
-<details open>
-<summary><strong>Expand Footage</strong></summary>
-
-Here's a quick video showcasing a few of the features: [web3os alpha demo](https://youtu.be/JsyJ8mbWMxc) [![Watchers](https://img.shields.io/youtube/views/JsyJ8mbWMxc?style=social)](https://youtu.be/JsyJ8mbWMxc)
 
 </details>
 
@@ -141,6 +130,8 @@ It's going to take people far smarter than me to make this project achieve its f
 
 Please consider digging into the code and see what you can come up with and submit a PR!
 
+Not sure where to start? Check out [the issues](https://github.com/web3os-org/kernel/issues)!
+
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 </details>
@@ -151,8 +142,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 <summary><strong>Expand User Quickstart</strong></summary>
 
 - Visit [https://web3os.sh](https://web3os.sh)
+- Use `ls` and `cd` to look around the filesystem
 - Type `help` for generic helpful information
-- Type `ls /bin` to list all available commands
+- Type `files /bin` to browse all available commands
 - Learn more about commands: `help [command]`
 - Edit a file: `edit /tmp/test.txt`
 - Launch the desktop: `desktop`
@@ -239,11 +231,17 @@ Packages are generally ES Modules, located at a url that contains a `package.jso
 
 You may also just use the `import` command to directly import an ES module from a URL.
 
-This means you can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com). This doesn't mean the package will work as expected, but here are a few examples of npm libraries that can be loaded in web3os:
+Dependency management is another monster altogether, so that's still a WIP. This means your package should already be bundled when web3os loads it, or pull in your dependencies some other way.
+
+You can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com). This doesn't mean the package will work as expected, but here are a few examples of npm libraries that can be loaded in web3os:
 
 - [lodash](https://www.npmjs.com/package/lodash)
   - `wpm install lodash`
   - This doesn't add an executable, but `_` is now available in the global scope.
+
+- [jquery](https://www.npmjs.com/package/jquery)
+  - `wpm install jquery`
+  - This doesn't add an executable, but `$` is now available in the global scope.
 
 - [moment](https://momentjs.com)
   - `wpm install --umd moment`
@@ -251,7 +249,7 @@ This means you can attempt to install any package from npm using a CDN such as [
 
 - [umbrellajs](https://umbrellajs.com/)
   - `wpm install umbrellajs --main umbrella.esm.js`
-  - Now you can use it by accessing:
+  - Now you can use it:
     - `const u = Kernel.modules.umbrellajs.default`
     - `const body = u('body')`
 
@@ -264,11 +262,18 @@ This means you can attempt to install any package from npm using a CDN such as [
 
 ---
 
+- [@web3os-apps/chess](https://npmjs.org/@web3os-apps/chess)
+- [@web3os-apps/code](https://npmjs.org/@web3os-apps/code)
 - [@web3os-apps/doom](https://npmjs.org/@web3os-apps/doom)
-- [@web3os-apps/wolfenstein](https://npmjs.org/@web3os-apps/wolfenstein)
+- [@web3os-apps/gun](https://npmjs.org/@web3os-apps/gun)
 - [@web3os-apps/minipaint](https://npmjs.org/@web3os-apps/minipaint)
+- [@web3os-apps/moralis](https://npmjs.org/@web3os-apps/moralis)
+- [@web3os-apps/rubikscube](https://npmjs.org/@web3os-apps/rubikscube)
+- [@web3os-apps/wolfenstein](https://npmjs.org/@web3os-apps/wolfenstein)
 
 </details>
+
+See the [full list](https://www.npmjs.com/org/web3os-apps)
 
 ## Kernel Interface
 

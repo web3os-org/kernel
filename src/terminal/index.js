@@ -46,7 +46,10 @@ class Web3osTerminal extends Terminal {
         const [key, value] = context.split(' ')
         if (this.debug) console.log('ENV:', { key, value })
         if (value) this.env[key] = isNaN(value) ? value : parseFloat(value)
-        term.log(this.env[key])
+
+        if (key) term.log(this.env[key])
+        else term.log(this.env)
+
         term.prompt()
       }
     })

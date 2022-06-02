@@ -412,7 +412,7 @@ export async function run (terminal, url) {
   browser.addEventListener('dragover', dragover)
   browser.addEventListener('drop', drop)
 
-  const appWindow = kernel.appWindow({
+  const appWindow = kernel.windows.create({
     mount: browser,
     title: url,
     class: ['web3os-window', 'web3os-files-explorer-window'],

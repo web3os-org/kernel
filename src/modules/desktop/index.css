@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@1,700&display=swap');
+
 #web3os-desktop {
   position: absolute;
   top: 0;
@@ -84,6 +86,7 @@
 }
 
 .web3os-desktop-launcher-window .wb-header .wb-title {
+  font-family: 'Kanit', sans-serif;
   font-variant: small-caps;
   text-shadow: 3px 3px 2px rgb(145, 145, 145);
   font-size: 2rem;

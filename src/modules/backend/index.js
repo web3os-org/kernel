@@ -41,7 +41,7 @@ export async function launchShell (options = {}) {
   container.style.height = '100%'
   newTerm.open(container)
 
-  win = kernel.appWindow({
+  win = kernel.windows.create({
     title: 'Backend Shell',
     mount: container,
     width: options.windowWidth || '75%',

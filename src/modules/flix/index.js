@@ -34,7 +34,7 @@ export function play (cid, args) {
   video.style.width = '100%'
   video.style.height = '100%'
 
-  const win = kernel.appWindow({
+  const win = kernel.windows.create({
     title: cid,
     mount: video
   })

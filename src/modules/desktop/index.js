@@ -92,7 +92,7 @@ export async function launchTerminal (options = {}) {
 
   const termKernel = options.kernel ? options.kernel : (kernel || globalThis.Kernel)
 
-  win = termKernel.appWindow({
+  win = termKernel.windows.create({
     title: options.windowTitle || options.command || 'web3os.sh',
     mount: container,
     width: options.windowWidth || '75%',
@@ -342,7 +342,7 @@ export async function start (args) {
     desktop.append(shellButton)
     desktop.append(exitButton)
     
-    document.querySelector('#terminal').style.display = 'none'
+    document.querySelector('#web3os-terminal').style.display = 'none'
     document.body.appendChild(desktop)
 
     loadDesktopIconPositions()
@@ -449,16 +449,16 @@ export async function toggleLauncher (args) {
     })
   }
 
-  launcher = kernel.appWindow({
+  launcher = kernel.windows.create({
     class: 'no-min no-full web3os-desktop-launcher-window',
-    title: 'Web3oS',
+    title: 'Web3os',
     mount: template,
     x: 'center',
     y: 'center',
     width: '70%',
     height: '70%',
     onblur: () => {
-      launcher.window.close()
+      launcher?.window?.close?.()
     },
     onclose: () => {
       launcher = null
@@ -471,7 +471,7 @@ export async function toggleLauncher (args) {
 
 export async function exitDesktop () {
   desktop.remove()
-  document.querySelector('#terminal').style.display = 'block'
+  document.querySelector('#web3os-terminal').style.display = 'block'
   globalThis.Terminal.focus()
   globalThis.Terminal.fit()
 }

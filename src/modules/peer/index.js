@@ -120,7 +120,7 @@ export function setupInstance () {
 
           video.onloadedmetadata = () => video.play()
 
-          kernel.appWindow({
+          kernel.windows.create({
             title: `Call: ${call.peer}`,
             mount: video,
             max: true
@@ -188,7 +188,7 @@ export async function call (peerId, args) {
 
     video.onloadedmetadata = () => video.play()
 
-    kernel.appWindow({
+    kernel.windows.create({
       title: `Call: ${call.peer}`,
       mount: video,
       max: true
@@ -247,7 +247,7 @@ function openChatWindow (peer) {
     input.value = ''
   })
 
-  kernel.appWindow({
+  kernel.windows.create({
     title: `Chat: ${peer.connection.peer}`,
     mount: container,
     width: '100%'

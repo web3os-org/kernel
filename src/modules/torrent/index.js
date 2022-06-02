@@ -72,7 +72,7 @@ export function play (torrentID, fileID, args) {
   div.style.width = '100%'
   div.style.height = '100%'
 
-  const win = kernel.appWindow({
+  const win = kernel.windows.create({
     title: file.name,
     mount: div
   })

@@ -1,10 +1,16 @@
 import 'regenerator-runtime/runtime'
 
 import('./index').then(kernel => {
+  if (!globalThis.Kernel) {
+    const term = document.createElement('div')
+    term.id = 'web3os-terminal'
+    document.body.appendChild(term)
+  }
+
   globalThis.Kernel = kernel
 
   import('./terminal').then(term => {
-    if (globalThis.Terminal) document.querySelector('#terminal').innerHTML = ''
+    if (globalThis.Terminal) document.querySelector('#web3os-terminal').innerHTML = ''
 
     globalThis.Terminal = term.create({
       fontFamily: "'Fira Mono', monospace",
@@ -13,13 +19,13 @@ import('./index').then(kernel => {
       theme: { background: '#121212' }
     })
 
-    globalThis.Terminal.open(document.querySelector('#terminal'))
+    globalThis.Terminal.open(document.querySelector('#web3os-terminal'))
     globalThis.Terminal.fit()
     globalThis.Terminal.focus()
 
     kernel.boot()
 
-    if (document.querySelector('#web3os-desktop')) document.querySelector('#terminal').style.display = 'none'
+    if (document.querySelector('#web3os-desktop')) document.querySelector('#web3os-terminal').style.display = 'none'
   })
 })
 

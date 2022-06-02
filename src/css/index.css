@@ -20,11 +20,11 @@ body {
   font-family: 'Times New Roman', Times, serif;
 }
 
-#terminal {
+#web3os-terminal {
   display: none;
 }
 
-#terminal, .terminal {
+#web3os-terminal, .terminal {
   width: 100% !important;
   height: 97% !important;
 }

@@ -98,7 +98,7 @@ export async function run (terminal, filename) {
 
   content.appendChild(textarea)
 
-  const appWindow = kernel.appWindow({
+  const appWindow = kernel.windows.create({
     title: `Edit: ${filename}`,
     mount: content,
     height: '75%',

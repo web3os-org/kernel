@@ -36,13 +36,14 @@ import '@material/mwc-icon-button'
 import '@material/mwc-snackbar'
 
 import README from '../README.md'
-import AppWindow from './app-window'
+import AppWindow from './windows'
 import theme from './themes/default/index.js'
 
 export const version = rootPkgJson.version
 const figletFontName = 'Graffiti'
 globalThis.topbar = topbar
 
+// TODO: Whittle this down and migrate to packages
 export const builtinModules = [
   'account', 'backend', 'confetti', 'contract', 'desktop', 'edit',
   'files', 'help', 'markdown', 'peer', 'ping', 'screensaver',
@@ -157,8 +158,13 @@ export function log (msg, options = {}) {
   term.writeln(msg)
 }
 
-export function appWindow (options) {
-  return new AppWindow(options)
+export const windows = {
+  _collection: new Set(),
+  create: options => {
+    const win = new AppWindow(options)
+    windows._collection.add(win)
+    return win
+  }
 }
 
 export async function dialog (options = {}) {
@@ -945,11 +951,11 @@ export async function boot () {
   if (!bootArgs.has('nobootsplash')) {
     const closeSplash = await showSplash()
     setTimeout(closeSplash, 1500) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
-    document.querySelector('#terminal').style.display = 'block'
+    document.querySelector('#web3os-terminal').style.display = 'block'
     setTimeout(globalThis.Terminal?.fit, 50)
     globalThis.Terminal?.focus()
   } else {
-    document.querySelector('#terminal').style.display = 'block'
+    document.querySelector('#web3os-terminal').style.display = 'block'
     setTimeout(globalThis.Terminal?.fit, 50)
     globalThis.Terminal?.focus()
   }

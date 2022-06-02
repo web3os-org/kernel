@@ -26,7 +26,7 @@ export async function run (term, filename) {
   wrapper.innerHTML = html
   wrapper.querySelectorAll('a').forEach(a => { a.style.color = '#4287f5' })
 
-  kernel.appWindow({
+  kernel.windows.create({
     title: filename,
     mount: wrapper,
     width: '70%',

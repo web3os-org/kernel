@@ -76,7 +76,7 @@ export async function run (terminal, filename) {
   const wrapper = document.createElement('div')
   wrapper.style.height = '100%'
 
-  const appWindow = kernel.appWindow({
+  const appWindow = kernel.windows.create({
     title: `${filename}`,
     mount: wrapper,
     width: '60%',
