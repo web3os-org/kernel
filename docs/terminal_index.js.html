@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: terminal/index.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: terminal/index.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Web3os Terminal
  * @class Web3osTerminal
  * @extends Terminal
@@ -38,7 +66,7 @@ class Web3osTerminal extends Terminal {
   customCommands = []
   cursorPosition = 0
   historyPosition = 0
-  promptFormat = `<${colors.cyan('3os')}>${colors.blue('{cwd}')}${colors.green('#')} `
+  promptFormat = `&lt;${colors.cyan('3os')}>${colors.blue('{cwd}')}${colors.green('#')} `
 
   escapes = escapes
 
@@ -95,11 +123,11 @@ class Web3osTerminal extends Terminal {
     const code = domEvent.which
     if (!code) return false
 
-    return !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey &&
+    return !domEvent.altKey &amp;&amp; !domEvent.ctrlKey &amp;&amp; !domEvent.metaKey &amp;&amp;
       (
-        code >= 32 && code <= 126 ||
-        code >= 186 && code <= 192 ||
-        code >= 219 && code <= 222 ||
+        code >= 32 &amp;&amp; code &lt;= 126 ||
+        code >= 186 &amp;&amp; code &lt;= 192 ||
+        code >= 219 &amp;&amp; code &lt;= 222 ||
         [173].includes(code)
       )
   }
@@ -156,7 +184,7 @@ class Web3osTerminal extends Terminal {
               }
             } else {
               const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
-              const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
+              const match = searchPaths.find(p => p !== '/' &amp;&amp; this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
               if (match) exec = path.join(`${match}/${exec.split(' ')[0]}`) + ' ' + exec.split(' ').slice(1).join(' ')
               this.kernel.execute(exec, options)
             }
@@ -198,7 +226,7 @@ class Web3osTerminal extends Terminal {
       case 'ArrowUp':
         if (this.history.length > 0) this.historyPosition += 1
         if (this.historyPosition > this.history.length) this.historyPosition = 0
-        if (this.historyPosition === 0 && this.cmd.length > 0) {
+        if (this.historyPosition === 0 &amp;&amp; this.cmd.length > 0) {
           this.cmd = ''
           this.write(escapes.cursor.back(this.cursorPosition))
           this.write(escapes.erase.inLine())
@@ -220,8 +248,8 @@ class Web3osTerminal extends Terminal {
         break
       case 'ArrowDown':
         if (this.history.length > 0) this.historyPosition -= 1
-        if (this.historyPosition < 0) this.historyPosition = this.history.length
-        if (this.historyPosition === 0 && this.cmd.length > 0) {
+        if (this.historyPosition &lt; 0) this.historyPosition = this.history.length
+        if (this.historyPosition === 0 &amp;&amp; this.cmd.length > 0) {
           this.cmd = ''
           this.write(escapes.cursor.back(this.cursorPosition))
           this.write(escapes.erase.inLine())
@@ -271,13 +299,13 @@ class Web3osTerminal extends Terminal {
       default:
         if (printable) {
           const replaceMode = this.getOption('cursorStyle') === 'underline'
-          const remainderOffset = replaceMode && this.cursorPosition < this.cmd.length ? this.cursorPosition + 1: this.cursorPosition
+          const remainderOffset = replaceMode &amp;&amp; this.cursorPosition &lt; this.cmd.length ? this.cursorPosition + 1: this.cursorPosition
           this.cmd = `${this.cmd.slice(0, this.cursorPosition)}${key}${this.cmd.slice(remainderOffset)}`
           const remainder = this.cmd.slice(remainderOffset)
 
           this.cursorPosition++
           this.write(escapes.erase.inLine())
-          this.write(replaceMode && (this.cmd.length > this.cursorPosition || remainder === '') ? key + remainder : remainder)
+          this.write(replaceMode &amp;&amp; (this.cmd.length > this.cursorPosition || remainder === '') ? key + remainder : remainder)
           if (this.cmd.length > this.cursorPosition) this.write(escapes.cursor.back(this.cmd.length - this.cursorPosition))
         }
     }
@@ -290,7 +318,7 @@ class Web3osTerminal extends Terminal {
 
     if (
       keyName === 'Escape'
-      || domEvent.ctrlKey && keyName.toLowerCase() === 'c'
+      || domEvent.ctrlKey &amp;&amp; keyName.toLowerCase() === 'c'
     ) {
       this.interruptListener.dispose()
       this.historyPosition = 0
@@ -316,7 +344,7 @@ class Web3osTerminal extends Terminal {
     // TODO: Also catch other paste events
     this.pasteListener = this.onData(data => {
       const containsUnprintable = data.split('').some(char => !this.isPrintable(data))
-      data.length > 1 && !containsUnprintable && this.paste()
+      data.length > 1 &amp;&amp; !containsUnprintable &amp;&amp; this.paste()
     })
   }
 
@@ -343,3 +371,26 @@ export function create (options = {}) {
   term.fit = fitAddon.fit.bind(fitAddon)
   return term
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-_loader.html">_loader</a></li></ul><h3>Classes</h3><ul><li><a href="Web3osTerminal.html">Web3osTerminal</a></li></ul><h3>Global</h3><ul><li><a href="global.html#builtinModules">builtinModules</a></li><li><a href="global.html#deleteKey">deleteKey</a></li><li><a href="global.html#deleteNamespace">deleteNamespace</a></li><li><a href="global.html#dump">dump</a></li><li><a href="global.html#fs">fs</a></li><li><a href="global.html#get">get</a></li><li><a href="global.html#loadLocalStorage">loadLocalStorage</a></li><li><a href="global.html#log">log</a></li><li><a href="global.html#modules">modules</a></li><li><a href="global.html#restore">restore</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#showBootIntro">showBootIntro</a></li><li><a href="global.html#updateLocalStorage">updateLocalStorage</a></li><li><a href="global.html#utils">utils</a></li><li><a href="global.html#windows">windows</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Jun 02 2022 11:38:02 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

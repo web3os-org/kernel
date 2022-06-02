@@ -1,8 +1,36 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: index.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: index.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Web3os Kernel
  * @description Entrypoint of the web3os kernel
 
- * @author Jay Mathis <code@mathis.network>
+ * @author Jay Mathis &lt;code@mathis.network>
  * @license MIT
  * @type Web3osKernel
  * @see https://github.com/web3os-org/kernel
@@ -101,7 +129,7 @@ export const showBootIntro = () => {
   log(colors.success(`Type ${colors.bold.underline('files /bin')} to explore all executable commands`))
   log(colors.warning(`Type ${colors.bold.underline('lsmod')} to list all kernel modules`))
   log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun 🎉`))
-  log(colors.muted(`Type ${colors.bold.underline('clip <command>')} to copy the output of a command to the clipboard\n`))
+  log(colors.muted(`Type ${colors.bold.underline('clip &lt;command>')} to copy the output of a command to the clipboard\n`))
 
   log('https://github.com/web3os-org')
   log(colors.muted('\nBooting...'))
@@ -277,7 +305,7 @@ export async function executeScript (filename, options = {}) {
   const commands = value.split('\n').map(c => c.trim())
 
   for (const cmd of commands) {
-    if (cmd?.trim().length > 0 && cmd?.[0] !== '#' && cmd?.substr(0, 2) !== '//') await execute(cmd, { terminal: term, doPrompt: false })
+    if (cmd?.trim().length > 0 &amp;&amp; cmd?.[0] !== '#' &amp;&amp; cmd?.substr(0, 2) !== '//') await execute(cmd, { terminal: term, doPrompt: false })
   }
 }
 
@@ -300,7 +328,7 @@ export async function download (term, context) {
   if (context.match(/^(http|ftp|blob)\:/i) || context.match(/^blob/i)) {
     const url = new URL(context.split(' ')[0])
     filename = utils.path.parse(url.pathname).base
-    if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
+    if (context.split(' ')?.[1] &amp;&amp; context.split(' ')[1] !== '') filename = context.split(' ')[1]
     const buffer = await (await fetch(url.href)).arrayBuffer()
     const data = BrowserFS.Buffer.from(buffer)
     console.log({ filename, data })
@@ -387,9 +415,9 @@ async function setupFilesystem () {
         focusDeny: true,
         confirmButtonText: 'Yes',
         html: `
-          <p>Do you want to overwrite existing files in your filesystem with the initfs located at:</p>
-          <h4><a href="${initfsUrl}" target="_blank">${initfsUrl}</a></h4>
-          <p><strong>Be sure you trust the source!</strong></p>
+          &lt;p>Do you want to overwrite existing files in your filesystem with the initfs located at:&lt;/p>
+          &lt;h4>&lt;a href="${initfsUrl}" target="_blank">${initfsUrl}&lt;/a>&lt;/h4>
+          &lt;p>&lt;strong>Be sure you trust the source!&lt;/strong>&lt;/p>
         `,
         preConfirm: async () => {
           try {
@@ -436,7 +464,7 @@ async function setupFilesystem () {
         Object.entries(initfs).forEach(async ([name, entry]) => {
           const filepath = utils.path.join('/', name)
 
-          if (entry.isDirectory) !fs.existsSync(filepath) && fs.mkdirSync(utils.path.join('/', name))
+          if (entry.isDirectory) !fs.existsSync(filepath) &amp;&amp; fs.mkdirSync(utils.path.join('/', name))
           else {
             const parentDir = utils.path.parse(filepath).dir
             if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir)
@@ -572,12 +600,12 @@ async function setupFilesystem () {
             const filename = utils.path.resolve(term.cwd, context, entry)
             const stat = fs.statSync(filename)
 
-            const isNamespacedBin = stat.isFile() && Boolean(filename.match(/^\/bin\/.+\//))
+            const isNamespacedBin = stat.isFile() &amp;&amp; Boolean(filename.match(/^\/bin\/.+\//))
 
             // console.log({ entry, filename, context, stat, isNamespacedBin })
 
             const info = modules[filename.replace('/bin/', '')]
-            if (isNamespacedBin && context !== 'bin') {
+            if (isNamespacedBin &amp;&amp; context !== 'bin') {
               data.push({
                 name: colors.cyanBright(entry),
                 description: colors.muted(info.description?.substr(0, 75) || '')
@@ -647,11 +675,11 @@ async function registerKernelBins () {
   kernelBins.history = { description: 'Show command history', run: term => { return term.log(JSON.stringify(term.history)) } }
   kernelBins.import = { description: 'Import a module from a URL', run: async (term, context) => await importModuleUrl(context) }
   kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
-  kernelBins.notify = { description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
+  kernelBins.notify = { description: 'Show a notification with &lt;title> and &lt;body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
   kernelBins.reboot = { description: 'Reload web3os', run: () => location.reload() }
   kernelBins.restore = { description: 'Restore the memory state', run: (term, context) => restore(context) }
-  kernelBins.snackbar = { description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
+  kernelBins.snackbar = { description: 'Show a snackbar with &lt;message>', run: (term, context) => snackbar({ labelText: context }) }
   kernelBins.wait = { description: 'Wait for the specified number of milliseconds', run: (term, context) => wait(context) }
 
   kernelBins.alias = {
@@ -692,7 +720,7 @@ async function registerKernelBins () {
 
   kernelBins.set = {
     description: 'Set a kernel memory value',
-    help: 'Usage: set <namespace> <key> <value>',
+    help: 'Usage: set &lt;namespace> &lt;key> &lt;value>',
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -704,7 +732,7 @@ async function registerKernelBins () {
 
   kernelBins.get = {
     description: 'Get a kernel memory namespace or key',
-    help: 'Usage: get <namespace> [key]',
+    help: 'Usage: get &lt;namespace> [key]',
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -716,7 +744,7 @@ async function registerKernelBins () {
 
   kernelBins.unset = {
     description: 'Delete specified memory namespace or key',
-    help: 'Usage: delkey <namespace> [key]',
+    help: 'Usage: delkey &lt;namespace> [key]',
     run: (term, context = '') => {
       try {
         const parts = context.split(' ')
@@ -741,7 +769,7 @@ async function registerKernelBins () {
 
   kernelBins.clip = {
     description: 'Copy return value of command to clipboard',
-    help: 'Usage: clip <command>',
+    help: 'Usage: clip &lt;command>',
     run: async (term, context) => {
       if (!context || context === '') return
       const parts = context.split(' ')
@@ -894,13 +922,13 @@ export async function showSplash (msg, options = {}) {
 
   const subtitle = document.createElement('h2')
   subtitle.id = 'web3os-splash-subtitle'
-  subtitle.innerHTML = options.subtitle || 'Made with <span class="heart">♥</span> by Jay Mathis'
+  subtitle.innerHTML = options.subtitle || 'Made with &lt;span class="heart">♥&lt;/span> by Jay Mathis'
   subtitle.style.margin = 0
   subtitle.style.color = options.subtitleColor || '#ccc'
   subtitle.style.fontStyle = options.subtitleFontStyle || 'italic'
   subtitle.querySelector('span.heart').style.color = 'red'
   subtitle.querySelector('span.heart').style.fontSize = '1.5em'
-  if (!options.disableAnimation) subtitle.classList.add('animate__animated', 'animate__zoomInDown') && subtitle.style.setProperty('--animate-delay', '0.5s')
+  if (!options.disableAnimation) subtitle.classList.add('animate__animated', 'animate__zoomInDown') &amp;&amp; subtitle.style.setProperty('--animate-delay', '0.5s')
 
   const background = document.createElement('div')
   background.id = 'web3os-splash-background'
@@ -1018,7 +1046,7 @@ export async function boot () {
   figlet.parseFont(figletFontName, figletFont)
   figlet.text('web3os', { font: figletFontName }, async (err, data) => {
     if (err) log(err)
-    if (data && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
+    if (data &amp;&amp; globalThis.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
     else log(`\n${colors.green.bold('\t\t   web3os')}`)
 
     console.log(`%cweb3os %c${rootPkgJson.version}`, `
@@ -1087,3 +1115,26 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js')
   })
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-_loader.html">_loader</a></li></ul><h3>Classes</h3><ul><li><a href="Web3osTerminal.html">Web3osTerminal</a></li></ul><h3>Global</h3><ul><li><a href="global.html#builtinModules">builtinModules</a></li><li><a href="global.html#deleteKey">deleteKey</a></li><li><a href="global.html#deleteNamespace">deleteNamespace</a></li><li><a href="global.html#dump">dump</a></li><li><a href="global.html#fs">fs</a></li><li><a href="global.html#get">get</a></li><li><a href="global.html#loadLocalStorage">loadLocalStorage</a></li><li><a href="global.html#log">log</a></li><li><a href="global.html#modules">modules</a></li><li><a href="global.html#restore">restore</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#showBootIntro">showBootIntro</a></li><li><a href="global.html#updateLocalStorage">updateLocalStorage</a></li><li><a href="global.html#utils">utils</a></li><li><a href="global.html#windows">windows</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Jun 02 2022 11:38:02 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,3 +1,12 @@
+/**
+ * Web3os Loader
+ * @description The web3os bootloader
+ * @module _loader
+ * @author Jay Mathis <code@mathis.network>
+ * @license MIT
+ * @see https://github.com/web3os-org/kernel
+ */
+
 import 'regenerator-runtime/runtime'
 
 import('./index').then(kernel => {
