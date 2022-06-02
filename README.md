@@ -54,6 +54,7 @@ The project is still very young, and proper documentation and organization is Co
 - [User Quickstart](#user-quickstart)
 - [Developer Quickstart](#developer-quickstart)
 - [Autostart](#autostart)
+- [Globals](#globals)
 - [Scripting](#scripting)
 - [Web3os Package Manager](#web3os-package-manager)
 - [Official Apps](#official-apps)
@@ -197,6 +198,21 @@ To modify the commands the system executes on startup:
 
 </details>
 
+## Globals
+
+<details>
+<summary><strong>Expand Globals</strong></summary>
+
+---
+
+These objects are available on the global object (globalThis/window):
+
+- `Kernel`: The global kernel
+- `Terminal`: The kernel's main terminal
+- `System`: The SystemJS library
+
+</details>
+
 ## Scripting
 
 <details>
@@ -229,11 +245,15 @@ The `wpm` command can be used to manage installed packages. Installing a package
 
 Packages are generally ES Modules, located at a url that contains a `package.json`.
 
-You may also just use the `import` command to directly import an ES module from a URL.
+You can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com) (this is the default wpm registry).
+
+This means that during development, you can serve up your app locally, with Live Server for example, and `wpm install http://localhost:5500`.
+
+You may also just use the `import` command to directly import an ES module from a URL. Or bypass all of this and use your own technique!
 
 Dependency management is another monster altogether, so that's still a WIP. This means your package should already be bundled when web3os loads it, or pull in your dependencies some other way.
 
-You can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com). This doesn't mean the package will work as expected, but here are a few examples of npm libraries that can be loaded in web3os:
+Here are a few examples of npm libraries that can be successfully loaded in web3os:
 
 - [lodash](https://www.npmjs.com/package/lodash)
   - `wpm install lodash`
@@ -290,16 +310,7 @@ Also, expect undocumented features for now.
 
 - Contains all apps registered in the kernel
 - e.g., `window.Kernel.modules.desktop.run()`
-
-`window.Kernel.wallet.web3` = :Web3Provider
-
-- The web3 provider setup with the `account` command
-
-`window.Kernel.wallet.account` = { address: '0x..', chainId: 1 }
-
-- You may also interact directly with the account app.
-  - e.g., `window.Kernel.modules.account.connect()`
-  - e.g., `window.Kernel.modules.account.account.address`
+- e.g., `window.Kernel.modules['@author/package'].version`
 
 `window.Kernel.dialog` ({ ...[sweetalert2options](https://sweetalert2.github.io/#configuration) }) = :Promise(sweetalert2result)
 
@@ -319,7 +330,7 @@ Also, expect undocumented features for now.
 - e.g., `window.Kernel.get('user', 'name')`
 - e.g., `const { color } = window.Kernel.get('myapp', 'theme')`
 
-`window.Kernel.appWindow` (options) = { options, window }
+`window.Kernel.windows.create` (options) = { options, window }
 
 - Creates a new application window with [WinBox](https://github.com/nextapps-de/winbox) options
 
