@@ -12,7 +12,7 @@ export let markdown
 export async function run (term, filename) {
   const { kernel } = term
   if (!filename || filename === '') throw new Error(colors.danger('Invalid filename'))
-  filename =kernel.utils.path.resolve(term.cwd, filename)
+  filename = kernel.utils.path.resolve(term.cwd, filename)
   if (!kernel.fs.existsSync(filename)) throw new Error(colors.danger('Invalid filename'))
 
   markdown = new MarkdownIt({ html: true, linkify: true })
