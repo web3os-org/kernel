@@ -8,7 +8,9 @@ import './index.css'
 import README from '../../../README.md'
 import defaultWallpaperURL from './default_wallpaper.png'
 import { default as defaultAppIcon } from '../../assets/default-app-icon.svg'
-import { create as createTerminal } from '../../terminal'
+import Web3osTerminal from '../../terminal'
+
+const { create: createTerminal } = Web3osTerminal
 
 export const name = 'desktop'
 export const version = '1.0.0'

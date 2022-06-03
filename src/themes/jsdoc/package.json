@@ -1,0 +1,46 @@
+{
+    "name": "clean-jsdoc-theme",
+    "version": "3.3.4",
+    "description": "A beautifully crafted theme/template for JSDoc 3. This theme/template looks and feels like a premium theme/template. This is a fully mobile responsive theme and also fully customizable theme.",
+    "main": "publish.js",
+    "scripts": {
+        "test": "node node_modules/jsdoc/jsdoc.js -c jsdoc-config.json",
+        "lint:js": "eslint . --ext .js",
+        "lint:style": "stylelint static/styles/",
+        "lint": "concurrently --prefix '{time}-{pid}' 'npm run lint:types' 'npm run lint:style'"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ankitskvmdam/clean-jsdoc-theme.git"
+    },
+    "author": "Ank",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/ankitskvmdam/clean-jsdoc-theme/issues"
+    },
+    "homepage": "https://ankdev.me/clean-jsdoc-theme/dark/index.html",
+    "peerDependencies": {
+        "jsdoc": "3"
+    },
+    "keywords": [
+        "jsdoc",
+        "template",
+        "jsdoc-template",
+        "javascript documentation",
+        "customizable jsdoc theme / template"
+    ],
+    "devDependencies": {
+        "@jsdoc/eslint-config": "^1.1.6",
+        "concurrently": "^5.3.0",
+        "eslint": "^7.22.0",
+        "prettier": "^2.2.1",
+        "stylelint": "^13.12.0",
+        "stylelint-config-sass-guidelines": "^7.1.0",
+        "stylelint-config-standard": "^20.0.0",
+        "stylelint-order": "^4.1.0",
+        "stylelint-scss": "^3.19.0"
+    },
+    "dependencies": {
+        "fs-extra": "^9.1.0"
+    }
+}

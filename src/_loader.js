@@ -1,7 +1,7 @@
 /**
  * Web3os Loader
  * @description The web3os bootloader
- * @module _loader
+ * @module @web3os-core/_loader
  * @author Jay Mathis <code@mathis.network>
  * @license MIT
  * @see https://github.com/web3os-org/kernel

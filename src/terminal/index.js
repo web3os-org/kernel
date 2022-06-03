@@ -1,12 +1,41 @@
 /**
  * Web3os Terminal
+ * 
+ * Unless you have a reason to directly create a new Web3osTerminal(),
+ * you should probably use the static {@link Web3osTerminal.create} method
+ * 
  * @class Web3osTerminal
  * @extends Terminal
+ * 
+ * @param {object=} options - Options for the new terminal
+ * @param {Web3osKernel=} [options.kernel=globalThis.Kernel] - The kernel for the terminal to attach to
+ * @param {boolean=} [options.debug=false] - Enable verbose logging
+ * @param {Array.<CustomCommand>} options.customCommands - An array of custom commands only for this terminal
+ *
  * @property {string} cmd - The current user input
  * @property {string} cwd - The current working directory
- * @property {object} env - The terminal's environment variables
+ * @property {Object} env - The terminal's environment variables
  * @property {boolean} debug - Enable verbose output
- * @property {object} aliases - Map of command aliases
+ * @property {Object} aliases - Map of command aliases
+ * @property {Array.<string>} history - The history of commands entered
+ * @property {Array.<string>} binSearchPath - An array of package scopes to search (in order) for executables
+ * @property {Array.<Object>} customCommands - An array of custom commands only for this terminal
+ * @property {number} cursorPosition - The current cursor position of the input string
+ * @property {number} historyPosition - The current position in the history array
+ * @property {string} promptFormat - The prompt format
+ * @property {Object} escapes - ANSI escapes via ansi-escape-sequences
+ */
+
+/**
+ * @typedef CustomCommand
+ * @memberof Web3osTerminal
+ * @property {string} name - The name to enter into the terminal to invoke this command
+ * @property {Function} run - The function to execute when this command is invoked
+ * @example
+ * {
+ *    name: 'smile',
+ *    run: (term, context) => console.log('😁', { term, context })
+ * }
  */
 
 import path from 'path'
@@ -27,7 +56,7 @@ let defaults = {
   fontSize: 16
 }
 
-class Web3osTerminal extends Terminal {
+export default class Web3osTerminal extends Terminal {
   cmd = ''
   cwd = '/'
   env = {}
@@ -35,6 +64,11 @@ class Web3osTerminal extends Terminal {
   aliases = {}
   history = []
   binSearchPath = []
+
+  /**
+   * An array of custom commands only for this terminal
+   * @example { name: 'mycommand', run: () => console.log('Running!') }
+  */
   customCommands = []
   cursorPosition = 0
   historyPosition = 0
@@ -66,6 +100,35 @@ class Web3osTerminal extends Terminal {
     })
   }
 
+  /**
+   * Create a new Web3os Terminal instance with addons:
+   * 
+   * xterm-addon-fit, xterm-addon-web-links, xterm-addon-attach
+   * 
+   * @memberof Web3osTerminal
+   * @param {Object} options - The options for the new terminal
+   */
+  static create (options = {}) {
+    const term = new Web3osTerminal({ ...defaults, ...options })
+    const fitAddon = new FitAddon()
+  
+    term.loadAddon(fitAddon)
+    term.loadAddon(new WebLinksAddon())
+    if (options.socket) {
+      const attachAddon = new AttachAddon(options.socket)
+      term.loadAddon(attachAddon)
+    }
+  
+    term.fit = fitAddon.fit.bind(fitAddon)
+    return term
+  }
+
+  /**
+   * Log a message to the terminal
+   * @memberof Web3osTerminal
+   * @instance
+   * @param {...any} args - Strings or stringifiable object to log
+  */
   log (...args) {
     for (let arg of args) {
       arg = typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)
@@ -75,27 +138,52 @@ class Web3osTerminal extends Terminal {
     return args
   }
 
+  /**
+   * Compile the prompt string (symbol replacement)
+   * @memberof Web3osTerminal
+   * @instance
+   * @returns {string} prompt - The compiled prompt string
+   */
   promptCompile () {
     return this.promptFormat.replace(/\{cwd\}/g, colors.muted(this.cwd))
   }
-  
+
+  /**
+   * Write the prompt to the terminal and listen for input
+   * @memberof Web3osTerminal
+   * @instance
+   * @param {string=} value - If passed, will update this terminal's promptFormat
+   */
   prompt (value) {
     if (value) this.promptFormat = value
     this.write(this.promptCompile())
     this.listen()
   }
 
+  /**
+   * Handle pasting content from the clipboard
+   * @memberof Web3osTerminal
+   * @instance
+   * @param {string=} [data=navigator.clipboard.readText()] - Data to paste into the terminal
+   */
   async paste (data) {
     const clip = data ? data : await navigator.clipboard.readText()
     this.write(clip)
     this.cmd += clip
   }
 
-  isPrintable (domEvent) {
-    const code = domEvent.which
+  /**
+   * Check if the domEvent represents a printable character
+   * @memberof Web3osTerminal
+   * @instance
+   * @param {KeyboardEvent} event - The keyboard event
+   * @returns {boolean} true if the event represents a printable character
+   */
+  isPrintable (event) {
+    const code = event.which
     if (!code) return false
 
-    return !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey &&
+    return !event.altKey && !event.ctrlKey && !event.metaKey &&
       (
         code >= 32 && code <= 126 ||
         code >= 186 && code <= 192 ||
@@ -104,6 +192,14 @@ class Web3osTerminal extends Terminal {
       )
   }
 
+  /**
+   * Handle the keypress event
+   * @memberof Web3osTerminal
+   * @instance
+   * @param {Object} data - The data for the key handler
+   * @param {string} data.key - The ASCII representation of the key
+   * @param {KeyboardEvent} data.domEvent - The KeyboardEvent from the DOM listener
+   */
   async keyHandler ({ key, domEvent }) {
     if (!key) return
     const keyName = domEvent.key
@@ -283,7 +379,16 @@ class Web3osTerminal extends Terminal {
     }
   }
 
-  // This doesn't actually kill anything, but it will return access to the terminal
+  /**
+   * Handle ESC and CTRL-C to return control of the terminal to the user.
+   * This doesn't actually kill anything, but it will recover terminal input.
+   * 
+   * @memberof Web3osTerminal
+   * @instance
+   * @param {Object} data - The data for the interrupt handler
+   * @param {string} data.key - The ASCII representation of the key
+   * @param {KeyboardEvent} data.domEvent - The KeyboardEvent from the DOM listener
+   */
   interruptHandler ({ key, domEvent }) {
     if (!key) return
     const keyName = domEvent.key
@@ -301,17 +406,16 @@ class Web3osTerminal extends Terminal {
     }
   }
 
+  /**
+   * Start listening for user input on the terminal
+   * 
+   * @memberof Web3osTerminal
+   * @instance
+   * @todo fix mobile input
+   */
   listen () {
     this.unlisten()
     this.keyListener = this.onKey(this.keyHandler.bind(this))
-
-    // TODO: Get mobile keyboard to work
-    // this.textarea.onkeyup = e => {
-    //   if (e.key === 'Unidentified') return
-    //   console.log({ up: e })
-    //   this.keyHandler({ key: e.key, domEvent: e })
-    // }
-
     // A little workaround: optimistically assume any data over one character is a paste
     // TODO: Also catch other paste events
     this.pasteListener = this.onData(data => {
@@ -320,6 +424,11 @@ class Web3osTerminal extends Terminal {
     })
   }
 
+  /**
+   * Stop listening for user input
+   * @memberof Web3osTerminal
+   * @instance
+   */
   unlisten () {
     try {
       this.keyListener.dispose()
@@ -327,19 +436,4 @@ class Web3osTerminal extends Terminal {
       this.interruptListener.dispose()
     } catch {}
   }
-}
-
-export function create (options = {}) {
-  const term = new Web3osTerminal({ ...defaults, ...options })
-  const fitAddon = new FitAddon()
-
-  term.loadAddon(fitAddon)
-  term.loadAddon(new WebLinksAddon())
-  if (options.socket) {
-    const attachAddon = new AttachAddon(options.socket)
-    term.loadAddon(attachAddon)
-  }
-
-  term.fit = fitAddon.fit.bind(fitAddon)
-  return term
 }

@@ -1,10 +1,9 @@
 /**
  * Web3os Kernel
+ * @module @web3os-core/kernel
  * @description Entrypoint of the web3os kernel
-
  * @author Jay Mathis <code@mathis.network>
  * @license MIT
- * @type Web3osKernel
  * @see https://github.com/web3os-org/kernel
  */
 
@@ -220,6 +219,12 @@ export const windows = {
   }
 }
 
+/**
+ * Show a SweetAlert dialog
+ * @async
+ * @param {Object} options - SweetAlert2 options
+ * @returns {SweetAlertDialog}
+ */
 export async function dialog (options = {}) {
   return sweetalert.fire({
     heightAuto: false,

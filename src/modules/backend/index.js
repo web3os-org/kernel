@@ -1,5 +1,7 @@
 import colors from 'ansi-colors'
-import { create as createTerminal } from '../../terminal'
+import Web3osTerminal from '../../terminal'
+
+const { create: createTerminal } = Web3osTerminal
 
 export const name = 'backend'
 export const description = 'Manages the connection to a Backend server'

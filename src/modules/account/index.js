@@ -1,3 +1,12 @@
+/**
+ * Web3os Account Manager
+ * @module @web3os-core/account
+ * @description Manage your web3 wallet
+ * @author Jay Mathis <code@mathis.network>
+ * @license MIT
+ * @see https://github.com/web3os-org/kernel
+ */
+
 import arg from 'arg'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'

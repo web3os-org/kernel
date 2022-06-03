@@ -1,13 +1,21 @@
 {
   "source": {
     "include": "./src/",
-    "includePattern": ".(jsx|js|ts|tsx)$"
+    "includePattern": ".(jsx|js|ts|tsx)$",
+    "exclude": ["./src/themes/jsdoc"]
   },
 
   "opts": {
+    "recurse": true,
+    "package": "./package.json",
     "readme": "./README.md",
+    "tutorials": "./src/tutorials",
     "destination": "./docs/",
-    "recurse": true
+    "template": "./src/themes/jsdoc",
+    "theme_opts": {
+      "theme": "dark",
+      "title": "API Reference"
+    }
   },
 
   "plugins": [

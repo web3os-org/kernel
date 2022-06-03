@@ -1,3 +1,12 @@
+/**
+ * Web3os Package Manager
+ * @module @web3os-core/wpm
+ * @description Manage installed packages
+ * @author Jay Mathis <code@mathis.network>
+ * @license MIT
+ * @see https://github.com/web3os-org/kernel
+ */
+
 /* global fetch, localStorage */
 /* eslint-disable no-new-func */
 
@@ -44,6 +53,25 @@ const spec = {
 let kernel = globalThis.Kernel
 let terminal = globalThis.Terminal
 
+/**
+ * ModInfo Object
+ * @typedef ModInfo
+ * @property {string} name - Module name
+ * @property {string} description - Module description
+ * @property {string} help - Module help information
+ * @property {string} url - Module URL
+ * @property {string} pkgJson - Module package.json
+ * @property {string} pkgJson.web3osData - Data specific to web3os
+ */
+
+/**
+ * Install a package
+ * @async
+ * @param {!string} url - The package URL (or just package name to use default registry)
+ * @param {Object=} args - The arguments for the installation
+ * @param {boolean=} [args.warn=true] - Show the installation warning if the user has never seen it
+ * @returns {Promise<(boolean|ModInfo)>} ModInfo or false on error
+ */
 export async function install (url, args = { warn: true }) {
   const warned = localStorage.getItem('web3os_wpm_install_warning_hidden')
   if (!warned && args.warn) {
@@ -115,7 +143,13 @@ export async function install (url, args = { warn: true }) {
   return modInfo
 }
 
-export async function uninstall (name, args = {}) {
+/**
+ * Uninstall a package
+ * @async
+ * @param {!string} name - The name of the package to uninstall
+ * @returns {boolean} true if the package was uninstalled
+ */
+export async function uninstall (name) {
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
   const pkg = packages.find(p => p.match(new RegExp(`^${name}@`)))
   if (!pkg) throw new Error('Package not found')
@@ -125,64 +159,16 @@ export async function uninstall (name, args = {}) {
   if (kernel.fs.existsSync(`/bin/${pkgJson.name}`)) kernel.fs.unlinkSync(`/bin/${pkgJson.name}`)
   // TODO: Delete package folder
   delete kernel.modules[pkgJson.name]
+  return true
 }
 
-export async function update (name, args) {
-  return await install(name, args)
-}
-
-// export async function update (name, args) {
-//   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-//   const nameRegex = new RegExp(`^${name}@`)
-//   const pkg = packages.find(p => p.match(nameRegex))
-//   console.log({ packages, pkg, name })
-//   if (!pkg) throw new Error('Package not found')
-
-//   const installedPkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
-//   const { web3osData } = installedPkgJson
-//   console.log({ web3osData })
-//   const candidatePkgJson = await (await fetch(`${web3osData.url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
-
-//   const { version: installedVersion } = installedPkgJson
-//   const { version: candidateVersion } = candidatePkgJson
-
-//   console.log({ installedVersion, candidateVersion })
-//   if (installedVersion === candidateVersion) throw new Error('Package is already up-to-date')
-
-//   await uninstall(name)
-
-//   const main = candidatePkgJson.web3osData?.main || candidatePkgJson.main || 'index.js'
-//   const type = candidatePkgJson.web3osData?.type || 'es'
-//   const mainUrl = `${DefaultPackageRegistry}/${main}`
-
-//   let mod
-//   try {
-//     switch (type) {
-//       case 'umd':
-//         mod = await kernel.importUMDModule(mainUrl)
-//         break
-//       case 'systemjs':
-//         mod = await globalThis.System.import(mainUrl)
-//         break
-//       default:
-//         mod = await import(/* webpackIgnore: true */ mainUrl)
-//     }
-
-//     console.log({ main, type, mod })
-//   } catch (err) {
-//     console.error('IMPORT ERROR:', err, { name, type, main, mod })
-//   }
-
-//   // const updatedPackages = packages.filter(p => p.exe !== pkg.exe)
-//   // const { name, exe, version, description } = fetchedPkg
-//   // updatedPackages.push({ name, exe, version, description, url: pkg.url })
-//   // kernel.fs.writeFileSync('/config/packages', JSON.stringify(updatedPackages, null, 2))
-//   // kernel.fs.writeFile(`/var/packages/${exe}`, code)
-
-//   // delete kernel.modules[exe]
-//   // kernel.loadPackage(exe)
-// }
-
+/**
+ * Run the wpm CLI
+ * @async
+ * @param {Web3osTerminal} term - The terminal to attach to
+ * @param {string} context - The arguments string to parse
+ * @returns {any} result of the command
+ */
 export async function run (term, context) {
   terminal = term
   kernel = term.kernel
@@ -198,8 +184,6 @@ export async function run (term, context) {
       return await install(args._?.slice(1)[0], args)
     case 'uninstall':
       return await uninstall(args._?.slice(1)[0], args)
-    case 'update':
-      return await update(args._?.slice(1)[0], args)
     default:
       return term.log(help)
   }
