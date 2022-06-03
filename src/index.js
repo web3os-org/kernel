@@ -57,24 +57,36 @@ export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/gun'
 ]
 
-// TODO: i18n this (and everything else)
+// TODO: i18n this (and everything else). This doesn't even belong here anymore.
 const configDescriptions = {
   'autostart.sh': 'Executed at startup line by line',
   packages: 'Master local package list'
 }
 
-/** Contains miscellaneous utilities */
+/**
+ * Contains miscellaneous utilities
+ * @type {Object}
+ * */
 export const utils = { path: pathUtil }
-/** Contains all registered kernel modules */
+/**
+ * Contains all registered kernel modules
+ * @type {Object}
+ * */
 export const modules = {}
-/** Gives access to Kernel.fs */
+/**
+ * Gives access to the BrowserFS API
+ * @type {Object}
+ * */
 export let fs
 let BrowserFS
 let memory
 
 colors.theme(theme)
 
-/** Output the boot introduction */
+/**
+ * Output the boot introduction
+ * @method
+ * */
 export const showBootIntro = () => {
   log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
   log(colors.heading.success.bold(`\t    web3os kernel v${rootPkgJson.version}    `))
@@ -102,6 +114,7 @@ export const showBootIntro = () => {
   log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun 🎉`))
   log(colors.muted(`Type ${colors.bold.underline('clip <command>')} to copy the output of a command to the clipboard\n`))
 
+  log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
   log(colors.muted('\nBooting...'))
 }

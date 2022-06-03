@@ -403,7 +403,7 @@ export async function toggleLauncher (args) {
   // TODO: Load this from somewhere configurable
   const launcherApps = [
     { name: 'Files', icon: kernel.modules.files?.icon, description: kernel.modules.files?.description, run: () => kernel.execute('files /desktop')},
-    { name: 'Mailchain', icon: kernel.modules.mailchain?.icon, description: kernel.modules.mailchain?.description, run: () => kernel.execute('www --no-toolbar --title Mailchain https://inbox.mailchain.xyz')},
+    // { name: 'Mailchain', icon: kernel.modules.mailchain?.icon, description: kernel.modules.mailchain?.description, run: () => kernel.execute('www --no-toolbar --title Mailchain https://inbox.mailchain.xyz')},
     { name: 'Doom', icon: kernel.modules['@web3os-apps/doom']?.icon, description: kernel.modules['@web3os-apps/doom']?.description, run: () => kernel.execute('@web3os-apps/doom')},
     { name: 'Wolfenstein', icon: kernel.modules['@web3os-apps/wolfenstein']?.icon, description: kernel.modules['@web3os-apps/wolfenstein']?.description, run: () => kernel.execute('wolfenstein')},
     { name: 'Screensaver', icon: kernel.modules.screensaver?.icon, description: kernel.modules.screensaver?.description, run: () => kernel.execute('screensaver') },
