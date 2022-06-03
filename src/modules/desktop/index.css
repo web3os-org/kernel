@@ -110,21 +110,19 @@
 }
 
 #web3os-desktop-launcher-wallpaper {
-  /* background-color: transparent; */
+  /* opacity: 0; */
+  background-color: #121212;
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-position: center;
   background-size: cover;
-  /* animation: fadein 0.5s;
-    -webkit-animation: fadein 0.5s;
-    -moz-animation: fadein 0.5s;
-    -ms-animation: fadein 0.5s;
-    -o-animation: fadein 0.5s; */
+
+  animation: fadein 0.75s;
 }
 
 @keyframes fadein {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {opacity: 0}
+  to {opacity: 1}
 }
 
 .web3os-desktop-launcher-entry {

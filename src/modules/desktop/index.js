@@ -400,7 +400,7 @@ export async function toggleLauncher (args) {
     return
   }
 
-  // TODO: Load this from somewhere configurable
+  // TODO: Load this from somewhere configurable and just make it... better.
   const launcherApps = [
     { name: 'Files', icon: kernel.modules.files?.icon, description: kernel.modules.files?.description, run: () => kernel.execute('files /desktop')},
     // { name: 'Mailchain', icon: kernel.modules.mailchain?.icon, description: kernel.modules.mailchain?.description, run: () => kernel.execute('www --no-toolbar --title Mailchain https://inbox.mailchain.xyz')},

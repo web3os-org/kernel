@@ -111,7 +111,8 @@ export const showBootIntro = () => {
   log(colors.primary(`Type ${colors.bold.underline('account connect')} to connect your wallet`))
   log(colors.success(`Type ${colors.bold.underline('files /bin')} to explore all executable commands`))
   log(colors.warning(`Type ${colors.bold.underline('lsmod')} to list all kernel modules`))
-  log(colors.magenta(`Type ${colors.bold.underline('confetti')} to fire the confetti gun 🎉`))
+  log(colors.cyan(`Type ${colors.bold.underline('confetti')} to fire the confetti gun 🎉`))
+  log(colors.magenta(`Type ${colors.bold.underline('minipaint')} to draw Art™ 🎨`))
   log(colors.muted(`Type ${colors.bold.underline('clip <command>')} to copy the output of a command to the clipboard\n`))
 
   log('https://docs.web3os.sh')
