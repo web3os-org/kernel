@@ -107,6 +107,7 @@ export default class Web3osTerminal extends Terminal {
    * 
    * @memberof Web3osTerminal
    * @param {Object} options - The options for the new terminal
+   * @returns {Web3osTerminal}
    */
   static create (options = {}) {
     const term = new Web3osTerminal({ ...defaults, ...options })

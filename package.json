@@ -39,7 +39,7 @@
     "watch:docs": "nodemon --exec yarn build:docs -w src",
     "build": "npm-run-all --parallel build:kernel build:docs",
     "build:kernel": "webpack build",
-    "build:docs": "jsdoc -c .jsdoc.json",
+    "build:docs": "jsdoc -c .jsdoc.json && shx cp src/assets/favicon.ico docs/",
     "clean": "npm-run-all --parallel clean:kernel clean:docs",
     "clean:kernel": "shx rm -rf dist/*",
     "clean:docs": "shx rm -rf docs/*",
