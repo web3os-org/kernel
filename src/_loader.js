@@ -19,9 +19,10 @@ import('./index').then(kernel => {
   globalThis.Kernel = kernel
 
   import('./terminal').then(term => {
+    console.log({ term })
     if (globalThis.Terminal) document.querySelector('#web3os-terminal').innerHTML = ''
 
-    globalThis.Terminal = term.create({
+    globalThis.Terminal = term.default.create({
       fontFamily: "'Fira Mono', monospace",
       fontSize: 18,
       fontWeight: 900,

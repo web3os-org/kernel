@@ -11,6 +11,7 @@
 
 ---
 
+[![API Reference](https://img.shields.io/badge/API-Reference-forestgreen?logo=)](https://docs.web3os.sh)
 [![Version](https://img.shields.io/github/package-json/v/web3os-org/kernel?color=success)](https://web3os.sh)
 [![Site Status](https://img.shields.io/website?url=https%3A%2F%2Fweb3os.sh)](https://web3os.sh)
 [![Last Commit](https://img.shields.io/github/last-commit/web3os-org/kernel.svg)](https://github.com/web3os-org/kernel/commit/master)
@@ -43,7 +44,9 @@ A decentralized web-based operating system for the next web, empowering users an
 - Interact with crypto wallets and smart contracts
 - Utilize a number of P2P protocols within the browser
 
-The project is still very young, and proper documentation and organization is Coming Soon™.
+Documentation: [https://docs.web3os.sh](https://docs.web3os.sh)
+
+The project is still very young, and more documentation and organization is Coming Soon™.
 
 ---
 

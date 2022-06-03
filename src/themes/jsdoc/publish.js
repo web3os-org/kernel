@@ -708,11 +708,17 @@ function buildNav(members) {
     var nav;
 
     if (!isHTML(title)) {
-        nav =
-            '<a href="index.html"><img class="navbar-logo" src="http://github.com/web3os-org/kernel/raw/master/.github/iconlogo.png" /></a>' +
-            '<div class="navbar-heading" id="navbar-heading"><a href="index.html"><h2 class="navbar-heading-text">' +
-            title +
-            '</h2></a></div>';
+        nav = `
+          <a href="index.html"><img class="navbar-logo" src="http://github.com/web3os-org/kernel/raw/master/.github/iconlogo.png" /></a>
+          <div class="navbar-heading" id="navbar-heading"><a href="index.html"><h2 class="navbar-heading-text">${title}</h2></a></div>
+          <div class="navbar-badges">
+            <a class="navbar-badge" href="https://web3os.sh" target="_blank">
+              <img alt="Launch web3os.sh" src="https://img.shields.io/badge/launch-web3os.sh-blue?style=for-the-badge" style="max-width: 100%;"></a>
+            <a class="navbar-badge" href="https://github.com/web3os-org/kernel">
+              <img alt="View Source" src="https://img.shields.io/badge/repo-web3os%E2%80%94org%2Fkernel-silver?style=for-the-badge&logo=github" />
+            </a>
+          </div>
+        `
     } else {
         nav = '<h2><a href="index.html">' + title + '</a></h2>';
     }

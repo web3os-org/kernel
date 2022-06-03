@@ -39,10 +39,13 @@
     "watch:docs": "nodemon --exec yarn build:docs -w src",
     "build": "npm-run-all --parallel build:kernel build:docs",
     "build:kernel": "webpack build",
-    "build:docs": "shx rm -rf docs/* && jsdoc -c .jsdoc.json",
-    "clean": "shx rm -rf dist/*",
+    "build:docs": "jsdoc -c .jsdoc.json",
+    "clean": "npm-run-all --parallel clean:kernel clean:docs",
+    "clean:kernel": "shx rm -rf dist/*",
+    "clean:docs": "shx rm -rf docs/*",
     "testnet": "hardhat node",
-    "test": "cross-env CYPRESS_REMOTE_DEBUGGING_PORT=9222 cypress open"
+    "test": "cross-env CYPRESS_REMOTE_DEBUGGING_PORT=9222 cypress open",
+    "prepare": "npm-run-all clean && build"
   },
   "dependencies": {
     "@assemblyscript/loader": "^0.19.22",

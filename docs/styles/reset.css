@@ -116,6 +116,14 @@ div#navbar-heading {
   justify-content: center;
 }
 
+.navbar-badges {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
 .name {
     font-family: 'code';
     /* font-size: 110%; */
