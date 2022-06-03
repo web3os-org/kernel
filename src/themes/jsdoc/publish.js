@@ -796,7 +796,8 @@ function buildNav(members) {
         }),
 
         [SECTION_TYPE.Global]: buildMemberNav({
-            itemHeading: 'Global',
+            // itemHeading: 'Global',
+            itemHeading: 'Kernel',
             items: members.globals,
             itemsSeen: seenGlobal,
             linktoFn: linkto,
@@ -1065,7 +1066,7 @@ exports.publish = function(taffyData, opts, tutorials) {
     }
 
     if (members.globals.length) {
-        generate('', 'Global', [{ kind: 'globalobj' }], globalUrl);
+        generate('', '@web3os-core/kernel', [{ kind: 'globalobj' }], globalUrl);
     }
 
     // index page displays information from package.json and lists files

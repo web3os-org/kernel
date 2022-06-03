@@ -1,6 +1,6 @@
 /**
  * Web3os Kernel
- * @module @web3os-core/kernel
+ * 
  * @description Entrypoint of the web3os kernel
  * @author Jay Mathis <code@mathis.network>
  * @license MIT
