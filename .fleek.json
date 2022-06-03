@@ -1,0 +1,15 @@
+{
+  "site": {
+    "id": "f64da289-ca58-4258-96e9-336a2e6c71df",
+    "team": "f5079c24-ff95-431a-8ef1-16ae1085f5f4",
+    "platform": "ipfs",
+    "source": "github",
+    "name": "web3os"
+  },
+  "build": {
+    "baseDir": "",
+    "publicDir": "dist",
+    "command": "apk add --no-cache git build-base autoconf automake && yarn && yarn build",
+    "rootDir": ""
+  }
+}
