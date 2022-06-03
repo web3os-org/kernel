@@ -207,7 +207,7 @@ export function deleteNamespace (namespace) {
  * @param {!string} message - The message to log
  * @param {?Object} options - Logging options
  * @param {?Boolean} options.console - Enable logging to both browser console and Terminal
- * @param {?Terminal} options.terminal - The terminal to attach to, or undefined for global Terminal
+ * @param {?Web3osTerminal} options.terminal - The terminal to attach to, or undefined for global Terminal
  */
 export function log (msg, options = {}) {
   if (!msg) return
@@ -249,6 +249,12 @@ export async function dialog (options = {}) {
   })
 }
 
+/**
+ * Execute a command
+ * @async
+ * @param {string} cmd - The command to execute
+ * @returns {CommandResult}
+ */
 export async function execute (cmd, options = {}) {
   const exec = cmd.split(' ')[0]
   const term = options.terminal || globalThis.Terminal
@@ -287,6 +293,12 @@ export async function execute (cmd, options = {}) {
   }
 }
 
+/**
+ * Execute a script file
+ * @async
+ * @param {string} path - The path of the script
+ * @returns {SweetAlertDialog}
+ */
 export async function executeScript (filename, options = {}) {
   const term = options.terminal || globalThis.Terminal
   if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
@@ -300,6 +312,11 @@ export async function executeScript (filename, options = {}) {
   }
 }
 
+/**
+ * Execute the /config/autostart.sh script
+ * @async
+ * @param {string=} defaultAutoStart - Write autostart script with this content if it doesn't exist
+ */
 export async function autostart (defaultAutoStart = '') {
   try {
     if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', defaultAutoStart) // Setup default autostart.sh
@@ -312,6 +329,12 @@ export async function autostart (defaultAutoStart = '') {
   }
 }
 
+/**
+ * Download a file from web3os to your local PC, or from a URL to web3os
+ * @async
+ * @param {Web3osTerminal} term - The terminal to attach to
+ * @param {string} context - Either a local path to download a file locally, or a URL to download to the current directory
+ */
 export async function download (term, context) {
   let filename = context
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
@@ -336,7 +359,12 @@ export async function download (term, context) {
   }
 }
 
-export async function upload (term, context) {
+/**
+ * Upload a file from your local PC to web3os
+ * @async
+ * @param {Web3osTerminal} term - The terminal to attach to
+ */
+export async function upload (term) {
   const input = document.createElement('input')
   input.setAttribute('type', 'file')
   input.setAttribute('multiple', true)
@@ -358,6 +386,14 @@ export async function upload (term, context) {
   input.click()
 }
 
+/**
+ * Colorize a string to differentiate numbers and letters
+ * @todo Move to .utils
+ * @param {string} str - The string to colorize
+ * @param {Object=} options - Options for colorization
+ * @param {Function=} [options.numbers=colors.blue()] - The function to colorize numbers
+ * @param {Function=} [options.letters=colors.white()] - The function to colorize letters
+ */
 export function colorChars (str, options = {}) {
   if (typeof str !== 'string') throw new Error('You must provide a string to colorChars')
   const numbers = options.numbers || colors.blue
@@ -365,11 +401,23 @@ export function colorChars (str, options = {}) {
   return str.split('').map(c => isNaN(c) ? letters(c) : numbers(c)).join('')
 }
 
+/**
+ * Send a browser notification
+ * @async
+ * @param {Object=} options - The notification options (Notification API)
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/notification
+ */
 export async function notify (options = {}) {
   if (Notification.permission !== 'granted') throw new Error('Notification permission denied')
   return new Notification(options.title, options)
 }
 
+/**
+ * Show a snackbar notification
+ * @async
+ * @param {Object=} options - The snackbar options
+ * @see https://www.npmjs.com/package/@material/mwc-snackbar
+ */
 export async function snackbar (options = {}) {
   const snack = document.createElement('mwc-snackbar')
   snack.id = options.id || 'snack-' + Math.random()
@@ -385,8 +433,11 @@ export async function snackbar (options = {}) {
   snack.show()
 }
 
-async function setupFilesystem () {
-  // const browserfs = await import('C:/ode/web3os/BrowserFS/build/browserfs.js')
+/**
+ * Sets up the filesystem
+ * @async
+ */
+export async function setupFilesystem () {
   const browserfs = await import('browserfs')
   const filesystem = {}
 
@@ -657,6 +708,14 @@ async function setupFilesystem () {
   })
 }
 
+/**
+ * Load the kernel's core internal commands
+ * 
+ * These are here because they're relatively simple, but many of them should be
+ * moved to their own respective external modules.
+ * 
+ * @async
+ */
 async function registerKernelBins () {
   const kernelBins = []
   kernelBins.alert = { description: 'Show an alert', run: (term, context) => dialog({ text: context }) }
@@ -796,6 +855,10 @@ async function registerKernelBins () {
   }
 }
 
+/**
+ * Load the kernel's core external modules
+ * @async
+ */
 async function registerBuiltinModules () {
   const mods = process.env.BUILTIN_MODULES ? process.env.BUILTIN_MODULES.split(',') : builtinModules
 
@@ -805,6 +868,12 @@ async function registerBuiltinModules () {
   }
 }
 
+/**
+ * Load a module into the kernel
+ * @async
+ * @param {!ModInfo} mod - The mod to load
+ * @param {Object=} options - Options for loading the module
+ */
 export async function loadModule (mod, options = {}) {
   if (!mod) throw new Error('Invalid module provided to kernel.loadModule')
   let { description, help, name, run, version, pkgJson } = options
@@ -840,10 +909,22 @@ export async function loadModule (mod, options = {}) {
   }
 }
 
+/**
+ * Directly import an ES module from a URL
+ * @async
+ * @param {string} url - The URL of the module to import
+ * @return {Module}
+ */
 export async function importModuleUrl (url) {
   return await import(/* webpackIgnore: true */ url)
 }
 
+/**
+ * Directly import a UMD module from a URL
+ * @async
+ * @param {string} url - The URL of the module to import
+ * @return {Module}
+ */
 export async function importUMDModule (url, name, module = { exports: {} }) {
   // Dark magic stolen from a lost tome of stackoverflow
   const mod = (Function('module', 'exports', await (await fetch(url)).text())
@@ -853,6 +934,10 @@ export async function importUMDModule (url, name, module = { exports: {} }) {
   return mod
 }
 
+/**
+ * Load or install the packages defined in /config/packages
+ * @async
+ */
 export async function loadPackages () {
   const packages = JSON.parse(fs.readFileSync('/config/packages').toString())
   for await (const pkg of packages) {
@@ -889,7 +974,13 @@ export async function loadPackages () {
   }
 }
 
-// TODO: Make splashes more customizable
+/**
+ * Show the boot splash screen
+ * @async
+ * @todo Make this more customizable
+ * @param {string} msg - The message to display
+ * @param {Object=} options - The splash screen options
+ */
 export async function showSplash (msg, options = {}) {
   document.querySelector('#web3os-splash')?.remove()
 
@@ -1011,6 +1102,12 @@ export async function showSplash (msg, options = {}) {
   }
 }
 
+/**
+ * Boot the kernel
+ * 
+ * This kicks off the process of initializing the filesystem, modules, and other components
+ * @async
+ */
 export async function boot () {
   topbar.show()
   const bootArgs = new URLSearchParams(globalThis.location.search)
@@ -1079,6 +1176,13 @@ export async function boot () {
   })
 }
 
+/**
+ * Wait for the specified number of milliseconds
+ * @async
+ * @todo Move this to .utils
+ * @param {number} ms - The number of milliseconds to wait
+ * @return {Module}
+ */
 export async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
