@@ -297,7 +297,7 @@ export default class Web3osTerminal extends Terminal {
         this.cursorPosition++
         this.write(key)
         break
-      case 'ArrowUp':
+      case 'ArrowDown':
         if (this.history.length > 0) this.historyPosition += 1
         if (this.historyPosition > this.history.length) this.historyPosition = 0
         if (this.historyPosition === 0 && this.cmd.length > 0) {
@@ -320,7 +320,7 @@ export default class Web3osTerminal extends Terminal {
         }
 
         break
-      case 'ArrowDown':
+      case 'ArrowUp':
         if (this.history.length > 0) this.historyPosition -= 1
         if (this.historyPosition < 0) this.historyPosition = this.history.length
         if (this.historyPosition === 0 && this.cmd.length > 0) {

@@ -90,7 +90,7 @@ colors.theme(theme)
 export const showBootIntro = () => {
   log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
   log(colors.heading.success.bold(`\t    web3os kernel v${rootPkgJson.version}    `))
-  log(colors.warning('\t⚠           ALPHA          ⚠'))
+  log(colors.warning('\t⚠           BETA          ⚠'))
   if (navigator.deviceMemory) log(`\t\t ${colors.info('RAM >=')} ${colors.muted(navigator.deviceMemory + 'GB')}`)
 
   if (navigator.userAgentData) {
