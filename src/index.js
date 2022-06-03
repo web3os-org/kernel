@@ -102,7 +102,7 @@ export const showBootIntro = () => {
   }
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
-    log(colors.danger('⚠ The first boot will take the longest, please be patient! ⚠\n'))
+    log(colors.danger('\n⚠ The first boot will take the longest, please be patient! ⚠\n'))
   }
 
   log(colors.danger(`\nType ${colors.bold.underline('help')} for help`))
