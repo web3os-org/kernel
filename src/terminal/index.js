@@ -7,7 +7,7 @@
  * @class Web3osTerminal
  * @extends Terminal
  * 
- * @param {object=} options - Options for the new terminal
+ * @param {Object=} options - Options for the new terminal
  * @param {Web3osKernel=} [options.kernel=globalThis.Kernel] - The kernel for the terminal to attach to
  * @param {boolean=} [options.debug=false] - Enable verbose logging
  * @param {Array.<CustomCommand>} options.customCommands - An array of custom commands only for this terminal
@@ -19,7 +19,7 @@
  * @property {Object} aliases - Map of command aliases
  * @property {Array.<string>} history - The history of commands entered
  * @property {Array.<string>} binSearchPath - An array of package scopes to search (in order) for executables
- * @property {Array.<Object>} customCommands - An array of custom commands only for this terminal
+ * @property {Array.<CustomCommand>} customCommands - An array of custom commands only for this terminal
  * @property {number} cursorPosition - The current cursor position of the input string
  * @property {number} historyPosition - The current position in the history array
  * @property {string} promptFormat - The prompt format
@@ -47,7 +47,7 @@ import { AttachAddon } from 'xterm-addon-attach'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 
 import 'xterm/css/xterm.css'
-import { term } from '..'
+import { term } from '../kernel'
 
 let defaults = {
   convertEol: true,
@@ -64,11 +64,6 @@ export default class Web3osTerminal extends Terminal {
   aliases = {}
   history = []
   binSearchPath = []
-
-  /**
-   * An array of custom commands only for this terminal
-   * @example { name: 'mycommand', run: () => console.log('Running!') }
-  */
   customCommands = []
   cursorPosition = 0
   historyPosition = 0
@@ -86,16 +81,26 @@ export default class Web3osTerminal extends Terminal {
     if (this.debug) console.log('New Terminal Created:', this, { options, kernel: this.kernel })
 
     this.customCommands.push({
+      name: '$custom',
+      run: (term, context) => {
+        const customs = this.customCommands.map(command => ({ name: command.name, description: command.description }))
+        term.log(customs)
+        term.prompt()
+        return customs
+      }
+    })
+
+    this.customCommands.push({
       name: 'env',
       run: (term, context) => {
+        let result
         const [key, value] = context.split(' ')
         if (this.debug) console.log('ENV:', { key, value })
         if (value) this.env[key] = isNaN(value) ? value : parseFloat(value)
-
-        if (key) term.log(this.env[key])
-        else term.log(this.env)
-
+        if (key) result = this.env[key]
+        else result = this.env
         term.prompt()
+        return result
       }
     })
   }

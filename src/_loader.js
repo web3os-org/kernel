@@ -9,7 +9,7 @@
 
 import 'regenerator-runtime/runtime'
 
-import('./index').then(kernel => {
+import('./kernel').then(kernel => {
   if (!globalThis.Kernel) {
     const term = document.createElement('div')
     term.id = 'web3os-terminal'

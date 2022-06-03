@@ -57,7 +57,7 @@ module.exports = {
 
   entry: {
     _loader: './src/_loader.js',
-    kernel: './src/index.js',
+    kernel: './src/kernel.js',
     'service-worker': './src/service-worker.js',
     ...glob.sync('./src/modules/**/*.js').reduce((obj, el) => { obj['modules/' + path.parse(el).dir.split('/').at(-1)] = el; return obj }, {})
   },
