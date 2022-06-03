@@ -112,6 +112,10 @@ img.navbar-logo {
   margin-top: 1rem;
 }
 
+div#navbar-heading {
+  justify-content: center;
+}
+
 .name {
     font-family: 'code';
     /* font-size: 110%; */
