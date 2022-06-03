@@ -45,7 +45,7 @@
     "clean:docs": "shx rm -rf docs/*",
     "testnet": "hardhat node",
     "test": "cross-env CYPRESS_REMOTE_DEBUGGING_PORT=9222 cypress open",
-    "prepare": "npm-run-all clean && build"
+    "prepare": "npm-run-all clean build"
   },
   "dependencies": {
     "@assemblyscript/loader": "^0.19.22",
