@@ -3,7 +3,7 @@
   "description": "A developer-friendly ecosystem of apps designed to build a crypto-focused web-based operating system",
   "homepage": "https://web3os.sh",
   "funding": "https://github.com/sponsors/mathiscode",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "main": "dist/kernel.js",
   "module": "src/index.js",
