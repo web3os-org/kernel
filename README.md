@@ -11,7 +11,7 @@
 
 ---
 
-[![API Reference](https://img.shields.io/badge/API-Reference-forestgreen?logo=)](https://docs.web3os.sh)
+[![API Reference](https://img.shields.io/badge/API-Reference-success)](https://docs.web3os.sh)
 [![Version](https://img.shields.io/github/package-json/v/web3os-org/kernel?color=success)](https://web3os.sh)
 [![Site Status](https://img.shields.io/website?url=https%3A%2F%2Fweb3os.sh)](https://web3os.sh)
 [![Last Commit](https://img.shields.io/github/last-commit/web3os-org/kernel.svg)](https://github.com/web3os-org/kernel/commit/master)
@@ -185,6 +185,8 @@ From here, simply connect to [https://localhost:8080](https://localhost:8080) an
 
 Alternatively, install [src/assets/ssl/localhost.crt](https://github.com/web3os-org/kernel/blob/master/src/assets/ssl/localhost.crt) to your trusted certificate store.
 
+We use SSL locally so that all browser APIs work as expected.
+
 </details>
 
 ## Autostart
@@ -196,7 +198,7 @@ To modify the commands the system executes on startup:
 
 - `edit /config/autostart.sh`
 - For example, add `desktop` to the end of the file
-- insert any additional commands you want to run on startup
+- Insert any additional commands you want to run on startup
 
 </details>
 
@@ -304,9 +306,9 @@ See the [full list](https://www.npmjs.com/org/web3os-apps)
 
 ---
 
-This (and everything else) is subject to change before version 1.0.
+This is a brief overview of how to use the kernel, please check [https://docs.web3os.sh](https://docs.web3os.sh) for updated documentation.
 
-Also, expect undocumented features for now.
+This (and everything else) is subject to change before version 1.0.
 
 `window.Kernel.modules` = { name: app }
 
@@ -466,4 +468,8 @@ Better yet, if you can make it do the thing, please [submit a PR](CONTRIBUTING.m
 
 ## Further Documentation
 
-Further documentation will soon be available at [https://docs.web3os.sh](https://docs.web3os.sh)
+You can find the full API reference and other tutorials at [https://docs.web3os.sh](https://docs.web3os.sh)
+
+Questions? Check out the [discussion forums](https://github.com/orgs/web3os-org/discussions)
+
+Problems? Search the [issues](https://github.com/web3os-org/kernel/issues)
