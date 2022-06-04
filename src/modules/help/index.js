@@ -17,7 +17,7 @@ export async function run (term, context) {
   return log(`
     ${colors.underline.info('Web3os Help:')}
     
-    web3os has many commands, which you can list by typing ${colors.green('ls /bin')}
+    web3os has many commands, which you can list by typing ${colors.green('ls /bin/@web3os-core')} or ${colors.blue('files /bin/@web3os-core')}
     To learn more about a command, type ${colors.green('help <command>')}
 
     ${colors.info('💾   Development:')}
