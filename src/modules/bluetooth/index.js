@@ -43,7 +43,7 @@ export async function printDevices(args) {
   }))
 }
 
-export async function request(args) {
+export async function pair(args) {
   const filter = {}
   const filters = []
 
@@ -52,7 +52,7 @@ export async function request(args) {
 
   const id = Math.random().toString(36).substr(2)
   const name = args['--name'] || Math.random().toString(36).substr(2)
-  const connection = await navigator.bluetooth.requestDevice({ filters })
+  const connection = await navigator.bluetooth.requestDevice(filters.length > 0 ? { filters } : { acceptAllDevices: true })
   const device = { id, name, connection }
   console.log({ device })
   devices.push(device)
@@ -62,8 +62,8 @@ export async function execute (cmd, args) {
   switch (cmd) {
     case 'devices':
       return await printDevices(args)
-    case 'request':
-      return await request(args)
+    case 'pair':
+      return await pair(args)
     default:
       return args.terminal.log(help)
   }
