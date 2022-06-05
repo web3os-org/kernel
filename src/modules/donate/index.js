@@ -34,7 +34,7 @@ export const help = `
     --version                       Print the version information
 `
 
-let kernel
+let kernel = globalThis.Kernel
 
 export const spec = {
   '--address': String,

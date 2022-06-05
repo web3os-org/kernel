@@ -2,7 +2,7 @@
   "source": {
     "include": "./src/",
     "includePattern": ".(jsx|js|ts|tsx)$",
-    "exclude": ["./src/themes/jsdoc"]
+    "exclude": ["./src/themes/jsdoc", "./src/emscripten-modules"]
   },
 
   "opts": {

@@ -9,8 +9,8 @@ const spec = {
   '-v': '--version'
 }
 
-let kernel
-let terminal
+let kernel = globalThis.Kernel
+let terminal = globalThis.Terminal
 let provider
 
 export async function run (terminal, context) {

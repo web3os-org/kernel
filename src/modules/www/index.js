@@ -84,10 +84,10 @@ export async function run (terminal, context = '') {
   addressBar.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       let newUrl = addressBar.value
-      newUrl = newUrl.match(/^about:/)
+      newUrl = /^about:/.test(newUrl)
         ? newUrl
         : (
-            newUrl.match(/^https?:\/\//)
+            /^https?:\/\//.test(newUrl)
               ? newUrl
               : `https://${newUrl}`
           )

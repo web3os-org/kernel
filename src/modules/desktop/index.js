@@ -34,9 +34,9 @@ const spec = {
   '-l': '--launcher-wallpaper'
 }
 
-let kernel
+let kernel = globalThis.Kernel
+let terminal = globalThis.Terminal
 let desktop
-let terminal
 let launcher
 const defaultLauncherWallpaper = 'https://images.unsplash.com/photo-1639262498805-17c7dc422d37'
 
@@ -234,7 +234,7 @@ async function createFileLayer () {
           }
           break
         default:
-          if (mime?.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
+          if (mime && /^(image|video|audio|application\/pdf)/.test(mime)) return kernel.execute(`view ${location}`)
           kernel.execute(`alert I'm not sure how to handle this file!`)
       }
     })

@@ -1,6 +1,6 @@
 /**
  * Web3os Package Manager
- * @module @web3os-core/wpm
+ * @module @web3os-core/3pm
  * @description Manage installed packages
  * @author Jay Mathis <code@mathis.network>
  * @license MIT
@@ -16,18 +16,20 @@ import { parse as cliParse } from 'shell-quote'
 
 export const DefaultPackageRegistry = 'https://unpkg.com'
 
-export const name = 'wpm'
+export const name = '3pm'
 export const version = '0.1.0'
 export const description = 'Web3os Package Manager'
 export const help = `
+  ${colors.blue('3pm')}: ${colors.green('The web3os package manager')}
+
   Usage:
-    wpm <command> <args> [options]
+    3pm <command> <args> [options]
 
   Commands:
-    install <name>         Install package named <name>
-    install <url>          Install package located at <url>
+    install <name>         Install (or update) package named <name> from the registry
+    install <url>          Install (or update) package located at <url>
+    ls                     List installed packages
     uninstall <name>       Uninstall package
-    update <name>          Update package
 
   Options:
     --help                 Show this help message
@@ -73,9 +75,9 @@ let terminal = globalThis.Terminal
  * @returns {Promise<(boolean|ModInfo)>} ModInfo or false on error
  */
 export async function install (url, args = { warn: true }) {
-  const warned = localStorage.getItem('web3os_wpm_install_warning_hidden')
+  const warned = localStorage.getItem('web3os_3pm_install_warning_hidden')
   if (!warned && args.warn) {
-    localStorage.setItem('web3os_wpm_install_warning_hidden', true)
+    localStorage.setItem('web3os_3pm_install_warning_hidden', true)
     terminal.log(`\n${colors.bgRed.white('WARNING')}: Do not install any packages unless you trust them completely.`)
     terminal.log(colors.bold(`All apps run in an inherently insecure context. ${colors.danger('This will be your last warning!')}`))
     terminal.log(colors.underline('Repeat the command to continue with the installation\n'))
@@ -85,7 +87,7 @@ export async function install (url, args = { warn: true }) {
   if (typeof url === 'object') url = url.url || url.pattern
   if (!url) throw new Error('Invalid package name or URL')
 
-  if (!url.match(/^(http|ftp).*\:/i)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
+  if (!/^(http|ftp).*\:/i.test(url)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
   const pkgJson = await (await fetch(`${url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
   const name = pkgJson.name
   const pkgName = name.split('/')
@@ -151,7 +153,7 @@ export async function install (url, args = { warn: true }) {
  */
 export async function uninstall (name) {
   const packages = JSON.parse(kernel.fs.readFileSync('/config/packages', 'utf8'))
-  const pkg = packages.find(p => p.match(new RegExp(`^${name}@`)))
+  const pkg = packages.find(p => (new RegExp(`^${name}@`)).test(p))
   if (!pkg) throw new Error('Package not found')
   const pkgJson = JSON.parse(kernel.fs.readFileSync(`/var/packages/${pkg}/package.json`))
   const newPackages = packages.filter(p => p !== `${pkgJson.name}@${pkgJson.version}`)
@@ -163,7 +165,7 @@ export async function uninstall (name) {
 }
 
 /**
- * Run the wpm CLI
+ * Run the 3pm CLI
  * @async
  * @param {Web3osTerminal} term - The terminal to attach to
  * @param {string} context - The arguments string to parse
@@ -182,6 +184,8 @@ export async function run (term, context) {
   switch (cmd) {
     case 'install':
       return await install(args._?.slice(1)[0], args)
+    case 'ls':
+      return await kernel.execute('cat /config/packages')
     case 'uninstall':
       return await uninstall(args._?.slice(1)[0], args)
     default:

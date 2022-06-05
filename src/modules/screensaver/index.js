@@ -22,8 +22,8 @@ const spec = {
   '-v': '--version'
 }
 
-let kernel
-let terminal
+let kernel = globalThis.Kernel
+let terminal = globalThis.Terminal
 export let running = false
 
 function listenForKeypress (callback) {
@@ -31,6 +31,7 @@ function listenForKeypress (callback) {
   keyTrap.style.opacity = 0
 
   keyTrap.addEventListener('keydown', e => {
+    events.dispatch('ScreensaverEnd')
     e.preventDefault()
     callback(e)
     keyTrap.remove()

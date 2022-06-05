@@ -12,7 +12,7 @@ export const help = `
     files <path>         Open a window at <url>
 `
 
-let kernel
+let kernel = globalThis.Kernel
 let history = []
 let historyPosition = 0
 
@@ -55,7 +55,7 @@ async function loadFolder (browser, url) {
 
       const extension = kernel.utils.path.extname(file)
       const mime = lookup(extension)
-      const isBin = !!(!mime && fileData.type === 'file' && fileData.location.match(/^\/bin\//))
+      const isBin = !!(!mime && fileData.type === 'file' && /^\/bin\//.test(fileData.location))
 
       switch (extension) {
         case '.js':
@@ -263,7 +263,7 @@ async function loadFolder (browser, url) {
             }
             break
           default:
-            if (mime?.match(/^(image|video|audio|application\/pdf)/)) return kernel.execute(`view ${location}`)
+            if (mime && /^(image|video|audio|application\/pdf)/.test(mime)) return kernel.execute(`view ${location}`)
             kernel.execute("alert I'm not sure how to handle this file!")
         }
       })

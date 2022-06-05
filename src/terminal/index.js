@@ -4,6 +4,12 @@
  * Unless you have a reason to directly create a new Web3osTerminal(),
  * you should probably use the static {@link Web3osTerminal.create} method
  * 
+ * Prompt Format
+ * 
+ * When setting #promptFormat, you may include these substitutions:
+ * 
+ * {cwd} - When the prompt is compiled, this will be replaced with the current working directory
+ * 
  * @class Web3osTerminal
  * @extends Terminal
  * 
@@ -22,7 +28,10 @@
  * @property {Array.<CustomCommand>} customCommands - An array of custom commands only for this terminal
  * @property {number} cursorPosition - The current cursor position of the input string
  * @property {number} historyPosition - The current position in the history array
- * @property {string} promptFormat - The prompt format
+ * @property {string} promptFormat - The prompt format containing substitutions
+ * @property {boolean} tabSelectMode - Whether the prompt is cycling tab choices
+ * @property {Array.<string>} tabSelectChoices - The array of choices that match the user's input
+ * @property {number} tabSelectCurrentChoice - The current index of tabSelectChoices
  * @property {Object} escapes - ANSI escapes via ansi-escape-sequences
  */
 
@@ -67,6 +76,9 @@ export default class Web3osTerminal extends Terminal {
   customCommands = []
   cursorPosition = 0
   historyPosition = 0
+  tabSelectMode = false
+  tabSelectChoices = []
+  tabSelectCurrentChoice = -1
   promptFormat = `<${colors.cyan('3os')}>${colors.blue('{cwd}')}${colors.green('#')} `
 
   escapes = escapes
@@ -99,6 +111,7 @@ export default class Web3osTerminal extends Terminal {
         if (value) this.env[key] = isNaN(value) ? value : parseFloat(value)
         if (key) result = this.env[key]
         else result = this.env
+        term.log(result)
         term.prompt()
         return result
       }
@@ -176,6 +189,7 @@ export default class Web3osTerminal extends Terminal {
     const clip = data ? data : await navigator.clipboard.readText()
     this.write(clip)
     this.cmd += clip
+    this.cursorPosition += clip.length
   }
 
   /**
@@ -196,6 +210,36 @@ export default class Web3osTerminal extends Terminal {
         code >= 219 && code <= 222 ||
         [173].includes(code)
       )
+  }
+
+  /**
+   * Cancel tab completion
+   * @memberof Web3osTerminal
+   * @instance
+   */
+  cancelTabSelection () {
+    if (!this.tabSelectMode) return
+    const currentChoice = this.tabSelectChoices[this.tabSelectCurrentChoice]
+    const goBack = currentChoice.slice(this.cmd.length).length
+    this.tabSelectMode = false
+    this.tabSelectChoices = []
+    this.tabSelectCurrentChoice = 0
+    if (goBack > 0) this.write(escapes.cursor.back(goBack))
+    this.write(escapes.erase.inLine())
+  }
+
+  /**
+   * Accept the current tab completion option
+   * @memberof Web3osTerminal
+   * @instance
+   */
+  acceptTabSelection () {
+    this.cmd = this.tabSelectChoices[this.tabSelectCurrentChoice]
+    this.cursorPosition = this.cmd.length
+    this.tabSelectMode = false
+    this.write(escapes.cursor.back(this.cmd.length))
+    this.write(escapes.erase.inLine())
+    this.write(this.cmd)
   }
 
   /**
@@ -236,6 +280,11 @@ export default class Web3osTerminal extends Terminal {
 
     switch (keyName) {
       case 'Enter':
+        if (this.tabSelectMode) {
+          this.acceptTabSelection()
+          break
+        }
+
         this.write('\n')
         this.unlisten()
 
@@ -249,7 +298,7 @@ export default class Web3osTerminal extends Terminal {
           const customCommand = this.customCommands?.find(c => c.name === this.cmd.split(' ')[0])
           if (customCommand) customCommand.run(this, this.cmd.split(' ').slice(1).join(' '))
           else {
-            if (this.cwd.match(/^\/bin\/.+/)) {
+            if (/^\/bin\/.+/.test(this.cwd)) {
               const scopedBin = path.join(this.cwd, this.cmd)
               if (this.kernel.fs.existsSync(scopedBin)) {
                 this.kernel.execute(scopedBin.replace('/bin/', ''), options)
@@ -272,13 +321,18 @@ export default class Web3osTerminal extends Terminal {
         this.historyPosition = 0
         break
       case 'Delete':
-        if (this.cursorPosition === this.cmd.length) break
+        if (this.tabSelectMode || this.cursorPosition === this.cmd.length) break
         this.cmd = `${this.cmd.slice(0, this.cursorPosition)}${this.cmd.slice(this.cursorPosition + 1)}`
         this.write(escapes.erase.inLine())
         this.write(this.cmd.slice(this.cursorPosition))
         if (this.cmd.length > this.cursorPosition) this.write(escapes.cursor.back(this.cmd.length - this.cursorPosition))
         break
       case 'Backspace':
+        if (this.tabSelectMode) {
+          this.cancelTabSelection()
+          break
+        }
+
         if (this.cursorPosition === 0) break
         this.cursorPosition--
         this.write(escapes.cursor.back())
@@ -288,16 +342,31 @@ export default class Web3osTerminal extends Terminal {
         if (this.cmd.length > this.cursorPosition) this.write(escapes.cursor.back(this.cmd.length - this.cursorPosition))
         break
       case 'ArrowLeft':
+        if (this.tabSelectMode) {
+          this.cancelTabSelection()
+          break
+        }
+
         if (this.cursorPosition === 0) break
         this.cursorPosition--
         this.write(key)
         break
       case 'ArrowRight':
+        if (this.tabSelectMode) {
+          this.acceptTabSelection()
+          break
+        }
+
         if (this.cursorPosition >= this.cmd.length) break
         this.cursorPosition++
         this.write(key)
         break
       case 'ArrowDown':
+        if (this.tabSelectMode) {
+          this.acceptTabSelection()
+          break
+        }
+
         if (this.history.length > 0) this.historyPosition += 1
         if (this.historyPosition > this.history.length) this.historyPosition = 0
         if (this.historyPosition === 0 && this.cmd.length > 0) {
@@ -321,6 +390,11 @@ export default class Web3osTerminal extends Terminal {
 
         break
       case 'ArrowUp':
+        if (this.tabSelectMode) {
+          this.acceptTabSelection()
+          break
+        }
+
         if (this.history.length > 0) this.historyPosition -= 1
         if (this.historyPosition < 0) this.historyPosition = this.history.length
         if (this.historyPosition === 0 && this.cmd.length > 0) {
@@ -343,18 +417,37 @@ export default class Web3osTerminal extends Terminal {
         }
 
         break
+      case 'Tab':
+        if (this.cmd.trim().length === 0) break
+        this.tabCompletion(this.cmd)
+        break
       case 'Home':
+        if (this.tabSelectMode) {
+          this.cancelTabSelection()
+          break
+        }
+
         if (this.cursorPosition === 0) break
         this.write(escapes.cursor.back(this.cursorPosition))
         this.cursorPosition = 0
         break
       case 'End':
+        if (this.tabSelectMode) {
+          this.acceptTabSelection()
+          break
+        }
+
         if (this.cursorPosition === this.cmd.length) break
         if (this.cursorPosition > 0) this.write(escapes.cursor.back(this.cursorPosition))
         this.write(escapes.cursor.forward(this.cmd.length))
         this.cursorPosition = this.cmd.length
         break
       case 'Escape':
+        if (this.tabSelectMode) {
+          this.cancelTabSelection()
+          break
+        }
+
         this.cmd = ''
         this.cursorPosition = 0
         this.setOption('cursorStyle', 'block')
@@ -372,6 +465,15 @@ export default class Web3osTerminal extends Terminal {
         break
       default:
         if (printable) {
+          if (this.tabSelectMode) {
+            this.cmd = this.tabSelectChoices[this.tabSelectCurrentChoice]
+            this.cursorPosition = this.cmd.length
+            this.tabSelectMode = false
+            this.write(escapes.cursor.back(this.cmd.length))
+            this.write(escapes.erase.inLine())
+            this.write(this.cmd)
+          }
+
           const replaceMode = this.getOption('cursorStyle') === 'underline'
           const remainderOffset = replaceMode && this.cursorPosition < this.cmd.length ? this.cursorPosition + 1: this.cursorPosition
           this.cmd = `${this.cmd.slice(0, this.cursorPosition)}${key}${this.cmd.slice(remainderOffset)}`
@@ -441,5 +543,50 @@ export default class Web3osTerminal extends Terminal {
       this.pasteListener.dispose()
       this.interruptListener.dispose()
     } catch {}
+  }
+
+  /**
+   * Handle tab completion
+   * @memberof Web3osTerminal
+   * @instance
+   * @async
+   */
+  async tabCompletion (input) {
+    if (!this.tabSelectMode) {
+      const binPaths = this.binSearchPath.map(searchPath => `/bin/${searchPath}`)
+      const entries = binPaths
+        .filter(exe => this.kernel.fs.existsSync(exe))
+        .map(exe => ({ path: exe, files: this.kernel.fs.readdirSync(exe) }))
+
+      const choices = []
+      for (const entry of entries) {
+        const reg = new RegExp(`^${input}`)
+        const file = entry.files.find(file => reg.test(file))
+        if (!file) continue
+        choices.push(file)
+      }
+
+      if (choices.length > 0) {
+        this.tabSelectMode = true
+        this.tabSelectChoices = choices
+        this.tabSelectCurrentChoice = 0
+        this.write(colors.muted(choices[0].slice(input.length)))
+      }
+    } else {
+      const currentChoice = this.tabSelectChoices[this.tabSelectCurrentChoice]
+      const goBack = currentChoice.slice(input.length).length
+      if (goBack > 0) this.write(escapes.cursor.back(goBack))
+      this.write(escapes.erase.inLine())
+      this.tabSelectCurrentChoice++
+
+      if (this.tabSelectCurrentChoice >= this.tabSelectChoices.length) {
+        this.tabSelectMode = false
+        this.tabSelectChoices = []
+        this.tabSelectCurrentChoice = 0
+      } else {
+        const newChoice = this.tabSelectChoices[this.tabSelectCurrentChoice]
+        this.write(colors.muted(newChoice.slice(input.length)))
+      }
+    }
   }
 }

@@ -5,7 +5,7 @@
         var searchBox = document.querySelector('#search-box');
         var sidebarMainContent = document.querySelector('#sidebar-main-content');
 
-        var heightToSubtract = 32;
+        var heightToSubtract = 250;
 
         if (heading) {
             heightToSubtract += heading.getBoundingClientRect().height;

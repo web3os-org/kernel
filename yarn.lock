@@ -8034,6 +8034,11 @@ currently-unhandled@^0.4.1:
   dependencies:
     array-find-index "^1.0.1"
 
+custom-event-js@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/custom-event-js/-/custom-event-js-1.0.3.tgz#e9b704061f9319145fac1794c7e66019e8c3c311"
+  integrity sha512-1rFSZz9Ao8ucaHBsO33zpi2C9iueMH8PxZ4TcjwCwE1EebnxbUsb9Q65rhV2Zn9sJypSBMPTmxt/qjQnuIeI6Q==
+
 cwebp-bin@^5.0.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/cwebp-bin/-/cwebp-bin-5.1.0.tgz#d5bea87c127358558e7bf7a90a6d440d42dcb074"

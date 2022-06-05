@@ -91,9 +91,10 @@ export async function run (terminal, filename) {
       content = createObject(mime, url, appWindow)
       break
     default:
-      if (mime?.match(/^image/)) content = createImage(mime, url, appWindow)
-      if (mime?.match(/^video/)) content = createVideo(mime, url, appWindow)
-      if (mime?.match(/^audio/)) content = createAudio(mime, url, appWindow)
+      if (!mime) break
+      if (/^image/.test(mime)) content = createImage(mime, url, appWindow)
+      if (/^video/.test(mime)) content = createVideo(mime, url, appWindow)
+      if (/^audio/.test(mime)) content = createAudio(mime, url, appWindow)
   }
 
   if (!content) throw new Error('Unknown file type')

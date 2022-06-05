@@ -15,9 +15,10 @@ import rootPkgJson from '../package.json'
 import bytes from 'bytes'
 import colors from 'ansi-colors'
 import columnify from 'columnify'
+import CustomEvent from 'custom-event-js'
 import figlet from 'figlet'
 import figletFont from 'figlet/importable-fonts/Graffiti'
-import pathUtil from 'path'
+import path from 'path'
 import sweetalert from 'sweetalert2'
 import topbar from 'topbar'
 
@@ -39,14 +40,15 @@ import theme from './themes/default/index.js'
 
 export const version = rootPkgJson.version
 const figletFontName = 'Graffiti'
+const fsModules = {}
 globalThis.topbar = topbar
 
 // TODO: Whittle this down and migrate to packages
 /** The array of default builtin modules */
 export const builtinModules = [
-  'account', 'backend', 'confetti', 'contract', 'desktop', 'edit',
+  '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
   'files', 'help', 'markdown', 'peer', 'ping', 'screensaver',
-  'usb', 'view', 'wasm', 'wpm', 'www'
+  'usb', 'view', 'wasm', 'www'
 ]
 
 export const defaultPackages = [
@@ -66,32 +68,99 @@ const configDescriptions = {
 /**
  * Contains miscellaneous utilities
  * @type {Object}
- * */
-export const utils = { path: pathUtil }
+ */
+export const utils = { path, bytes }
+
 /**
  * Contains all registered kernel modules
  * @type {Object}
- * */
+ */
 export const modules = {}
+
 /**
  * Gives access to the BrowserFS API
  * @type {Object}
- * */
+ */
 export let fs
+
+/**
+ * The main kernel event bus
+ * 
+ * @type {CustomEvent}
+ * 
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent
+ * @see https://www.npmjs.com/package/custom-event-js
+ * 
+ * @property {Function} dispatch - Dispatch an event
+ * @property {string} dispatch.eventName - The name of the event
+ * @property {Object} dispatch.detail - The event detail payload
+ * @property {Function} on - Subscribe to event
+ * @property {string} on.eventName - The name of the event
+ * @property {Function} on.callback - Execute when this event is triggered
+ * @property {Function} off - Unsubscribe from event
+ * @property {string} off.eventName - The name of the event
+ * @property {Function} off.callback - Execute when this event is triggered
+ */
+export const events = CustomEvent
+
 let BrowserFS
 let memory
+
+const FileSystemOverlayConfig = {
+  // AsyncMirror is not the ideal way to handle this, but it works for now
+  // until migration from sync to async in the fsModules is complete
+  '/': {
+    fs: 'AsyncMirror',
+    options: {
+      sync: { fs: 'InMemory' },
+      async: {
+        fs: 'IndexedDB',
+        options: {
+          storeName: 'web3os'
+        }
+      }
+    }
+  },
+
+  '/mount/html5fs': {
+    fs: 'AsyncMirror',
+    options: {
+      sync: { fs: 'InMemory' },
+      async: {
+        fs: 'HTML5FS',
+        options: {}
+      }
+    }
+  },
+
+  '/bin': { fs: 'InMemory' },
+  '/tmp': { fs: 'InMemory' },
+  '/docs': { fs: 'InMemory' },
+  '/mount': { fs: 'InMemory' }
+}
 
 colors.theme(theme)
 
 /**
  * Output the boot introduction
- * @method
  * */
-export const showBootIntro = () => {
+export async function showBootIntro () {
   log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
-  log(colors.heading.success.bold(`\t    web3os kernel v${rootPkgJson.version}    `))
+  log(colors.heading.success.bold(`\n\t    web3os kernel v${rootPkgJson.version}    `))
   log(colors.warning('\t⚠           BETA          ⚠'))
-  if (navigator.deviceMemory) log(`\t\t ${colors.info('RAM >=')} ${colors.muted(navigator.deviceMemory + 'GB')}`)
+
+  if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
+  if (navigator.storage?.estimate) {
+    const storageDetails = await navigator.storage.estimate()
+    const used = bytes(storageDetails.usage)
+    const free = bytes(storageDetails.quota - storageDetails.usage)
+    log(`${colors.info('Storage:')} Used: ${colors.muted(used)} - Free: ${colors.muted(free)}`)
+  }
+
+  if (navigator.getBattery) {
+    const batt = await navigator.getBattery()
+    log(`${colors.info('Battery:')} ${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}`)
+  }
 
   if (navigator.userAgentData) {
     const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
@@ -133,6 +202,7 @@ function loadLocalStorage () {
     const storedMemory = localStorage.getItem('memory')
     if (!storedMemory) memory = { firstBootVersion: rootPkgJson.version }
     else { memory = JSON.parse(storedMemory) }
+    updateLocalStorage()
   } catch (err) {
     console.error(err)
     memory = {}
@@ -221,15 +291,24 @@ export function log (msg, options = {}) {
  * Manages interactions with the windowing system
  * @type Object
  * @property {Set} _collection - The collection of windows
+ *
  * @property {Function} create - Create a new window
  * @property {Object} create.options - Options to pass to WinBox
+ *
+ * @property {Function} find - Find a window by ID
+ * @property {string} find.id - The ID of the window (usually winbox-#; stored on app.window.id)
  */
 export const windows = {
   _collection: new Set(),
+
   create: options => {
-    const win = new AppWindow(options)
-    windows._collection.add(win)
-    return win
+    const app = new AppWindow(options)
+    windows._collection.add(app)
+    return app
+  },
+
+  find: id => {
+    return Array.from(windows._collection.values()).find(app => app.window.id === id)
   }
 }
 
@@ -339,7 +418,7 @@ export async function download (term, context) {
   let filename = context
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
 
-  if (context.match(/^(http|ftp|blob)\:/i) || context.match(/^blob/i)) {
+  if (/^(http|ftp|blob)\:/i.test(context) || /^blob/i.test(context)) {
     const url = new URL(context.split(' ')[0])
     filename = utils.path.parse(url.pathname).base
     if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
@@ -435,276 +514,301 @@ export async function snackbar (options = {}) {
 
 /**
  * Sets up the filesystem
+ * 
+ * These parameters can also be provided as a query parameter:
+ * 
+ * https://web3os.sh/?initfsUrl=https://my.place.com/initfs.zip
+ * 
+ * Bare minimum, temporary, fs:
+ * https://web3os.sh/?mountableFilesystemConfig={ "/": { "fs": "InMemory" }, "/bin": { "fs": "InMemory" } }
+ * 
  * @async
+ * @param {string=} initfsUrl - URL to a zipped filesystem snapshot
+ * @param {MountableFileSystemOptions=} mountableFilesystemConfig - Filesystem configuration object for BrowserFS for customization
+ * @see https://jvilk.com/browserfs/2.0.0-beta/index.html
  */
-export async function setupFilesystem () {
-  const browserfs = await import('browserfs')
-  const filesystem = {}
-
-  let initfs
-  const bootArgs = new URLSearchParams(globalThis.location.search)
-  const initfsUrl = bootArgs.get('initfs')
-
-  if (bootArgs.has('initfs')) {
-    try {
-      const result = await dialog({
-        title: 'Use initfs?',
-        icon: 'warning',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showDenyButton: true,
-        showLoaderOnConfirm: true,
-        focusDeny: true,
-        confirmButtonText: 'Yes',
-        html: `
-          <p>Do you want to overwrite existing files in your filesystem with the initfs located at:</p>
-          <h4><a href="${initfsUrl}" target="_blank">${initfsUrl}</a></h4>
-          <p><strong>Be sure you trust the source!</strong></p>
-        `,
-        preConfirm: async () => {
-          try {
-            return await unzip(initfsUrl)
-          } catch (err) {
-            console.error(err)
-            globalThis.Terminal?.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
-            return true
-          }
-        }
-      })
-
-      if (result.isDenied) throw new Error('User rejected using initfs')
-      const { entries } = result.value
-      initfs = entries
-      globalThis.history.replaceState(null, null, '/') // prevent reload with initfs
-    } catch (err) {
-      globalThis.Terminal?.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
-      globalThis.Terminal?.log(colors.danger(err.message))
-      console.error(err)
-    }
-  }
-
-  browserfs.install(filesystem)
-  browserfs.configure({
-    fs: 'MountableFileSystem',
-    options: {
-      '/': { fs: 'LocalStorage' },
-      // '/home': { fs: 'IndexedDB', options: { storeName: 'web3os' } },
-      '/bin': { fs: 'InMemory' },
-      '/tmp': { fs: 'InMemory' },
-      '/docs': { fs: 'InMemory' }
-    }
-  }, err => {
-    if (err) {
-      console.error(err)
-      log(colors.danger(`Failed to initialize filesystem: ${err.message}`))
-    } else {
-      BrowserFS = filesystem
-      fs = filesystem.require('fs')
-
-      // Use an initfs if available
-      if (initfs) {
-        Object.entries(initfs).forEach(async ([name, entry]) => {
-          const filepath = utils.path.join('/', name)
-
-          if (entry.isDirectory) !fs.existsSync(filepath) && fs.mkdirSync(utils.path.join('/', name))
-          else {
-            const parentDir = utils.path.parse(filepath).dir
-            if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir)
-            fs.writeFileSync(filepath, BrowserFS.Buffer.from(await entry.arrayBuffer()))
+export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
+  return new Promise(async (resolve, reject) => {
+    // const browserfs = await import('c:\\ode\\web3os\\BrowserFS')
+    const browserfs = await import('browserfs')
+    const filesystem = {}
+  
+    let initfs
+    const bootArgs = new URLSearchParams(globalThis.location.search)
+    initfsUrl = initfsUrl || bootArgs.get('initfsUrl')
+    mountableFilesystemConfig = initfsUrl || bootArgs.get('mountableFilesystemConfig')
+      ? JSON.parse(bootArgs.get('mountableFilesystemConfig')) : FileSystemOverlayConfig
+  
+    if (bootArgs.has('initfsUrl')) {
+      try {
+        const result = await dialog({
+          title: 'Use initfs?',
+          icon: 'warning',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showDenyButton: true,
+          showLoaderOnConfirm: true,
+          focusDeny: true,
+          confirmButtonText: 'Yes',
+          html: `
+            <p>Do you want to overwrite existing files in your filesystem with the initfs located at:</p>
+            <h4><a href="${initfsUrl}" target="_blank">${initfsUrl}</a></h4>
+            <p><strong>Be sure you trust the source!</strong></p>
+          `,
+          preConfirm: async () => {
+            try {
+              return await unzip(initfsUrl)
+            } catch (err) {
+              console.error(err)
+              globalThis.Terminal?.log(colors.danger(`Failed to unzip initfsUrl at ${initfsUrl}`))
+              return true
+            }
           }
         })
-      }
-
-      // Prepare required paths
-      if (!fs.existsSync('/var')) fs.mkdirSync('/var')
-      if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
-      if (!fs.existsSync('/config')) fs.mkdirSync('/config')
-      if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
-
-      // Populate /docs
-      const docs = fs.readdirSync('/docs')
-      if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
-
-      // Drag and drop on terminal
-      // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
-      // const dragover = e => { e.stopPropagation(); e.preventDefault() }
-      // const drop = e => {
-      //   e.stopPropagation()
-      //   e.preventDefault()
-      //   const dt = e.dataTransfer
-      //   const files = dt.files
-
-      //   for (const file of files) {
-      //     const reader = new FileReader()
-
-      //     reader.readAsArrayBuffer(file)
-      //     reader.onload = () => {
-      //       const buffer = BrowserFS.Buffer.from(reader.result)
-      //       const filepath = utils.path.resolve(terminal.cwd, file.name)
-      //       fs.writeFileSync(filepath, buffer)
-      //       snackbar({ labelText: `Uploaded ${filepath}` })
-      //     }
-      //   }
-      // }
-
-      // terminal.addEventListener('dragenter', dragenter)
-      // terminal.addEventListener('dragover', dragover)
-      // terminal.addEventListener('drop', drop)
-
-      // Setup FS commands
-      const fsModules = {}
-      fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
-      fsModules.cd = {
-        description: 'Change the current working directory',
-        run: (term, context) => {
-          const newCwd = utils.path.resolve(term.cwd, context)
-          if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
-          if (!fs.statSync(newCwd).isDirectory()) throw new Error(`cd: ${context}: No such directory`)
-          term.cwd = newCwd
-        }
-      }
-
-      fsModules.read = {
-        description: 'Read contents of file',
-        run: (term, context) => {
-          const dir = utils.path.resolve(term.cwd, context)
-          if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
-          return term.log(fs.readFileSync(dir, 'utf8'))
-        }
-      }
-
-      fsModules.upload = { description: 'Upload files', run: upload }
-      fsModules.download = {
-        description: 'Download URL to CWD, or download FILE to PC',
-        run: download
-      }
-
-      fsModules.mkdir = {
-        description: 'Create a directory',
-        run: (term, context) => {
-          if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
-          fs.mkdirSync(utils.path.resolve(term.cwd, context))
-        }
-      }
-
-      fsModules.rm = {
-        description: 'Remove a file',
-        run: (term, context) => {
-          const target = utils.path.resolve(term.cwd, context)
-          if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
-          if (!fs.existsSync(target)) throw new Error(`rm: ${context}: No such file`)
-          fs.unlinkSync(target)
-        }
-      }
-
-      fsModules.rmdir = {
-        description: 'Remove a directory',
-        run: (term, context) => {
-          const target = utils.path.resolve(term.cwd, context)
-          if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
-          if (!fs.existsSync(target)) throw new Error(`rmdir: ${context}: No such directory`)
-          fs.rmdirSync(target)
-        }
-      }
-
-      fsModules.mv = {
-        description: 'Move a file or directory',
-        run: (term, context) => {
-          const [fromStr, toStr] = context.split(' ')
-          const from = utils.path.resolve(term.cwd, fromStr)
-          const to = utils.path.resolve(term.cwd, toStr)
-          if (!fs.existsSync(from)) throw new Error(`mv: source ${from} does not exist`)
-          if (fs.existsSync(to)) throw new Error(`mv: target ${to} already exists`)
-          fs.renameSync(from, to)
-        }
-      }
-
-      fsModules.cp = {
-        description: 'Copy a file or directory',
-        run: (term, context) => {
-          const [fromStr, toStr] = context.split(' ')
-          const from = utils.path.resolve(term.cwd, fromStr)
-          const to = utils.path.resolve(term.cwd, toStr)
-          if (!fs.existsSync(from)) throw new Error(`cp: source ${from} does not exist`)
-          if (fs.existsSync(to)) throw new Error(`cp: target ${to} already exists`)
-          fs.copySync(from, to)
-        }
-      }
-
-      fsModules.ls = {
-        description: 'List directory contents',
-        run: (term, context) => {
-          if (!context || context === '') context = term.cwd
-          const entries = fs.readdirSync(utils.path.resolve(term.cwd, context)).sort()
-          const data = []
-
-          entries.forEach(entry => {
-            const filename = utils.path.resolve(term.cwd, context, entry)
-            const stat = fs.statSync(filename)
-
-            const isNamespacedBin = stat.isFile() && Boolean(filename.match(/^\/bin\/.+\//))
-
-            // console.log({ entry, filename, context, stat, isNamespacedBin })
-
-            const info = modules[filename.replace('/bin/', '')]
-            if (isNamespacedBin && context !== 'bin') {
-              data.push({
-                name: colors.cyanBright(entry),
-                description: colors.muted(info.description?.substr(0, 75) || '')
-              })
-            }
-
-            // Show custom output for special dirs
-            switch (utils.path.resolve(context)) {
-              case '/bin':
-                data.push({
-                  name: colors.cyanBright(entry),
-                  description: colors.muted(
-                    stat.isDirectory()
-                      ? `Packages in the ${entry} namespace`
-                      : (modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
-                  )
-                })
-
-                break
-              case '/config':
-                data.push({
-                  name: colors.cyanBright(entry),
-                  size: colors.muted(bytes(stat.size).toLowerCase()),
-                  description: colors.muted(configDescriptions[entry] || '')
-                })
-
-                break
-              default:
-                if (!isNamespacedBin) {
-                  data.push({
-                    name: stat.isDirectory() ? colors.green('/' + entry) : colors.blue(entry),
-                    type: colors.muted.em(stat.isDirectory() ? 'dir' : 'file'),
-                    size: colors.muted(bytes(stat.size).toLowerCase())
-                  })
-                }
-            }
-          })
-
-          return term.log(columnify(data, {
-            config: {
-              name: { minWidth: 20 },
-              type: { minWidth: 8 },
-              size: { minWidth: 8 }
-            }
-          }))
-        }
-      }
-
-      // FS command aliases
-      fsModules.cat = { description: 'Alias of read', run: fsModules.read.run }
-      fsModules.dir = { description: 'Alias of ls', run: fsModules.ls.run }
-      fsModules.rename = { description: 'Alias of mv', run: fsModules.mv.run }
-
-      for (const [name, mod] of Object.entries(fsModules)) {
-        loadModule(mod, { name: `@web3os-fs/${name}` })
+  
+        if (result.isDenied) throw new Error('User rejected using initfs')
+        const { entries } = result.value
+        initfs = entries
+        globalThis.history.replaceState(null, null, '/') // prevent reload with initfs
+      } catch (err) {
+        globalThis.Terminal?.log(colors.danger('Failed to unzip initfsUrl ' + initfsUrl))
+        globalThis.Terminal?.log(colors.danger(err.message))
+        console.error(err)
       }
     }
+  
+    browserfs.install(filesystem)
+    browserfs.configure({
+      fs: 'MountableFileSystem',
+      options: mountableFilesystemConfig
+    }, err => {
+      if (err) {
+        console.error(err)
+        log(colors.danger(`Failed to initialize filesystem: ${err.message}`))
+      } else {
+        BrowserFS = filesystem
+        fs = filesystem.require('fs')
+  
+        // Use an initfs if available
+        if (initfs) {
+          Object.entries(initfs).forEach(async ([name, entry]) => {
+            const filepath = utils.path.join('/', name)
+  
+            if (entry.isDirectory) !fs.existsSync(filepath) && fs.mkdirSync(utils.path.join('/', name))
+            else {
+              const parentDir = utils.path.parse(filepath).dir
+              if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir)
+              fs.writeFileSync(filepath, BrowserFS.Buffer.from(await entry.arrayBuffer()))
+            }
+          })
+        }
+  
+        // Prepare required paths
+        if (!fs.existsSync('/var')) fs.mkdirSync('/var')
+        if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
+        if (!fs.existsSync('/config')) fs.mkdirSync('/config')
+        if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
+  
+        // Populate /docs
+        try {
+          const docs = fs.readdirSync('/docs')
+          if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
+        } catch {}
+  
+        // Drag and drop on terminal
+        // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
+        // const dragover = e => { e.stopPropagation(); e.preventDefault() }
+        // const drop = e => {
+        //   e.stopPropagation()
+        //   e.preventDefault()
+        //   const dt = e.dataTransfer
+        //   const files = dt.files
+  
+        //   for (const file of files) {
+        //     const reader = new FileReader()
+  
+        //     reader.readAsArrayBuffer(file)
+        //     reader.onload = () => {
+        //       const buffer = BrowserFS.Buffer.from(reader.result)
+        //       const filepath = utils.path.resolve(terminal.cwd, file.name)
+        //       fs.writeFileSync(filepath, buffer)
+        //       snackbar({ labelText: `Uploaded ${filepath}` })
+        //     }
+        //   }
+        // }
+  
+        // terminal.addEventListener('dragenter', dragenter)
+        // terminal.addEventListener('dragover', dragover)
+        // terminal.addEventListener('drop', drop)
+  
+        // Setup FS commands
+        fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
+        fsModules.cd = {
+          description: 'Change the current working directory',
+          run: (term, context) => {
+            const newCwd = utils.path.resolve(term.cwd, context)
+            if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
+            if (!fs.statSync(newCwd).isDirectory()) throw new Error(`cd: ${context}: No such directory`)
+            term.cwd = newCwd
+          }
+        }
+  
+        fsModules.read = {
+          description: 'Read contents of file',
+          run: (term, context) => {
+            const dir = utils.path.resolve(term.cwd, context)
+            if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
+            return term.log(fs.readFileSync(dir, 'utf8'))
+          }
+        }
+  
+        fsModules.upload = { description: 'Upload files', run: upload }
+        fsModules.download = {
+          description: 'Download URL to CWD, or download FILE to PC',
+          run: download
+        }
+  
+        fsModules.mkdir = {
+          description: 'Create a directory',
+          run: (term, context) => {
+            if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
+            fs.mkdirSync(utils.path.resolve(term.cwd, context))
+          }
+        }
+  
+        fsModules.rm = {
+          description: 'Remove a file',
+          run: (term, context) => {
+            const target = utils.path.resolve(term.cwd, context)
+            if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
+            if (!fs.existsSync(target)) throw new Error(`rm: ${context}: No such file`)
+            if (fs.statSync(target).isDirectory()) throw new Error(`rm: ${context}: Is a directory, use rmdir`)
+            fs.unlinkSync(target)
+          }
+        }
+  
+        fsModules.rmdir = {
+          description: 'Remove a directory and all of its contents',
+          run: (term, context) => {
+            const target = utils.path.resolve(term.cwd, context)
+            if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
+            if (!fs.existsSync(target)) throw new Error(`rmdir: ${context}: No such directory`)
+            if (!fs.statSync(target).isDirectory()) throw new Error(`rm: ${context}: Is not a directory, use rm`)
+  
+            const entries = fs.readdirSync(target)
+  
+            if (entries.length === 0) {
+              return
+            }
+  
+            for (const entry of entries) {
+              const entryPath = utils.path.join(target, entry)
+              const entryStat = fs.statSync(entryPath)
+              if (entryStat.isDirectory()) fsModules.rmdir.run(term, entryPath)
+              else fs.unlinkSync(entryPath)
+            }
+  
+            console.log({ emptyDirs })
+          }
+        }
+  
+        fsModules.mv = {
+          description: 'Move a file or directory',
+          run: (term, context) => {
+            const [fromStr, toStr] = context.split(' ')
+            const from = utils.path.resolve(term.cwd, fromStr)
+            const to = utils.path.resolve(term.cwd, toStr)
+            if (!fs.existsSync(from)) throw new Error(`mv: source ${from} does not exist`)
+            if (fs.existsSync(to)) throw new Error(`mv: target ${to} already exists`)
+            fs.renameSync(from, to)
+          }
+        }
+  
+        fsModules.cp = {
+          description: 'Copy a file or directory',
+          run: (term, context) => {
+            const [fromStr, toStr] = context.split(' ')
+            const from = utils.path.resolve(term.cwd, fromStr)
+            const to = utils.path.resolve(term.cwd, toStr)
+            if (!fs.existsSync(from)) throw new Error(`cp: source ${from} does not exist`)
+            if (fs.existsSync(to)) throw new Error(`cp: target ${to} already exists`)
+            fs.copySync(from, to)
+          }
+        }
+  
+        fsModules.ls = {
+          description: 'List directory contents',
+          run: (term, context) => {
+            if (!context || context === '') context = term.cwd
+            const entries = fs.readdirSync(utils.path.resolve(term.cwd, context)).sort()
+            const data = []
+  
+            entries.forEach(entry => {
+              const filename = utils.path.resolve(term.cwd, context, entry)
+              const stat = fs.statSync(filename)
+  
+              const isNamespacedBin = stat.isFile() && /^\/bin\/.+\//.test(filename)
+  
+              // console.log({ entry, filename, context, stat, isNamespacedBin })
+  
+              const info = modules[filename.replace('/bin/', '')]
+              if (isNamespacedBin && context !== 'bin') {
+                data.push({
+                  name: colors.cyanBright(entry),
+                  description: colors.muted(info.description?.substr(0, 75) || '')
+                })
+              }
+  
+              // Show custom output for special dirs
+              switch (utils.path.resolve(context)) {
+                case '/bin':
+                  data.push({
+                    name: colors.cyanBright(entry),
+                    description: colors.muted(
+                      stat.isDirectory()
+                        ? `Packages in the ${entry} namespace`
+                        : (modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
+                    )
+                  })
+  
+                  break
+                case '/config':
+                  data.push({
+                    name: colors.cyanBright(entry),
+                    size: colors.muted(bytes(stat.size).toLowerCase()),
+                    description: colors.muted(configDescriptions[entry] || '')
+                  })
+  
+                  break
+                default:
+                  if (!isNamespacedBin) {
+                    data.push({
+                      name: stat.isDirectory() ? colors.green('/' + entry) : colors.blue(entry),
+                      type: colors.muted.em(stat.isDirectory() ? 'dir' : 'file'),
+                      size: colors.muted(bytes(stat.size).toLowerCase())
+                    })
+                  }
+              }
+            })
+  
+            return term.log(columnify(data, {
+              config: {
+                name: { minWidth: 20 },
+                type: { minWidth: 8 },
+                size: { minWidth: 8 }
+              }
+            }))
+          }
+        }
+  
+        // FS command aliases
+        fsModules.cat = { description: 'Alias of read', run: fsModules.read.run }
+        fsModules.dir = { description: 'Alias of ls', run: fsModules.ls.run }
+        fsModules.rename = { description: 'Alias of mv', run: fsModules.mv.run }
+
+        resolve(fs)
+      }
+    })
   })
 }
 
@@ -720,6 +824,7 @@ async function registerKernelBins () {
   const kernelBins = []
   kernelBins.alert = { description: 'Show an alert', run: (term, context) => dialog({ text: context }) }
   kernelBins.clear = { description: 'Clear the terminal', run: term => term.clear() }
+  kernelBins.docs = { description: 'Open the documentation', run: term => { modules.www.run(term, '--title "Web3os Documentation" --no-toolbar /docs') }}
   kernelBins.dump = { description: 'Dump the memory state', run: term => term.log(dump()) }
   kernelBins.echo = { description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }
   kernelBins.history = { description: 'Show command history', run: term => { return term.log(JSON.stringify(term.history)) } }
@@ -727,6 +832,7 @@ async function registerKernelBins () {
   kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
   kernelBins.notify = { description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
+  kernelBins.storage = { description: 'Display storage usage information', run: async term => term.log(await navigator.storage.estimate()) }
   kernelBins.reboot = { description: 'Reload web3os', run: () => location.reload() }
   kernelBins.restore = { description: 'Restore the memory state', run: (term, context) => restore(context) }
   kernelBins.snackbar = { description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
@@ -942,16 +1048,16 @@ export async function loadPackages () {
   const packages = JSON.parse(fs.readFileSync('/config/packages').toString())
   for await (const pkg of packages) {
     try {
-      if (pkg.match(/^(http|ftp).*\:/i)) {
-        if (modules?.wpm) {
-          await modules.wpm.install(pkg, { warn: false })
+      if (/^(http|ftp).*\:/i.test(pkg)) {
+        if (modules?.['3pm']) {
+          await modules['3pm'].install(pkg, { warn: false })
         } else {
-          const waitForWpm = async () => {
-            if (!modules?.wpm) return setTimeout(waitForWpm, 500)
-            await modules.wpm.install(pkg, { warn: false })
+          const waitFor3pm = async () => {
+            if (!modules?.['3pm']) return setTimeout(waitFor3pm, 500)
+            await modules['3pm'].install(pkg, { warn: false })
           }
 
-          setTimeout(waitForWpm, 500)
+          await waitFor3pm()
         }
 
         continue
@@ -1118,6 +1224,7 @@ export async function boot () {
 
   // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
+    events.dispatch('ShowSplash')
     const closeSplash = await showSplash()
     setTimeout(closeSplash, 1500) // Prevent splash flash. The splash is pretty and needs to be seen and validated.
     document.querySelector('#web3os-terminal').style.display = 'block'
@@ -1153,16 +1260,24 @@ export async function boot () {
 
     await showBootIntro()
     await loadLocalStorage()
+    events.dispatch('MemoryLoaded', memory)
     await setupFilesystem()
+    events.dispatch('FilesystemLoaded')
+
+    for await (const [name, mod] of Object.entries(fsModules)) loadModule(mod, { name: `@web3os-fs/${name}` })
+
     await registerKernelBins()
+    events.dispatch('KernelBinsLoaded')
     await registerBuiltinModules()
+    events.dispatch('BuiltinModulesLoaded')
     await loadPackages()
+    events.dispatch('PackagesLoaded')
 
     // Copy namespaced core modules onto root object
-    const web3osNamespaces = ['@web3os-core', '@web3os-fs']
+    const web3osCoreNamespaces = ['@web3os-core', '@web3os-fs']
     for (const mod of Object.values(modules)) {
       const [namespace, name] = mod.name.split('/')
-      if (web3osNamespaces.includes(namespace)) modules[name] = mod
+      if (web3osCoreNamespaces.includes(namespace)) modules[name] = mod
     }
 
     // Check for notification permission and request if necessary
@@ -1170,7 +1285,9 @@ export async function boot () {
     if (Notification?.permission === 'denied') log(colors.warning('Notification permission denied'))
 
     localStorage.setItem('web3os_first_boot_complete', 'true')
+    events.dispatch('AutostartStart')
     await autostart()
+    events.dispatch('AutostartEnd')
     await execute('confetti --startVelocity 90 --particleCount 150')
     topbar.hide()
   })
@@ -1192,7 +1309,10 @@ let idleTimer
 const resetIdleTime = () => {
   clearTimeout(idleTimer)
   if (!modules.screensaver) return
-  idleTimer = setTimeout(() => modules.screensaver.run(globalThis.Terminal, get('user', 'screensaver') || 'matrix'), get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
+  idleTimer = setTimeout(() => {
+    events.dispatch('ScreensaverStart')
+    modules.screensaver.run(globalThis.Terminal, get('user', 'screensaver') || 'matrix')
+  }, get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
 }
 
 globalThis.addEventListener('load', resetIdleTime)

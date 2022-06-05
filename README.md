@@ -79,7 +79,7 @@ The project is still very young, and more documentation and organization is Comi
 - Optional desktop environment
 - Optional backend environment runs in Docker container
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
-- [Web3OS Package Manager](#web3os-package-manager)
+- [3pm: The Web3OS Package Manager](#web3os-package-manager)
 - Modules may also be imported with [SystemJS](https://github.com/systemjs/systemjs)
 - Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
@@ -101,11 +101,14 @@ The project is still very young, and more documentation and organization is Comi
   - [WIP] [Emscripten](https://emscripten.org/)
   - [WIP] [AssemblyScript](https://www.assemblyscript.org/)
 - Decentralized:
-  - Open source to run your own copy
+  - Open source to run and customize your own copy
+  - Included Fleek and Netlify configs for easy deployment
   - Main site hosted on [Fleek](https://fleek.co)
   - Backup site hosted on IPFS
 - Developer-friendly:
-  - Easily scriptable
+  - Easily scriptable and customizable
+  - Use an [initfsUrl](https://docs.web3os.sh/global.html#setupFilesystem) query param to load a ZIP file from a URL to populate your filesystem
+  - Use a [mountableFileSystemConfig](https://docs.web3os.sh/global.html#setupFilesystem) query param to specify how your filesystems should be mounted
   - Install nearly any browser package from npm
   - Programs are just HTML/CSS/JS/WebGL, or any language that compiles to WebAssembly
 
@@ -245,13 +248,13 @@ See some sample scripts at: [https://github.com/web3os-org/sample-scripts](https
 
 ---
 
-The `wpm` command can be used to manage installed packages. Installing a package adds an entry to `/config/packages` and all packages in this file are loaded on startup.
+The `3pm` command can be used to manage installed packages. Installing a package adds an entry to `/config/packages` and all packages in this file are loaded on startup.
 
 Packages are generally ES Modules, located at a url that contains a `package.json`.
 
-You can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com) (this is the default wpm registry).
+You can attempt to install any package from npm using a CDN such as [unpkg](https://unpkg.com) (this is the default 3pm registry).
 
-This means that during development, you can serve up your app locally, with Live Server for example, and `wpm install http://localhost:5500`.
+This means that during development, you can serve up your app locally, with Live Server for example, and `3pm install http://localhost:5500`.
 
 You may also just use the `import` command to directly import an ES module from a URL. Or bypass all of this and use your own technique!
 
@@ -260,19 +263,19 @@ Dependency management is another monster altogether, so that's still a WIP. This
 Here are a few examples of npm libraries that can be successfully loaded in web3os:
 
 - [lodash](https://www.npmjs.com/package/lodash)
-  - `wpm install lodash`
+  - `3pm install lodash`
   - This doesn't add an executable, but `_` is now available in the global scope.
 
 - [jquery](https://www.npmjs.com/package/jquery)
-  - `wpm install jquery`
+  - `3pm install jquery`
   - This doesn't add an executable, but `$` is now available in the global scope.
 
 - [moment](https://momentjs.com)
-  - `wpm install --umd moment`
+  - `3pm install --umd moment`
   - `const now = Kernel.modules.moment.run()`
 
 - [umbrellajs](https://umbrellajs.com/)
-  - `wpm install umbrellajs --main umbrella.esm.js`
+  - `3pm install umbrellajs --main umbrella.esm.js`
   - Now you can use it:
     - `const u = Kernel.modules.umbrellajs.default`
     - `const body = u('body')`
@@ -448,9 +451,9 @@ Access the array of devices within an app: `Kernel.modules.usb.devices`
 
 - There's a lot to do... please help. 😅
 - Decoupling of built-in apps into their own packages
-- Unified WASM handling
+- Unified WASM handling (or just give up and focus on Emscripten)
 - Finish development of backend Node.js web3os-server API
-- Rewrite expensive core modules in Rust
+- Rewrite expensive core modules using Emscripten
 - Improve security/isolation
 - Some apps are just placeholders
 - Modify command interfaces to conform to IEEE Std 1003.1-2017

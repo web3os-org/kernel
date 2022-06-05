@@ -27,7 +27,7 @@ export const help = `
     edit <filename>
 `
 
-let kernel
+let kernel = globalThis.Kernel
 
 async function executeFile ({ filename, extension }) {
   try {

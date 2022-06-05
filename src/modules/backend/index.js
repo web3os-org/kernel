@@ -1,5 +1,6 @@
 import colors from 'ansi-colors'
 import Web3osTerminal from '../../terminal'
+import { term } from '../account'
 
 const { create: createTerminal } = Web3osTerminal
 
@@ -16,12 +17,14 @@ export const help = `
 
 `
 
-let kernel
+let kernel = globalThis.Kernel
 let oldPrompt
 export let connection
 
 async function authSign ({ address, key }) {
-  console.log('authSign', { address, key })
+  const isAnonymous = /^anon\:/.test(address)
+  console.log('authSign', { isAnonymous, address, key })
+  if (isAnonymous) throw new Error('Cannot authenticate without a connected wallet')
   const signature = await kernel.modules.account.sign(JSON.stringify({ address, key }))
   connection.send(`auth-verify ${signature}`)
 }
@@ -83,36 +86,51 @@ export async function run (terminal, context = '') {
       const initHandler = async e => {
         console.log('backend:init', e.data)
 
-        if (e.data === 'HI') return connection.send(kernel.wallet.account.address)
+        if (e.data === 'HI') return connection.send(kernel.modules.account.account.address)
         if (e.data.split(' ')[0] === 'SUCCESS') {
-          log(colors.success("We're in. 🚀"))
+          log(colors.success("\nWe're in. 🚀"))
           oldPrompt = terminal.promptFormat
-          terminal.prompt(terminal.promptFormat.replace('#', `{${colors.warning(host)}}#`))
+          terminal.prompt(terminal.promptFormat.replace('#', `${colors.warning(`{${host}}`)}#`))
 
           const handler = async ({ data }) => {
             data = data[0] === '{' ? JSON.parse(data) : data
             console.log('backend:handler', data)
+            if (typeof data === 'string') return log(data)
 
-            switch (data.cmd) {
-              case 'authSign':
-                await authSign(data.payload)
-                break
-              case 'stream:start':
-                console.log('stream:start')
-                connection.removeEventListener('message', handler)
-                break
-              case 'stream:end':
-                console.log('stream:end')
-                connection.addEventListener('message', handler)
-                break
-              default:
-                // log('\n' + data)
-                // terminal.prompt()
+            const { address, key } = data.payload
+            if (!address) throw new Error('Payload has no address')
+            if (!key) throw new Error('Payload has no key')
+
+            try {
+              switch (data.cmd) {
+                case 'authSign':
+                  await authSign(data.payload)
+                  break
+                case 'stream:start':
+                  console.log('stream:start')
+                  connection.removeEventListener('message', handler)
+                  break
+                case 'stream:end':
+                  console.log('stream:end')
+                  connection.addEventListener('message', handler)
+                  break
+                default:
+                  log('\n' + data)
+                  terminal.prompt()
+              }
+            } catch (err) {
+              console.error(err)
+              log(err.message)
+              terminal.prompt()
             }
           }
 
           connection.removeEventListener('message', initHandler)
           connection.addEventListener('message', handler)
+        } else {
+          console.error(e)
+          terminal.log(e.data)
+          throw new Error(e.data)
         }
       }
 

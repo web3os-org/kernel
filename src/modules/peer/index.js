@@ -58,7 +58,7 @@ export const spec = {
   '--video': Boolean
 }
 
-let kernel
+let kernel = globalThis.Kernel
 let terminal
 export let id = ''
 export let instance
