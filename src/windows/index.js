@@ -4,7 +4,8 @@ import WinBox from 'winbox/src/js/winbox.js'
 
 const defaults = {
   class: 'web3os-window',
-  title: 'Untitled Window'
+  title: 'Untitled Window',
+  max: window.innerWidth < 768
 }
 
 class AppWindow {

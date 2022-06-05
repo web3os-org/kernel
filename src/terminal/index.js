@@ -116,6 +116,22 @@ export default class Web3osTerminal extends Terminal {
         return result
       }
     })
+
+    // Wait for textarea and apply fixes for mobile
+    const waitInterval = setInterval(() => {
+      if (this.textarea) {
+        clearInterval(waitInterval)
+        this.textarea.setAttribute('enterkeyhint', 'send')
+
+        const pollInterval = setInterval(() => {
+          const input = this.textarea.value
+          if (input.trim().length > 0 && this.cmd.trim().length < input.trim().length) {
+            this.cmd = input
+            this.cursorPosition = this.cmd.length
+          }
+        }, 100)
+      }
+    }, 100)
   }
 
   /**
@@ -285,35 +301,38 @@ export default class Web3osTerminal extends Terminal {
           break
         }
 
+        if (this.debug) console.log('Enter:', this.cmd, this.textarea)
+
         this.write('\n')
         this.unlisten()
 
-        if (this.cmd.trim().length > 0) {
-          this.interruptListener = this.onKey(this.interruptHandler.bind(this))
-          this.history.push(this.cmd)
+        // Mobileish keyboard
+        if (this.cmd.trim().length === 0 && this.textarea.value.trim().length > 0) this.cmd = this.textarea.value.trim()
 
-          let exec = this.aliases[this.cmd] ? this.aliases[this.cmd] : this.cmd
-          const options = { terminal: this, doPrompt: true }
+        if (this.cmd.trim().length === 0) return this.prompt()
 
-          const customCommand = this.customCommands?.find(c => c.name === this.cmd.split(' ')[0])
-          if (customCommand) customCommand.run(this, this.cmd.split(' ').slice(1).join(' '))
-          else {
-            if (/^\/bin\/.+/.test(this.cwd)) {
-              const scopedBin = path.join(this.cwd, this.cmd)
-              if (this.kernel.fs.existsSync(scopedBin)) {
-                this.kernel.execute(scopedBin.replace('/bin/', ''), options)
-              } else {
-                this.kernel.execute(exec, options)
-              }
+        this.interruptListener = this.onKey(this.interruptHandler.bind(this))
+        this.history.push(this.cmd)
+
+        let exec = this.aliases[this.cmd] ? this.aliases[this.cmd] : this.cmd
+        const options = { terminal: this, doPrompt: true }
+
+        const customCommand = this.customCommands?.find(c => c.name === this.cmd.split(' ')[0])
+        if (customCommand) customCommand.run(this, this.cmd.split(' ').slice(1).join(' '))
+        else {
+          if (/^\/bin\/.+/.test(this.cwd)) {
+            const scopedBin = path.join(this.cwd, this.cmd)
+            if (this.kernel.fs.existsSync(scopedBin)) {
+              this.kernel.execute(scopedBin.replace('/bin/', ''), options)
             } else {
-              const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
-              const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
-              if (match) exec = path.join(`${match}/${exec.split(' ')[0]}`) + ' ' + exec.split(' ').slice(1).join(' ')
               this.kernel.execute(exec, options)
             }
+          } else {
+            const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
+            const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
+            if (match) exec = path.join(`${match}/${exec.split(' ')[0]}`) + ' ' + exec.split(' ').slice(1).join(' ')
+            this.kernel.execute(exec, options)
           }
-        } else {
-          return this.prompt()
         }
 
         this.cmd = ''

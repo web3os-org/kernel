@@ -75,6 +75,10 @@
   background-color: #500f4a;
 }
 
+#web3os-desktop-exit-button, #web3os-desktop-menu-button, #web3os-desktop-shell-button {
+  user-select: none;
+}
+
 .web3os-desktop-launcher-window {
   background: #121212;
 }

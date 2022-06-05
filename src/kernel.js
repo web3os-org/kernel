@@ -103,6 +103,14 @@ export let fs
  */
 export const events = CustomEvent
 
+/**
+ * Create a new primary Broadcast Channel for web3os
+ * 
+ * @type {BroadcastChannel}
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
+ */
+export const broadcast = new BroadcastChannel('web3os')
+
 let BrowserFS
 let memory
 
@@ -145,9 +153,10 @@ colors.theme(theme)
  * Output the boot introduction
  * */
 export async function showBootIntro () {
-  log(colors.info(`\t Made with  ${colors.red('♥')}  by Jay Mathis`))
-  log(colors.heading.success.bold(`\n\t    web3os kernel v${rootPkgJson.version}    `))
-  log(colors.warning('\t⚠           BETA          ⚠'))
+  const isSmall = window.innerWidth <= 445
+  log(colors.info(`${isSmall ? '' : '\t '}Made with  ${colors.red('♥')}  by Jay Mathis`))
+  log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}    web3os kernel v${rootPkgJson.version}    `))
+  log(colors.warning(`${isSmall ? '' : '\t '}⚠           BETA          ⚠`))
 
   if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
   if (navigator.storage?.estimate) {
@@ -167,7 +176,7 @@ export async function showBootIntro () {
     const browser = `${brand} v${version}`
 
     Terminal.write(`${colors.info('Browser:')} ${colors.muted(browser)}`)
-    Terminal.write(`\t${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform || 'Unknown')}\n`)
+    Terminal.write(`${isSmall ? '\n' : '\t '}${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform || 'Unknown')}\n`)
   }
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
@@ -1238,11 +1247,12 @@ export async function boot () {
 
   setInterval(() => globalThis.Terminal?.fit(), 200)
 
+  const isSmall = window.innerWidth <= 445
   figlet.parseFont(figletFontName, figletFont)
   figlet.text('web3os', { font: figletFontName }, async (err, data) => {
     if (err) log(err)
     if (data && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
-    else log(`\n${colors.green.bold('\t\t   web3os')}`)
+    else log(`\n${colors.green.bold(`${isSmall ? '' : '\t   '}web3os`)}`)
 
     console.log(`%cweb3os %c${rootPkgJson.version}`, `
       font-family: "Lucida Console", Monaco, monospace;
@@ -1290,6 +1300,15 @@ export async function boot () {
     events.dispatch('AutostartEnd')
     await execute('confetti --startVelocity 90 --particleCount 150')
     topbar.hide()
+    const heartbeat = setInterval(() => navigator.vibrate([200, 50, 200]), 1000)
+    setTimeout(() => clearInterval(heartbeat), 5000)
+    
+    // Expose this globally in case it needs to be cleared externally by an app
+    window.blinkyTitleInterval = setInterval(() => {
+      document.title = document.title.includes('_') ? 'web3os# ' : 'web3os# _'
+    }, 600)
+
+    events.dispatch('BootComplete')
   })
 }
 

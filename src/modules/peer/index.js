@@ -15,7 +15,7 @@ export const help = `
     peer <command> <args> [options]
 
   Default Connection Broker:
-    ${colors.bold("kernel.get('peerjs', 'server-host')")} if set, or ${colors.bold('0.peerjs.com')}
+    ${colors.bold("Kernel.get('peerjs', 'server-host')")} if set, or ${colors.bold('0.peerjs.com')}
 
   Commands:
     call <peer-id> [--video] [--audio]     Call a peer with media streams
@@ -24,6 +24,7 @@ export const help = `
     id                                     Display your peer ID
     list                                   List available peers
     send <peer-id> [--text] [--json]       Send a message
+    screen <peer-id>                       Share your screen with a peer
     upload <peer-id> [--file]              Upload a file to a peer
 
   Options:
@@ -137,9 +138,10 @@ export function setupInstance () {
 
 async function processIncomingData (data, connection) {
   if (typeof data === 'object') {
+    let result
     switch (data.cmd) {
       case 'chat':
-        const result = await kernel.dialog({
+        result = await kernel.dialog({
           title: 'Incoming Chat',
           html: `<p>Peer ID:<br />${connection.peer}</p><h3>Accept?</h3>`,
           showDenyButton: true,
@@ -147,6 +149,16 @@ async function processIncomingData (data, connection) {
         })
 
         if (result.isConfirmed) openChatWindow(connections[connection.peer])
+        break
+      case 'screen':
+        result = await kernel.dialog({
+          title: 'Incoming Screenshare',
+          html: `<p>Peer ID:<br />${connection.peer}</p><h3>Accept?</h3>`,
+          showDenyButton: true,
+          confirmButtonText: 'Yes'
+        })
+
+        if (result.isConfirmed) openScreenWindow(connections[connection.peer])
         break
       default:
         throw new Error(`Invalid command ${JSON.stringify(data)} received from peer ${connection.peer}`)
@@ -200,7 +212,7 @@ export async function call (peerId, args) {
   })
 }
 
-function openChatWindow (peer) {
+export function openChatWindow (peer) {
   const container = document.createElement('div')
   container.classList.add(styles.container)
   const chat = document.createElement('div')
@@ -262,6 +274,69 @@ export async function chat (peerId) {
   openChatWindow(peer)
 }
 
+export async function screen (peerId) {
+  const peer = connections[peerId]
+  if (!peer) throw new Error('Not connected to that peer')
+  if (!navigator.mediaDevices) throw new Error('Media devices not available')
+  
+  const stream = await navigator.mediaDevices.getDisplayMedia()
+  const call = instance.call(peerId, stream)
+
+  call.on('stream', peerStream => {
+    const video = document.createElement('video')
+    video.style.width = '100%'
+    video.style.height = '100%'
+
+    if ('srcObject' in video) {
+      video.srcObject = peerStream
+    } else {
+      video.src = URL.createObjectURL(peerStream)
+    }
+
+    video.onloadedmetadata = () => video.play()
+
+    kernel.windows.create({
+      title: `Screen: ${call.peer}`,
+      mount: video,
+      max: true
+    })
+  })
+}
+
+export function openScreenWindow (peer) {
+  const container = document.createElement('div')
+
+  const receiveMessage = data => {
+    if (typeof data !== 'string') return
+    const bubble = document.createElement('div')
+    bubble.classList.add(styles.bubble, styles.toMe)
+    bubble.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2)
+    chat.appendChild(bubble)
+    bubble.scrollIntoView()
+  }
+
+  const sendMessage = data => {
+    if (!data || data === '') return
+    const bubble = document.createElement('div')
+    bubble.classList.add(styles.fromMe)
+    bubble.textContent = data
+    chat.appendChild(bubble)
+    bubble.scrollIntoView()
+    peer.connection.send(data)
+  }
+
+  peer.connection.on('data', receiveMessage)
+  peer.connection.send({ cmd: 'screen' })
+
+  kernel.windows.create({
+    title: `Screen: ${peer.connection.peer}`,
+    mount: container,
+    width: '100%'
+  })
+
+  // TODO: peer.off onclose
+}
+
 export async function run (term, context = '') {
   const args = arg(spec, { argv: cliParse(context) })
   if (args['--version']) return term.log(version)
@@ -305,6 +380,8 @@ export async function run (term, context = '') {
       return await chat(args._?.[1], args)
     case 'call':
       return await call(args._?.[1], args)
+    case 'screen':
+      return await screen(args._?.[1], args)
     case 'list':
       return term.log(Object.keys(connections))
     default:
