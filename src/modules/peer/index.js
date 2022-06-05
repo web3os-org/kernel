@@ -282,7 +282,7 @@ export async function screen (peerId) {
   const stream = await navigator.mediaDevices.getDisplayMedia()
   const call = instance.call(peerId, stream)
 
-  call.on('stream', peerStream => {
+  call.on('stream', (peerStream) => {
     const video = document.createElement('video')
     video.style.width = '100%'
     video.style.height = '100%'
