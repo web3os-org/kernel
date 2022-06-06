@@ -12,6 +12,7 @@ export const help = `
     files <path>         Open a window at <url>
 `
 
+export let appWindow
 let kernel = globalThis.Kernel
 let history = []
 let historyPosition = 0
@@ -225,11 +226,7 @@ async function loadFolder (browser, url) {
           return loadFolder(browser, location)
         }
 
-        const runIt = where => {
-          kernel.execute(where)
-        }
-
-        if (isBin) return kernel.execute(location)
+        if (isBin) return kernel.execute(location) && appWindow.window.minimize()
 
         const promptExecute = async allow => {
           const { isConfirmed } = await kernel.dialog({
@@ -248,26 +245,26 @@ async function loadFolder (browser, url) {
 
         switch (extension) {
           case '.sh':
-            return promptExecute(() => kernel.executeScript(location))
+            return promptExecute(() => kernel.executeScript(location) && appWindow.window.minimize())
           case '.js':
-            return promptExecute(() => kernel.execute(`eval ${location}`))
+            return promptExecute(() => kernel.execute(`eval ${location}`) && appWindow.window.minimize())
           case '.json':
           case '.txt':
-            return kernel.execute(`edit ${location}`)
+            return kernel.execute(`edit ${location}`) && appWindow.window.minimize()
           case '.md':
-            return kernel.execute(`markdown ${location}`)
+            return kernel.execute(`markdown ${location}`) && appWindow.window.minimize()
           case '.link':
             try {
               const { url, useWeb3osBrowser } = JSON.parse(kernel.fs.readFileSync(location, 'utf8'))
               if (!useWeb3osBrowser) globalThis.open(url, '_blank')
-              else kernel.execute(`www ${url}`)
+              else { kernel.execute(`www ${url}`) && appWindow.window.minimize() }
             } catch (err) {
               console.error(err)
               kernel.dialog({ title: 'Error', text: err.message, icon: 'error' })
             }
             break
           default:
-            if (mime && /^(image|video|audio|application\/pdf)/.test(mime)) return kernel.execute(`view ${location}`)
+            if (mime && /^(image|video|audio|application\/pdf)/.test(mime)) return kernel.execute(`view ${location}`) && appWindow.window.minimize()
             kernel.execute("alert I'm not sure how to handle this file!")
         }
       })
@@ -416,7 +413,7 @@ export async function run (terminal, url) {
   browser.addEventListener('dragover', dragover)
   browser.addEventListener('drop', drop)
 
-  const appWindow = kernel.windows.create({
+  appWindow = kernel.windows.create({
     mount: browser,
     title: url,
     class: ['web3os-window', 'web3os-files-explorer-window'],

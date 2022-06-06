@@ -1,6 +1,7 @@
 import arg from 'arg'
 import path from 'path'
 import colors from 'ansi-colors'
+import { term } from '../account'
 
 export const name = 'ipfs'
 export const version = '0.1.0'
@@ -76,8 +77,10 @@ export async function run (terminal = globalThis.Terminal, context = '') {
 
   if (args['--help']) return terminal.log(help)
   if (args['--version']) return terminal.log(version)
-  if (!ipfs) ipfs = await import('ipfs-core')
-  if (!inst) inst = await ipfs.create()
+
+  return term.log('IPFS temporarily disabled')
+  // if (!ipfs) ipfs = await import('ipfs-core')
+  // if (!inst) inst = await ipfs.create()
   args.terminal = terminal
 
   switch (cmd) {
