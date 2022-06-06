@@ -27,6 +27,7 @@ specifiers:
   as-bind: ^0.8.2
   assemblyscript: ^0.19.22
   avalanche: ^3.13.3
+  awesome-notifications: ^3.1.3
   babel-loader: ^8.2.3
   bip32: ^3.0.1
   bitcoinjs-lib: ^6.0.1
@@ -138,6 +139,7 @@ dependencies:
   arg: 5.0.2
   as-bind: 0.8.2_e7dupdiu56sxvhq5kvzojefg5u
   avalanche: 3.14.1
+  awesome-notifications: 3.1.3
   bip32: 3.0.1
   bitcoinjs-lib: 6.0.1
   browserfs: github.com/web3os-org/BrowserFS/a96aa2d417995dac7d376987839bc4e95e218e06
@@ -5312,6 +5314,10 @@ packages:
       - bufferutil
       - debug
       - utf-8-validate
+    dev: false
+
+  /awesome-notifications/3.1.3:
+    resolution: {integrity: sha512-bEm+52ePN9IQipu77YN/7Ia7hkSlZjLTra8/Y+vTfZUt+oB5jPA601akBi7uxJ8VghvpmuhwARUBQ2Iae3J8Sg==}
     dev: false
 
   /aws-sign2/0.7.0:

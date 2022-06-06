@@ -12,6 +12,7 @@
 
 import rootPkgJson from '../package.json'
 
+import AwesomeNotifications from 'awesome-notifications'
 import bytes from 'bytes'
 import colors from 'ansi-colors'
 import columnify from 'columnify'
@@ -26,6 +27,7 @@ import { unzip } from 'unzipit'
 
 import 'systemjs'
 import 'animate.css'
+import 'awesome-notifications/dist/style.css'
 import './css/index.css'
 import './themes/default/index.css'
 import './themes/default/sweetalert2.css'
@@ -171,6 +173,11 @@ export async function showBootIntro () {
 
   if (navigator.getBattery) {
     const batt = await navigator.getBattery()
+
+    batt.addEventListener('chargingchange', () => {
+      if (batt.charging) execute('confetti')
+    })
+
     log(`${colors.info('Battery:')} ${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}`)
   }
 
@@ -184,6 +191,10 @@ export async function showBootIntro () {
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
     log(colors.danger('\n⚠ The first boot will take the longest, please be patient! ⚠\n'))
+  }
+
+  if (navigator.userAgentData.platform === 'Android' || window.innerWidth < 500 || window.innerHeight < 500) {
+    log(colors.danger('\n⚠ 🐉  NOTE: The mobile experience is pretty wacky and experimental - proceed with caution! ⚠'))
   }
 
   log(colors.danger(`\nType ${colors.bold.underline('help')} for help`))
@@ -493,6 +504,15 @@ export function colorChars (str, options = {}) {
 }
 
 /**
+ * Send an awesome-notification
+ * @type {AwesomeNotifications}
+ * @see https://f3oall.github.io/awesome-notifications
+ */
+export const notify = new AwesomeNotifications({
+  position: 'top-right'
+})
+
+/**
  * Send a browser/platform notification
  * @async
  * @param {Object=} options - The notification options (Notification API)
@@ -500,17 +520,14 @@ export function colorChars (str, options = {}) {
  */
 export async function systemNotify (options = {}) {
   if (Notification.permission !== 'granted') throw new Error('Notification permission denied')
-  // return new Notification(options.title, options)
-  navigator.serviceWorker.ready.then(function(registration) {
-    registration.showNotification('Notification with ServiceWorker');
-  })
-}
-
-/**
- * Send an awesome-notification
- */
-export async function notify (options = {}) {
-  
+  try {
+    const notification = new Notification(options.title, options)
+  } catch (err) {
+    console.warn(err)
+    navigator.serviceWorker.ready.then(registration => {
+      registration.showNotification('Notification with ServiceWorker')
+    })
+  }
 }
 
 /**
@@ -861,7 +878,7 @@ async function registerKernelBins () {
   kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
   kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
   kernelBins.storage = { description: 'Display storage usage information', run: async term => term.log(await navigator.storage.estimate()) }
-  kernelBins.systemnotify = { description: 'Show a browser/platform notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
+  kernelBins.systemnotify = { description: 'Show a browser/platform notification with <title> and <body>', run: (term, context) => systemNotify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.reboot = { description: 'Reload web3os', run: () => location.reload() }
   kernelBins.restore = { description: 'Restore the memory state', run: (term, context) => restore(context) }
   kernelBins.snackbar = { description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
@@ -1272,7 +1289,7 @@ export async function boot () {
   figlet.text('web3os', { font: figletFontName }, async (err, data) => {
     if (err) log(err)
     if (data && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
-    else log(`\n${colors.green.bold(`${isSmall ? '' : '\t   '}web3os`)}`)
+    else log(`\n${colors.green.bold(`${isSmall ? '' : '\t   '}🐉  web3os 🐉`)}`)
 
     console.log(`%cweb3os %c${rootPkgJson.version}`, `
       font-family: "Lucida Console", Monaco, monospace;

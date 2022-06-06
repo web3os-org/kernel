@@ -1,3 +1,53 @@
+/**
+ * @module @web3os-core/peer
+ * @author Jay Mathis <code@mathis.network>
+ * @license MIT
+ * @see https://peerjs.com
+ * @see https://github.com/web3os-org/kernel
+ * 
+ * @todo Fix receiving emojis causing BinaryPackFailure
+ * 
+ * @description
+ * PeerJS Utility
+ * 
+ * <pre>
+ * 
+ * 
+ * 
+    Usage:
+      peer <command> <args> [options]
+
+    To set your ID (default is UUID):
+      peer id --id myfirstdevice
+
+    Default Connection Broker:
+      Kernel.get('peerjs', 'server-host') if set, or 0.peerjs.com
+
+    Commands:
+      call <peer-id> [--video] [--audio]              Call a peer with media streams
+      chat <peer-id>                                  Open a text chat with a peer
+      connect <peer-id>                               Connect to a peer
+      id                                              Display your peer ID
+      list                                            List available peers
+      send <peer-id> [--text] [--json]                Send a message
+      screen <peer-id>                                Share your screen with a peer
+      upload <peer-id> [--file]                       Upload a file to a peer
+
+    Options:
+      --debug                                Debug level ({0},1,2,3)
+      --file                                 Path to the file to upload
+      --help                                 Print this help message
+      --id                                   Set your peer ID
+      --json                                 Path to JSON file to send
+      --server-host                          Set the peerjs broker host
+      --server-key                           Server API key (for 0.peerjs.com)
+      --server-path                          Set the peerjs broker path {/}
+      --server-port                          Set the peerjs broker port {443}
+      --text                                 Text message to send
+      --version                              Print the version information
+ * </pre>
+ */
+
 import arg from 'arg'
 import Peer from 'peerjs/dist/peerjs.esm'
 import colors from 'ansi-colors'
@@ -13,6 +63,9 @@ export const help = `
 
   Usage:
     peer <command> <args> [options]
+
+  To set your ID (default is UUID):
+    peer id --id myfirstdevice
 
   Default Connection Broker:
     ${colors.bold("Kernel.get('peerjs', 'server-host')")} if set, or ${colors.bold('0.peerjs.com')}
@@ -83,6 +136,7 @@ export function setupInstance () {
       if (call.metadata.video && call.metadata.audio) avState = 'Audio & Video'
       if (call.metadata.video && !call.metadata.audio) avState = 'Video Only'
       if (!call.metadata.video && call.metadata.audio) avState = 'Audio Only'
+      if (call.metadata.screen) avState = 'Screenshare'
 
       const container = document.createElement('div')
       container.innerHTML = `
@@ -95,20 +149,23 @@ export function setupInstance () {
     
       const result = await kernel.dialog({
         icon: 'info',
-        title: 'Incoming Call',
+        title: 'Incoming ' + call.metadata.screen ? 'Screenshare' : 'Call',
         html: container.outerHTML,
         reverseButtons: true,
         showDenyButton: true,
         denyButtonText: 'Decline',
-        confirmButtonText: 'Answer'
+        confirmButtonText: call.metadata.screen ? 'Accept' : 'Answer'
       })
 
       if (result.isConfirmed) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: call.metadata?.audio, video: call.metadata?.video })
-        call.answer(stream)
+        if (call.metadata.screen) {
+          call.answer()
+        } else {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: call.metadata?.audio, video: call.metadata?.video })
+          call.answer(stream)
+        }
 
         call.on('stream', peerStream => {
-          console.log({ stream, peerStream })
           const video = document.createElement('video')
           video.style.width = '100%'
           video.style.height = '100%'
@@ -122,9 +179,12 @@ export function setupInstance () {
           video.onloadedmetadata = () => video.play()
 
           kernel.windows.create({
-            title: `Call: ${call.peer}`,
+            title: `${call.metadata.screen ? 'Screenshare' : 'Call'}: ${call.peer}`,
             mount: video,
-            max: true
+            max: true,
+            onclose: () => {
+              call.close()
+            }
           })
         })
 
@@ -158,7 +218,7 @@ async function processIncomingData (data, connection) {
           confirmButtonText: 'Yes'
         })
 
-        if (result.isConfirmed) openScreenWindow(connections[connection.peer])
+        if (result.isConfirmed) openScreenWindow(connections[connection.peer], data.stream)
         break
       default:
         throw new Error(`Invalid command ${JSON.stringify(data)} received from peer ${connection.peer}`)
@@ -183,11 +243,15 @@ export async function call (peerId, args) {
   if (!peer) throw new Error('Not connected to that peer')
   if (!navigator.mediaDevices) throw new Error('Media devices not available')
 
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: args['--audio'], video: args['--video'] })
-  const call = instance.call(peerId, stream, { metadata: { audio: args['--audio'], video: args['--video'] } })
+  const metadata =
+    args.screen
+    ? { screen: true }
+    : { audio: args['--audio'], video: args['--video'] }
+
+  const stream = args.screen ? await navigator.mediaDevices.getDisplayMedia() : await navigator.mediaDevices.getUserMedia(metadata)
+  const call = instance.call(peerId, stream, { metadata })
 
   call.on('stream', peerStream => {
-    console.log({ stream, peerStream })
     const video = document.createElement('video')
     video.style.width = '100%'
     video.style.height = '100%'
@@ -201,9 +265,12 @@ export async function call (peerId, args) {
     video.onloadedmetadata = () => video.play()
 
     kernel.windows.create({
-      title: `Call: ${call.peer}`,
+      title: `Screen: ${call.peer}`,
       mount: video,
-      max: true
+      max: true,
+      onclose: () => {
+        call.close()
+      }
     })
   })
 
@@ -262,10 +329,12 @@ export function openChatWindow (peer) {
   kernel.windows.create({
     title: `Chat: ${peer.connection.peer}`,
     mount: container,
-    width: '100%'
+    width: '100%',
+    max: false,
+    onclose: () => {
+      peer.connection.off('data', receiveMessage)
+    }
   })
-
-  // TODO: peer.off onclose
 }
 
 export async function chat (peerId) {
@@ -278,63 +347,18 @@ export async function screen (peerId) {
   const peer = connections[peerId]
   if (!peer) throw new Error('Not connected to that peer')
   if (!navigator.mediaDevices) throw new Error('Media devices not available')
-  
-  const stream = await navigator.mediaDevices.getDisplayMedia()
-  const call = instance.call(peerId, stream)
-
-  call.on('stream', (peerStream) => {
-    const video = document.createElement('video')
-    video.style.width = '100%'
-    video.style.height = '100%'
-
-    if ('srcObject' in video) {
-      video.srcObject = peerStream
-    } else {
-      video.src = URL.createObjectURL(peerStream)
-    }
-
-    video.onloadedmetadata = () => video.play()
-
-    kernel.windows.create({
-      title: `Screen: ${call.peer}`,
-      mount: video,
-      max: true
-    })
-  })
+  call(peerId, { screen: true })
 }
 
-export function openScreenWindow (peer) {
+export function openScreenWindow (peer, stream) {
   const container = document.createElement('div')
 
-  const receiveMessage = data => {
-    if (typeof data !== 'string') return
-    const bubble = document.createElement('div')
-    bubble.classList.add(styles.bubble, styles.toMe)
-    bubble.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2)
-    chat.appendChild(bubble)
-    bubble.scrollIntoView()
-  }
-
-  const sendMessage = data => {
-    if (!data || data === '') return
-    const bubble = document.createElement('div')
-    bubble.classList.add(styles.fromMe)
-    bubble.textContent = data
-    chat.appendChild(bubble)
-    bubble.scrollIntoView()
-    peer.connection.send(data)
-  }
-
-  peer.connection.on('data', receiveMessage)
-  peer.connection.send({ cmd: 'screen' })
 
   kernel.windows.create({
     title: `Screen: ${peer.connection.peer}`,
     mount: container,
     width: '100%'
   })
-
-  // TODO: peer.off onclose
 }
 
 export async function run (term, context = '') {
