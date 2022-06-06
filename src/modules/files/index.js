@@ -225,6 +225,10 @@ async function loadFolder (browser, url) {
           return loadFolder(browser, location)
         }
 
+        const runIt = where => {
+          kernel.execute(where)
+        }
+
         if (isBin) return kernel.execute(location)
 
         const promptExecute = async allow => {

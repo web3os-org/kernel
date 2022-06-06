@@ -104,12 +104,15 @@ export let fs
 export const events = CustomEvent
 
 /**
- * Create a new primary Broadcast Channel for web3os
+ * The primary Broadcast Channel for web3os
  * 
  * @type {BroadcastChannel}
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
  */
 export const broadcast = new BroadcastChannel('web3os')
+broadcast.onmessage = msg => {
+  console.log('Incoming Broadcast:', msg)
+}
 
 let BrowserFS
 let memory
@@ -490,18 +493,33 @@ export function colorChars (str, options = {}) {
 }
 
 /**
- * Send a browser notification
+ * Send a browser/platform notification
  * @async
  * @param {Object=} options - The notification options (Notification API)
  * @see https://developer.mozilla.org/en-US/docs/Web/API/notification
  */
-export async function notify (options = {}) {
+export async function systemNotify (options = {}) {
   if (Notification.permission !== 'granted') throw new Error('Notification permission denied')
-  return new Notification(options.title, options)
+  // return new Notification(options.title, options)
+  navigator.serviceWorker.ready.then(function(registration) {
+    registration.showNotification('Notification with ServiceWorker');
+  })
+}
+
+/**
+ * Send an awesome-notification
+ */
+export async function notify (options = {}) {
+  
 }
 
 /**
  * Show a snackbar notification
+ * 
+ * @deprecated
+ * This can still be useful I think, but it's being deprecated
+ * in favor of awesome-notifications. Should this be removed?
+ * 
  * @async
  * @param {Object=} options - The snackbar options
  * @see https://www.npmjs.com/package/@material/mwc-snackbar
@@ -509,6 +527,8 @@ export async function notify (options = {}) {
 export async function snackbar (options = {}) {
   const snack = document.createElement('mwc-snackbar')
   snack.id = options.id || 'snack-' + Math.random()
+  snack.leading = options.leading || false
+  snack.closeOnEscape || false
   snack.labelText = options.labelText || ''
   snack.stacked = options.stacked || false
 
@@ -839,9 +859,9 @@ async function registerKernelBins () {
   kernelBins.history = { description: 'Show command history', run: term => { return term.log(JSON.stringify(term.history)) } }
   kernelBins.import = { description: 'Import a module from a URL', run: async (term, context) => await importModuleUrl(context) }
   kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
-  kernelBins.notify = { description: 'Show a notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
   kernelBins.storage = { description: 'Display storage usage information', run: async term => term.log(await navigator.storage.estimate()) }
+  kernelBins.systemnotify = { description: 'Show a browser/platform notification with <title> and <body>', run: (term, context) => notify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.reboot = { description: 'Reload web3os', run: () => location.reload() }
   kernelBins.restore = { description: 'Restore the memory state', run: (term, context) => restore(context) }
   kernelBins.snackbar = { description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }

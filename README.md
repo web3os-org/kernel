@@ -289,7 +289,6 @@ Here are a few examples of npm libraries that can be successfully loaded in web3
 
 ---
 
-- [@web3os-apps/chess](https://npmjs.org/@web3os-apps/chess)
 - [@web3os-apps/code](https://npmjs.org/@web3os-apps/code)
 - [@web3os-apps/doom](https://npmjs.org/@web3os-apps/doom)
 - [@web3os-apps/gun](https://npmjs.org/@web3os-apps/gun)
@@ -301,6 +300,8 @@ Here are a few examples of npm libraries that can be successfully loaded in web3
 </details>
 
 See the [full list](https://www.npmjs.com/org/web3os-apps)
+
+Note: some apps are currently either very basic implementations or just placeholders to be developed further
 
 ## Kernel Interface
 
@@ -324,13 +325,18 @@ This (and everything else) is subject to change before version 1.0.
 - Convenience method to create a sweetalert2 dialog with appropriate defaults
 - e.g., `window.Kernel.dialog({ title: 'Are you sure?', text: 'Scary stuff!', icon: 'warning' })`
 
+`window.Kernel.fs` = { ...BrowserFS }
+
+- This object holds the initialized BrowserFS instance
+- e.g., `const doesExist = window.Kernel.fs.existsSync('/config/packages')`
+
 `window.Kernel.set` ('namespace', 'key', :any)
 
 - Sets a value in the kernel "memory" - persists in localStorage
 - e.g., `window.Kernel.set('user', 'name', 'hosk')`
 - e.g., `window.Kernel.set('myapp', 'theme', { color: 'rebeccapurple' })`
 
-`window.Kernel.get` ('namespace', 'key') = value
+`window.Kernel.get` ('namespace', 'key') = :any
 
 - Gets a value from the kernel "memory" - loaded from localStorage
 - e.g., `window.Kernel.get('user')`
