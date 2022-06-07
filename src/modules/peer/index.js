@@ -149,7 +149,7 @@ export function setupInstance () {
     
       const result = await kernel.dialog({
         icon: 'info',
-        title: 'Incoming ' + call.metadata.screen ? 'Screenshare' : 'Call',
+        title: `Incoming ${call.metadata.screen ? 'Screenshare' : 'Call'}`,
         html: container.outerHTML,
         reverseButtons: true,
         showDenyButton: true,
@@ -209,16 +209,6 @@ async function processIncomingData (data, connection) {
         })
 
         if (result.isConfirmed) openChatWindow(connections[connection.peer])
-        break
-      case 'screen':
-        result = await kernel.dialog({
-          title: 'Incoming Screenshare',
-          html: `<p>Peer ID:<br />${connection.peer}</p><h3>Accept?</h3>`,
-          showDenyButton: true,
-          confirmButtonText: 'Yes'
-        })
-
-        if (result.isConfirmed) openScreenWindow(connections[connection.peer], data.stream)
         break
       default:
         throw new Error(`Invalid command ${JSON.stringify(data)} received from peer ${connection.peer}`)
@@ -348,17 +338,6 @@ export async function screen (peerId) {
   if (!peer) throw new Error('Not connected to that peer')
   if (!navigator.mediaDevices) throw new Error('Media devices not available')
   call(peerId, { screen: true })
-}
-
-export function openScreenWindow (peer, stream) {
-  const container = document.createElement('div')
-
-
-  kernel.windows.create({
-    title: `Screen: ${peer.connection.peer}`,
-    mount: container,
-    width: '100%'
-  })
 }
 
 export async function run (term, context = '') {

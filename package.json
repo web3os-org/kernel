@@ -31,9 +31,10 @@
     "npm": ">=8.1.0"
   },
   "scripts": {
-    "start": "npm-run-all --parallel start:kernel start:docs",
+    "start": "npm-run-all --parallel start:kernel start:docs start:browser",
     "start:kernel": "cross-env NODE_ENV=development webpack serve",
     "start:docs": "npm run watch:docs",
+    "start:browser": "chromium --remote-debugging-port=9222 https://localhost:8080",
     "watch": "npm-run-all --parallel watch:kernel watch:docs",
     "watch:kernel": "webpack --watch",
     "watch:docs": "nodemon --exec yarn build:docs -w src",

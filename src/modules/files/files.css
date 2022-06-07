@@ -109,7 +109,8 @@
   width: 65%;
   font-weight: bolder;
   font-size: 1rem;
-  color: white;
+  color: black;
+  background-color: #ddd;
 }
 
 .web3os-files-explorer-entry {

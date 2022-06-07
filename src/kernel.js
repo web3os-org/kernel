@@ -377,7 +377,7 @@ export async function execute (cmd, options = {}) {
   }
 
   if (options.topbar) topbar.hide()
-  if (!command?.run) { term.log(colors.danger('Invalid command')); return term.prompt() }
+  if (!command?.run) { term.log(colors.danger(`Invalid command; try ${colors.underline.white('help')}`)); return term.prompt() }
   options.doPrompt = options.doPrompt || false
 
   try {
