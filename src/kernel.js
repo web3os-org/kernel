@@ -19,6 +19,7 @@ import columnify from 'columnify'
 import CustomEvent from 'custom-event-js'
 import figlet from 'figlet'
 import figletFont from 'figlet/importable-fonts/Graffiti'
+import Keyboard from 'simple-keyboard'
 import path from 'path'
 import sweetalert from 'sweetalert2'
 import topbar from 'topbar'
@@ -28,6 +29,7 @@ import { unzip } from 'unzipit'
 import 'systemjs'
 import 'animate.css'
 import 'awesome-notifications/dist/style.css'
+// import 'simple-keyboard/build/css/index.css'
 import './css/index.css'
 import './themes/default/index.css'
 import './themes/default/sweetalert2.css'
@@ -40,6 +42,7 @@ import README from '../README.md'
 import AppWindow from './windows'
 import theme from './themes/default/index.js'
 
+export const isMobile = window.matchMedia('only screen and (max-width: 760px)').matches
 export const version = rootPkgJson.version
 const figletFontName = 'Graffiti'
 const fsModules = {}
@@ -49,7 +52,7 @@ globalThis.topbar = topbar
 /** The array of default builtin modules */
 export const builtinModules = [
   '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'help', 'markdown', 'peer', 'ping', 'screensaver',
+  'files', 'help', 'markdown', 'peer', 'ping', 'screensaver', 'speak', 'three',
   'usb', 'view', 'wasm', 'www'
 ]
 
@@ -78,6 +81,16 @@ export const utils = { path, bytes }
  * @type {Object}
  */
 export const modules = {}
+
+/**
+ * Gives access to the virtual keyboard
+ * 
+ * This gives us more control and consistency over mobile input
+ * 
+ * @type {SimpleKeyboard}
+ * @see https://virtual-keyboard.js.org
+ */
+export let keyboard
 
 /**
  * Gives access to the BrowserFS API
@@ -163,7 +176,7 @@ export async function showBootIntro () {
   log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}    web3os kernel v${rootPkgJson.version}    `))
   log(colors.warning(`${isSmall ? '' : '\t '}⚠           BETA          ⚠`))
 
-  if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
+  // if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
   if (navigator.storage?.estimate) {
     const storageDetails = await navigator.storage.estimate()
     const used = bytes(storageDetails.usage)
@@ -1268,6 +1281,17 @@ export async function boot () {
     document.querySelector('#web3os-splash-icon').classList.add('rotating')
   })
 
+  // const keyboardElement = document.createElement('div')
+  // keyboardElement.classList.add('simple-keyboard')
+  // // keyboardElement.style.display = 'none'
+  // keyboardElement.style.position = 'absolute'
+  // keyboardElement.style.top = '0'
+  // document.body.appendChild(keyboardElement)
+  // keyboard = new Keyboard({
+  //   onChange: input => events.dispatch('MobileKeyboardChange', input),
+  //   onKeyPress: button => events.dispatch('MobileKeyboardKeyPress', button)
+  // })
+
   // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
     events.dispatch('ShowSplash')
@@ -1305,6 +1329,9 @@ export async function boot () {
     console.log('%chttps://github.com/web3os-org/kernel', 'font-size:14px;')
     console.log({ Kernel, Terminal, System })
 
+    const KernelEvents = ['MemoryLoaded', 'FilesystemLoaded', 'KernelBinsLoaded', 'BuiltinModulesLoaded', 'PackagesLoaded', 'AutostartStart', 'AutostartEnd']
+    for (const evt of KernelEvents) events.on(evt, console.log(evt))
+
     await showBootIntro()
     await loadLocalStorage()
     events.dispatch('MemoryLoaded', memory)
@@ -1337,8 +1364,8 @@ export async function boot () {
     events.dispatch('AutostartEnd')
     await execute('confetti --startVelocity 90 --particleCount 150')
     topbar.hide()
-    const heartbeat = setInterval(() => navigator.vibrate([200, 50, 200]), 1000)
-    setTimeout(() => clearInterval(heartbeat), 5000)
+    // const heartbeat = setInterval(() => navigator.vibrate([200, 50, 200]), 1000)
+    // setTimeout(() => clearInterval(heartbeat), 5000)
     
     // Expose this globally in case it needs to be cleared externally by an app
     window.blinkyTitleInterval = setInterval(() => {

@@ -137,6 +137,7 @@
   text-align: center;
   padding: 1.25rem;
   border-radius: 25px;
+  color: white;
   background-color: rgba(7, 7, 7, 0.7);
   transition: transform 0.5s;
   overflow: hidden;

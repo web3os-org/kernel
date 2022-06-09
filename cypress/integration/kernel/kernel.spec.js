@@ -8,7 +8,7 @@ const testValue = Math.random()
 
 describe('Kernel', () => {
   before(() => {
-    cy.visit('https://localhost:8080')
+    cy.visit('https://localhost:2160')
   })
 
   it('should boot to a prompt', () => {

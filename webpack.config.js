@@ -11,6 +11,7 @@ module.exports = {
   devtool: 'source-map',
   devServer: {
     hot: 'only',
+    port: process.env.PORT || 2160,
     static: './dist',
     // devMiddleware: { writeToDisk: true },
     client: {

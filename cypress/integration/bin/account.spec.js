@@ -8,7 +8,7 @@ describe('bin/account', () => {
   before(() => {
     cy.setupMetamask()
     cy.changeMetamaskNetwork('localhost')
-    cy.visit('https://localhost:8080')
+    cy.visit('https://localhost:2160')
   })
 
   it('should connect to an account', async () => {

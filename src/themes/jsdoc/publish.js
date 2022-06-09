@@ -44,6 +44,7 @@ var SECTION_TYPE = {
 
 var defaultSections = [
     SECTION_TYPE.Menu,
+    SECTION_TYPE.Global,
     SECTION_TYPE.Modules,
     SECTION_TYPE.Classes,
     SECTION_TYPE.Externals,
@@ -51,8 +52,7 @@ var defaultSections = [
     SECTION_TYPE.Namespaces,
     SECTION_TYPE.Mixins,
     SECTION_TYPE.Tutorials,
-    SECTION_TYPE.Interfaces,
-    SECTION_TYPE.Global
+    SECTION_TYPE.Interfaces
 ];
 
 function copyStaticFolder() {

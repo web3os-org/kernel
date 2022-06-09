@@ -184,7 +184,7 @@ yarn # or npm install
 yarn start # or npm start
 ```
 
-From here, simply connect to [https://localhost:8080](https://localhost:8080) and accept the certificate warning.
+From here, simply connect to [https://localhost:2160](https://localhost:2160) and accept the certificate warning.
 
 Alternatively, install [src/assets/ssl/localhost.crt](https://github.com/web3os-org/kernel/blob/master/src/assets/ssl/localhost.crt) to your trusted certificate store.
 
@@ -356,7 +356,11 @@ This (and everything else) is subject to change before version 1.0.
 
 ---
 
-Developers should be able to create apps in any way they like, with as few requirements as possible. Remember, your app is simply running in a browser - you have access to everything that any other script does.
+Developers should be able to create apps in any way they like, with as few requirements as possible. Remember, your app is simply running in a browser - you have access to everything that any other script or module does.
+
+To make your module executable from the command line, you may export an async function named `run`, or your default export must be a function.
+
+Your module or `package.json` may also contain a `help` property that contians your module's help text.
 
 The best way to create applications for web3os is to create an `npm` package, using any bundler you'd like.
 
@@ -386,8 +390,6 @@ For example, to create an application with [snowpack](https://www.snowpack.dev):
 `index.js`:
 
 ```js
-import pkg from './package.json'
-
 export const help = `
   This app enables developers to Do An App!
 
@@ -395,6 +397,7 @@ export const help = `
 `
 
 export async function run (terminal, context) {
+// or: export default function (terminal, context) {
   console.log(terminal) // the xterm.js terminal in which your app is running
   console.log(context) // the plain string of arguments passed to your app
   terminal.log('Thanks for checking out myapp!')
@@ -418,7 +421,7 @@ Apps can be written and bundled a number of different ways, for some ideas check
 
 The `backend` command is the utility to connect to and interact with backend servers. The web3os-server spins up a private Docker container for performing various server-side tasks at the request of the web3os client, authenticated with a user's wallet.
 
-It offers multi-user capability while restricting access based on user's authenticated wallet address.
+It offers multi-user capability while restricting access based on user's authenticated wallet address, or other attributes such as NFT ownership, etc.
 
 [View the web3os-server repository](https://github.com/web3os-org/server)
 
@@ -429,7 +432,7 @@ It offers multi-user capability while restricting access based on user's authent
 <details>
 <summary><strong>Expand WebUSB</strong></summary>
 
-Experimental WebUSB features are only available in Chrome-based browsers at this time.
+Experimental WebUSB features are only available in Chromium-based browsers at this time.
 
 The `usb` command doesn't do much except pair and maintain a list of devices.
 
@@ -456,7 +459,7 @@ Access the array of devices within an app: `Kernel.modules.usb.devices`
 <summary><strong>Expand TODO</strong></summary>
 
 - There's a lot to do... please help. 😅
-- Decoupling of built-in apps into their own packages
+- Decoupling of built-in modules into their own packages
 - Unified WASM handling (or just give up and focus on Emscripten)
 - Finish development of backend Node.js web3os-server API
 - Rewrite expensive core modules using Emscripten
