@@ -48,6 +48,8 @@ const figletFontName = 'Graffiti'
 const fsModules = {}
 globalThis.topbar = topbar
 
+const KernelEvents = ['MemoryLoaded', 'FilesystemLoaded', 'KernelBinsLoaded', 'BuiltinModulesLoaded', 'PackagesLoaded', 'AutostartStart', 'AutostartEnd']
+
 // TODO: Whittle this down and migrate to packages
 /** The array of default builtin modules */
 export const builtinModules = [
@@ -174,14 +176,16 @@ export async function showBootIntro () {
   const isSmall = window.innerWidth <= 445
   log(colors.info(`${isSmall ? '' : '\t '}Made with  ${colors.red('♥')}  by Jay Mathis`))
   log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}    web3os kernel v${rootPkgJson.version}    `))
-  log(colors.warning(`${isSmall ? '' : '\t '}⚠           BETA          ⚠`))
+  log(colors.warning(`${isSmall ? '' : '\t '}⚠           BETA          ⚠\n`))
 
   // if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
-  if (navigator.storage?.estimate) {
-    const storageDetails = await navigator.storage.estimate()
-    const used = bytes(storageDetails.usage)
-    const free = bytes(storageDetails.quota - storageDetails.usage)
-    log(`${colors.info('Storage:')} Used: ${colors.muted(used)} - Free: ${colors.muted(free)}`)
+
+  if (navigator.userAgentData) {
+    const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
+    const browser = `${brand} v${version}`
+
+    Terminal.log(`${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform || 'Unknown')}`)
+    Terminal.log(`${colors.info('Browser:')}  ${colors.muted(browser)}`)
   }
 
   if (navigator.getBattery) {
@@ -191,15 +195,14 @@ export async function showBootIntro () {
       if (batt.charging) execute('confetti')
     })
 
-    log(`${colors.info('Battery:')} ${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}`)
+    log(`${colors.info('Battery:')}  ${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}`)
   }
 
-  if (navigator.userAgentData) {
-    const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
-    const browser = `${brand} v${version}`
-
-    Terminal.write(`${colors.info('Browser:')} ${colors.muted(browser)}`)
-    Terminal.write(`${isSmall ? '\n' : '\t '}${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform || 'Unknown')}\n`)
+  if (navigator.storage?.estimate) {
+    const storageDetails = await navigator.storage.estimate()
+    const used = bytes(storageDetails.usage)
+    const free = bytes(storageDetails.quota - storageDetails.usage)
+    log(`${colors.info('Storage:')}  ${colors.muted('Used:')} ${used} ${isSmall ? '\n\t ' : '-'} ${colors.muted('Free:')} ${free}`)
   }
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
@@ -211,7 +214,7 @@ export async function showBootIntro () {
   }
 
   log(colors.danger(`\nType ${colors.bold.underline('help')} for help`))
-  log(colors.gray(`Type ${colors.bold.underline('markdown /docs/README.md')} to view the README`))
+  log(colors.gray(`Type ${colors.bold.underline('docs')} to open the documentation`))
   log(colors.info(`Type ${colors.bold.underline('desktop')} to launch the desktop`))
   log(colors.primary(`Type ${colors.bold.underline('account connect')} to connect your wallet`))
   log(colors.success(`Type ${colors.bold.underline('files /bin')} to explore all executable commands`))
@@ -1329,7 +1332,6 @@ export async function boot () {
     console.log('%chttps://github.com/web3os-org/kernel', 'font-size:14px;')
     console.log({ Kernel, Terminal, System })
 
-    const KernelEvents = ['MemoryLoaded', 'FilesystemLoaded', 'KernelBinsLoaded', 'BuiltinModulesLoaded', 'PackagesLoaded', 'AutostartStart', 'AutostartEnd']
     for (const evt of KernelEvents) events.on(evt, console.log(evt))
 
     await showBootIntro()
