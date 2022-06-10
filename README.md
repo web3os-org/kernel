@@ -64,6 +64,7 @@ The project is still very young, and more documentation and organization is Comi
 - [App Structure](#app-structure)
 - [Backend (web3os-server)](#backend-web3os-server)
 - [WebUSB](#webusb)
+- [Web Bluetooth](#web-bluetooth)
 - [TODO](#todo)
 - [Can it do *thing*?](#can-it-do-thing)
 - [Further Documentation](#further-documentation)
@@ -138,7 +139,7 @@ Please consider digging into the code and see what you can come up with and subm
 
 Not sure where to start? Check out [the issues](https://github.com/web3os-org/kernel/issues)!
 
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](https://github.com/web3os-org/kernel/blob/master/CONTRIBUTING.md)
 
 </details>
 
@@ -432,7 +433,7 @@ It offers multi-user capability while restricting access based on user's authent
 <details>
 <summary><strong>Expand WebUSB</strong></summary>
 
-Experimental WebUSB features are only available in Chromium-based browsers at this time.
+Experimental WebUSB API features are limited in browser support at this time.
 
 The `usb` command doesn't do much except pair and maintain a list of devices.
 
@@ -453,12 +454,37 @@ Access the array of devices within an app: `Kernel.modules.usb.devices`
 
 </details>
 
+## Web Bluetooth
+
+<details>
+<summary><strong>Expand Web Bluetooth</strong></summary>
+
+Experimental Web Bluetooth API features are limited in browser support at this time.
+
+The `bluetooth` command doesn't do much except pair and maintain a list of devices.
+
+```text
+Usage:
+    bluetooth devices            List paired bluetooth devices
+    bluetooth pair <options>     Request bluetooth device (blank for user choice)
+
+  Options:
+    --help                 Print this help message
+    --name                 Specify a friendly name for the bluetooth device
+    --version              Print the version information
+```
+
+Access the array of devices within an app: `Kernel.modules.bluetooth.devices`
+
+</details>
+
 ## TODO
 
 <details>
 <summary><strong>Expand TODO</strong></summary>
 
 - There's a lot to do... please help. 😅
+- Typescriptify everything
 - Decoupling of built-in modules into their own packages
 - Unified WASM handling (or just give up and focus on Emscripten)
 - Finish development of backend Node.js web3os-server API
@@ -476,7 +502,7 @@ Access the array of devices within an app: `Kernel.modules.usb.devices`
 
 If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. PR's are always welcome and encouraged. Let's talk about it on [Discord](https://discord.gg/yA4M83fXn9)!
 
-Better yet, if you can make it do the thing, please [submit a PR](CONTRIBUTING.md)! This project will never grow without a thriving community of developers!
+Better yet, if you can make it do the thing, please [submit a PR](https://github.com/web3os-org/kernel/blob/master/CONTRIBUTING.md)! This project will never grow without a thriving community of developers!
 
 ## Further Documentation
 

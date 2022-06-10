@@ -178,6 +178,10 @@ export async function showBootIntro () {
   log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}    web3os kernel v${rootPkgJson.version}    `))
   log(colors.warning(`${isSmall ? '' : '\t '}⚠           BETA          ⚠\n`))
 
+  log(colors.success('Donate:'))
+  log(`${colors.success('BTC:')} ${colors.success.underline('BTCADDR')}`)
+  log(`${colors.success('ETH/MATIC/similar:')} ${colors.success.underline('0x67d2bDf37c779303010363420709F047d95E1c26')}\n`)
+
   // if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
 
   if (navigator.userAgentData) {
@@ -886,6 +890,7 @@ async function registerKernelBins () {
   const kernelBins = []
   kernelBins.alert = { description: 'Show an alert', run: (term, context) => dialog({ text: context }) }
   kernelBins.clear = { description: 'Clear the terminal', run: term => term.clear() }
+  kernelBins.date = { description: 'Display the date/time', run: term => term.log(new Intl.DateTimeFormat(get('i18n', 'lang') || 'en-US', { dateStyle: 'long', timeStyle: 'short' }).format(new Date()))}
   kernelBins.docs = { description: 'Open the documentation', run: term => { modules.www.run(term, '--title "Web3os Documentation" --no-toolbar /docs') }}
   kernelBins.dump = { description: 'Dump the memory state', run: term => term.log(dump()) }
   kernelBins.echo = { description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }

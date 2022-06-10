@@ -153,7 +153,7 @@ export async function createInstance () {
 
   amorphous(true)
 
-  for await (const each of Array.from(Array(10).keys())) {
+  for await (const each of Array.from(Array(15).keys())) {
     move(random(10, 80) + '%', random(10, 80) + '%')
     await Kernel.wait(random(50, 200))
   }
@@ -178,7 +178,7 @@ export async function run (term, context) {
   const { getUtterance, speak } = Kernel.modules.speak
   const selectedVoice = Kernel.get('three', 'voice') || 'Google UK English Female'
   const volume = Kernel.get('three', 'volume') || 0.5
-  const pitch = Kernel.get('three', 'pitch') || 0.6
+  const pitch = Kernel.get('three', 'pitch') || 0.5
   const rate = Kernel.get('three', 'rate') || 1
   const voice = speechSynthesis.getVoices().find(v => v.name === selectedVoice)
 
