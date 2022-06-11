@@ -19,6 +19,8 @@ import columnify from 'columnify'
 import CustomEvent from 'custom-event-js'
 import figlet from 'figlet'
 import figletFont from 'figlet/importable-fonts/Graffiti'
+import i18next from 'i18next'
+import i18nextBrowserLanguageDetector from 'i18next-browser-languagedetector'
 import Keyboard from 'simple-keyboard'
 import path from 'path'
 import sweetalert from 'sweetalert2'
@@ -41,6 +43,7 @@ import '@material/mwc-snackbar'
 import README from '../README.md'
 import AppWindow from './windows'
 import theme from './themes/default/index.js'
+import locales from './locales'
 
 export const isMobile = window.matchMedia('only screen and (max-width: 760px)').matches
 export const version = rootPkgJson.version
@@ -54,7 +57,7 @@ const KernelEvents = ['MemoryLoaded', 'FilesystemLoaded', 'KernelBinsLoaded', 'B
 /** The array of default builtin modules */
 export const builtinModules = [
   '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'help', 'markdown', 'peer', 'ping', 'screensaver', 'speak', 'three',
+  'files', 'help', 'lang', 'markdown', 'peer', 'ping', 'screensaver', 'speak', 'three',
   'usb', 'view', 'wasm', 'www'
 ]
 
@@ -83,6 +86,13 @@ export const utils = { path, bytes }
  * @type {Object}
  */
 export const modules = {}
+
+/**
+ * Contains the initialized i18next instance
+ * @type {Object}
+ * @see https://i18next.com
+ */
+export const i18n = i18next
 
 /**
  * Gives access to the virtual keyboard
@@ -173,14 +183,16 @@ colors.theme(theme)
  * Output the boot introduction
  * */
 export async function showBootIntro () {
+  const { t } = i18n
   const isSmall = window.innerWidth <= 445
-  log(colors.info(`${isSmall ? '' : '\t '}Made with  ${colors.red('♥')}  by Jay Mathis`))
+
+  log(colors.info(`${isSmall ? '' : '\t '}${t('kernel:bootIntroSubtitle', `Made with  ${colors.red('♥')}  by Jay Mathis`)}`))
   log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}    web3os kernel v${rootPkgJson.version}    `))
   log(colors.warning(`${isSmall ? '' : '\t '}⚠           BETA          ⚠\n`))
 
-  log(colors.success('Donate:'))
-  log(`${colors.success('BTC:')} ${colors.success.underline('BTCADDR')}`)
-  log(`${colors.success('ETH/MATIC/similar:')} ${colors.success.underline('0x67d2bDf37c779303010363420709F047d95E1c26')}\n`)
+  // log(colors.success(`${t('donate', 'Donate')}:`))
+  // log(`${colors.success('BTC:')} ${colors.success.underline('BTCADDR')}`)
+  // log(`${colors.success('ETH/MATIC/similar:')} ${colors.success.underline('0x67d2bDf37c779303010363420709F047d95E1c26')}\n`)
 
   // if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
 
@@ -188,8 +200,8 @@ export async function showBootIntro () {
     const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
     const browser = `${brand} v${version}`
 
-    Terminal.log(`${colors.info('Platform:')} ${colors.muted(navigator.userAgentData.platform || 'Unknown')}`)
-    Terminal.log(`${colors.info('Browser:')}  ${colors.muted(browser)}`)
+    Terminal.log(`${colors.info(`${t('platform', 'Platform')}:`)} ${colors.muted(navigator.userAgentData.platform || t('unknown', 'Unknown'))}`)
+    Terminal.log(`${colors.info(`${t('browser', 'Browser')}:`)}  ${colors.muted(browser)}`)
   }
 
   if (navigator.getBattery) {
@@ -199,37 +211,38 @@ export async function showBootIntro () {
       if (batt.charging) execute('confetti')
     })
 
-    log(`${colors.info('Battery:')}  ${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}`)
+    log(`${colors.info(`${t('battery', 'Battery')}:`)}  ${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}`)
   }
 
   if (navigator.storage?.estimate) {
     const storageDetails = await navigator.storage.estimate()
     const used = bytes(storageDetails.usage)
     const free = bytes(storageDetails.quota - storageDetails.usage)
-    log(`${colors.info('Storage:')}  ${colors.muted('Used:')} ${used} ${isSmall ? '\n\t ' : '-'} ${colors.muted('Free:')} ${free}`)
+    log(`${colors.info(`${t('storage', 'Storage')}:`)}  ${colors.muted(`${t('used', 'Used')}:`)} ${used} ${isSmall ? '\n\t ' : '-'} ${colors.muted(`${t('free', 'Free')}:`)} ${free}`)
   }
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
-    log(colors.danger('\n⚠ The first boot will take the longest, please be patient! ⚠\n'))
+    log(colors.danger(`\n⚠ ${t('kernel:firstBootWarning', 'The first boot will take the longest, please be patient!')} ⚠`))
   }
 
   if (navigator.userAgentData.platform === 'Android' || window.innerWidth < 500 || window.innerHeight < 500) {
-    log(colors.danger('\n⚠ 🐉  NOTE: The mobile experience is pretty wacky and experimental - proceed with caution! ⚠'))
+    log(colors.danger(`\n⚠ 🐉  ${t('kernel:mobileExperienceWarning', 'NOTE: The mobile experience is pretty wacky and experimental - proceed with caution!')} ⚠`))
   }
 
-  log(colors.danger(`\nType ${colors.bold.underline('help')} for help`))
-  log(colors.gray(`Type ${colors.bold.underline('docs')} to open the documentation`))
-  log(colors.info(`Type ${colors.bold.underline('desktop')} to launch the desktop`))
-  log(colors.primary(`Type ${colors.bold.underline('account connect')} to connect your wallet`))
-  log(colors.success(`Type ${colors.bold.underline('files /bin')} to explore all executable commands`))
-  log(colors.warning(`Type ${colors.bold.underline('lsmod')} to list all kernel modules`))
-  log(colors.cyan(`Type ${colors.bold.underline('confetti')} to fire the confetti gun 🎉`))
-  log(colors.magenta(`Type ${colors.bold.underline('minipaint')} to draw Art™ 🎨`))
-  log(colors.muted(`Type ${colors.bold.underline('clip <command>')} to copy the output of a command to the clipboard\n`))
+  // TODO: i18n this and integrate colors into the translation processing
+  log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline('help')} ${t('kernel:bootIntro.help', 'for help')}`))
+  log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline('docs')} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
+  log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline('desktop')} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
+  log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('account connect')} ${t('kernel:bootIntro.account', 'to connect your wallet')}`))
+  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('files /bin')} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
+  log(colors.warning(`${t('typeVerb', 'Type')} ${colors.bold.underline('lsmod')} ${t('kernel:bootIntro.lsmod', 'to list all kernel modules')}`))
+  log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline('confetti')} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
+  log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
+  log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}\n`))
 
   log('https://docs.web3os.sh')
   log('https://github.com/web3os-org')
-  log(colors.muted('\nBooting...'))
+  log(colors.muted(`\n${t('booting', 'Booting')}...`))
 }
 
 /**
@@ -887,27 +900,29 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
  * @async
  */
 async function registerKernelBins () {
+  const { t } = Kernel.i18n
   const kernelBins = []
-  kernelBins.alert = { description: 'Show an alert', run: (term, context) => dialog({ text: context }) }
-  kernelBins.clear = { description: 'Clear the terminal', run: term => term.clear() }
-  kernelBins.date = { description: 'Display the date/time', run: term => term.log(new Intl.DateTimeFormat(get('i18n', 'lang') || 'en-US', { dateStyle: 'long', timeStyle: 'short' }).format(new Date()))}
-  kernelBins.docs = { description: 'Open the documentation', run: term => { modules.www.run(term, '--title "Web3os Documentation" --no-toolbar /docs') }}
-  kernelBins.dump = { description: 'Dump the memory state', run: term => term.log(dump()) }
-  kernelBins.echo = { description: 'Echo some text to the terminal', run: (term, context) => term.log(context) }
-  kernelBins.history = { description: 'Show command history', run: term => { return term.log(JSON.stringify(term.history)) } }
-  kernelBins.import = { description: 'Import a module from a URL', run: async (term, context) => await importModuleUrl(context) }
-  kernelBins.man = { description: 'Alias of help', run: (term, context) => modules.help.run(term, context) }
-  kernelBins.sh = { description: 'Execute a web3os script', run: (term, context) => executeScript(context, { terminal: term }) }
-  kernelBins.storage = { description: 'Display storage usage information', run: async term => term.log(await navigator.storage.estimate()) }
-  kernelBins.systemnotify = { description: 'Show a browser/platform notification with <title> and <body>', run: (term, context) => systemNotify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
-  kernelBins.reboot = { description: 'Reload web3os', run: () => location.reload() }
-  kernelBins.restore = { description: 'Restore the memory state', run: (term, context) => restore(context) }
-  kernelBins.snackbar = { description: 'Show a snackbar with <message>', run: (term, context) => snackbar({ labelText: context }) }
-  kernelBins.wait = { description: 'Wait for the specified number of milliseconds', run: (term, context) => wait(context) }
+
+  kernelBins.alert = { description: t('kernel:bins.alertDescription', 'Show an alert'), run: (term, context) => dialog({ text: context }) }
+  kernelBins.clear = { description: t('kernel:bins.clearDescription', 'Clear the terminal'), run: term => term.clear() }
+  kernelBins.date = { description: t('kernel:bins.dateDescription', 'Display the date/time'), run: term => term.log(new Intl.DateTimeFormat(Kernel.i18n.language || 'en-US', { dateStyle: 'long', timeStyle: 'short' }).format(new Date()))}
+  kernelBins.docs = { description: t('kernel:bins.docsDescription', 'Open the documentation'), run: term => { modules.www.run(term, '--title "Web3os Documentation" --no-toolbar /docs') }}
+  kernelBins.dump = { description: t('kernel:bins.dumpDescription', 'Dump the memory state'), run: term => term.log(dump()) }
+  kernelBins.echo = { description: t('kernel:bins.echoDescription', 'Echo some text to the terminal'), run: (term, context) => term.log(context) }
+  kernelBins.history = { description: t('kernel:bins.historyDescription', 'Show command history'), run: term => { return term.log(JSON.stringify(term.history)) } }
+  kernelBins.import = { description: t('kernel:bins.importDescription', 'Import a module from a URL'), run: async (term, context) => await importModuleUrl(context) }
+  kernelBins.man = { description: t('kernel:bins.manDescription', 'Alias of help'), run: (term, context) => modules.help.run(term, context) }
+  kernelBins.sh = { description: t('kernel:bins.shDescription', 'Execute a web3os script'), run: (term, context) => executeScript(context, { terminal: term }) }
+  kernelBins.storage = { description: t('kernel:bins.storageDescription', 'Display storage usage information'), run: async term => term.log(await navigator.storage.estimate()) }
+  kernelBins.systemnotify = { description: t('kernel:bins.systemnotifyDescription', 'Show a browser/platform notification; e.g., systemnotify Title Body'), run: (term, context) => systemNotify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
+  kernelBins.reboot = { description: t('kernel:bins.rebootDescription', 'Reload web3os'), run: () => location.reload() }
+  kernelBins.restore = { description: t('kernel:bins.restoreDescription', 'Restore the memory state'), run: (term, context) => restore(context) }
+  kernelBins.snackbar = { description: t('kernel:bins.snackbarDescription', 'Show a snackbar; e.g. snackbar Alert!'), run: (term, context) => snackbar({ labelText: context }) }
+  kernelBins.wait = { description: t('kernel:bins.waitDescription', 'Wait for the specified number of milliseconds'), run: (term, context) => wait(context) }
 
   kernelBins.alias = {
-    description: 'Set or list command aliases',
-    help: 'Usage: alias [src] [dest]',
+    description: t('kernel:bins.aliasDescription', 'Set or list command aliases'),
+    help: `${t('usage', 'Usage')}: alias [src] [dest]`,
     run: (term, context) => {
       if (!context || context === '') return term.log(term.aliases)
       const command = context.split(' ')
@@ -917,7 +932,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.ipecho = {
-    description: 'Echo your public IP address',
+    description: t('kernel:bins.ipechoDescription', 'Echo your public IP address'),
     run: async term => {
       const result = await fetch('https://ipecho.net/plain')
       const ip = await result.text()
@@ -928,7 +943,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.lsmod = {
-    description: 'List loaded kernel modules',
+    description: t('kernel:bins.lsmodDescription', 'List loaded kernel modules'),
     run: async term => {
       const mods = {
         ...modules,
@@ -942,8 +957,8 @@ async function registerKernelBins () {
   }
 
   kernelBins.set = {
-    description: 'Set a kernel memory value',
-    help: 'Usage: set <namespace> <key> <value>',
+    description: t('kernel:bins.setDescription', 'Set a kernel memory value'),
+    help: `${t('usage', 'Usage')}: set <namespace> <key> <value>`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -954,8 +969,8 @@ async function registerKernelBins () {
   }
 
   kernelBins.get = {
-    description: 'Get a kernel memory namespace or key',
-    help: 'Usage: get <namespace> [key]',
+    description: t('kernel:bins.getDescription', 'Get a kernel memory namespace or key'),
+    help: `${t('usage', 'Usage')}: get <namespace> [key]`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -966,8 +981,8 @@ async function registerKernelBins () {
   }
 
   kernelBins.unset = {
-    description: 'Delete specified memory namespace or key',
-    help: 'Usage: delkey <namespace> [key]',
+    description: t('kernel:bins.unsetDescription', 'Delete specified memory namespace or key'),
+    help: `${t('usage', 'Usage')}: unset <namespace> [key]`,
     run: (term, context = '') => {
       try {
         const parts = context.split(' ')
@@ -981,7 +996,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.eval = {
-    description: 'Load and evaluate a Javascript file',
+    description: t('kernel:bins.evalDescription', 'Load and evaluate a Javascript file'),
     run: (term, filename) => {
       if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
       filename = utils.path.resolve(term.cwd, filename)
@@ -991,8 +1006,8 @@ async function registerKernelBins () {
   }
 
   kernelBins.clip = {
-    description: 'Copy return value of command to clipboard',
-    help: 'Usage: clip <command>',
+    description: t('kernel:bins.clipDescription', 'Copy return value of command to clipboard'),
+    help: `${t('usage', 'Usage')}: clip <command>`,
     run: async (term, context) => {
       if (!context || context === '') return
       const parts = context.split(' ')
@@ -1003,19 +1018,20 @@ async function registerKernelBins () {
   }
 
   kernelBins.height = {
-    description: 'Set body height',
+    description: t('kernel:bins.heightDescription', 'Set body height'),
     run: (term, context) => { document.body.style.height = context }
   }
 
   kernelBins.width = {
-    description: 'Set body width',
+    description: t('kernel:bins.widthDescription', 'Set body width'),
     run: (term, context) => { document.body.style.width = context }
   }
 
   kernelBins.objectUrl = {
-    description: 'Create an ObjectURL for a file',
+    description: t('kernel:bins.objectUrlDescription', 'Create an ObjectURL for a file'),
     run: (term, filename) => {
-      if (!filename || filename === '') throw new Error('Invalid filename')
+      const { t } = Kernel.i18n
+      if (!filename || filename === '') throw new Error(t('invalidFilename', 'Invalid filename'))
       const data = fs.readFileSync(utils.path.join(term.cwd, filename))
       const file = new File([data], utils.path.parse(filename).base, { type: 'application/octet-stream' })
       const url = URL.createObjectURL(file)
@@ -1048,13 +1064,16 @@ async function registerBuiltinModules () {
  * @param {Object=} options - Options for loading the module
  */
 export async function loadModule (mod, options = {}) {
-  if (!mod) throw new Error('Invalid module provided to kernel.loadModule')
+  const { t } = Kernel.i18n
+  if (!mod) throw new Error(`${t('kernel:invalidModule', 'Invalid module provided to')} kernel.loadModule`)
+
   let { description, help, name, run, version, pkgJson } = options
   description = description || mod.description
   version = version || pkgJson?.version || mod.version
-  help = help || mod.help || 'Help is not exported from this module'
+  help = help || mod.help || t('kernel:helpNotExported', 'Help is not exported from this module')
   name = name || mod.name || 'module_' + Math.random().toString(36).slice(2)
   run = run || mod.run || mod.default
+
   if (!modules[name]) modules[name] = {}
   modules[name] = { ...modules[name], ...mod, run, name, version, description, help }
 
@@ -1155,6 +1174,7 @@ export async function loadPackages () {
  * @param {Object=} options - The splash screen options
  */
 export async function showSplash (msg, options = {}) {
+  const { t } = Kernel.i18n
   document.querySelector('#web3os-splash')?.remove()
 
   const icon = document.createElement('mwc-icon')
@@ -1177,12 +1197,16 @@ export async function showSplash (msg, options = {}) {
 
   const subtitle = document.createElement('h2')
   subtitle.id = 'web3os-splash-subtitle'
-  subtitle.innerHTML = options.subtitle || 'Made with <span class="heart">♥</span> by Jay Mathis'
+  subtitle.innerHTML = options.subtitle || t('kernel:bootIntroSubtitle', 'Made with <span class="heart">♥</span> by Jay Mathis')
   subtitle.style.margin = 0
   subtitle.style.color = options.subtitleColor || '#ccc'
   subtitle.style.fontStyle = options.subtitleFontStyle || 'italic'
-  subtitle.querySelector('span.heart').style.color = 'red'
-  subtitle.querySelector('span.heart').style.fontSize = '1.5em'
+
+  if (subtitle.querySelector('span.heart')) {
+    subtitle.querySelector('span.heart').style.color = 'red'
+    subtitle.querySelector('span.heart').style.fontSize = '1.5em'
+  }
+
   if (!options.disableAnimation) subtitle.classList.add('animate__animated', 'animate__zoomInDown') && subtitle.style.setProperty('--animate-delay', '0.5s')
 
   const background = document.createElement('div')
@@ -1215,7 +1239,7 @@ export async function showSplash (msg, options = {}) {
   message.id = 'web3os-splash-message'
   message.style.color = 'silver'
   message.style.fontSize = '2.5rem'
-  message.textContent = msg || '💾 Booting... 💾'
+  message.textContent = msg || `💾 ${t('booting', 'Booting')}... 💾`
 
   const versionInfo = document.createElement('h4')
   versionInfo.id = 'web3os-splash-version'
@@ -1282,10 +1306,20 @@ export async function showSplash (msg, options = {}) {
  * @async
  */
 export async function boot () {
+  i18n
+    .use(i18nextBrowserLanguageDetector)
+    .init({
+      fallbackLng: 'en-US',
+      debug: process.env.I18N_DEBUG === 'true',
+      ns: ['common', 'kernel'],
+      defaultNS: 'common',
+      resources: locales
+    })
+
   topbar.show()
   const bootArgs = new URLSearchParams(globalThis.location.search)
   globalThis.addEventListener('beforeunload', async () => {
-    await showSplash('Rebooting...', { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })
+    await showSplash(`${t('rebooting', 'Rebooting')}...`, { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })
     document.querySelector('#web3os-splash-icon').classList.add('rotating')
   })
 

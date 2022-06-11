@@ -485,12 +485,13 @@ Access the array of devices within an app: `Kernel.modules.bluetooth.devices`
 
 - There's a lot to do... please help. 😅
 - Typescriptify everything
+- Finish internationalization/translations
 - Decoupling of built-in modules into their own packages
 - Unified WASM handling (or just give up and focus on Emscripten)
 - Finish development of backend Node.js web3os-server API
 - Rewrite expensive core modules using Emscripten
 - Improve security/isolation
-- Some apps are just placeholders
+- Some apps are just placeholders; flesh them out
 - Modify command interfaces to conform to IEEE Std 1003.1-2017
 - Flesh out rm command and remove rmdir; allow recursive delete
 - Migrate all global CSS to CSS modules

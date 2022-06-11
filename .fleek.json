@@ -9,7 +9,7 @@
   "build": {
     "baseDir": "",
     "publicDir": "dist",
-    "command": "apk add --no-cache git build-base autoconf automake && yarn && yarn build",
+    "command": "apk add --no-cache git build-base autoconf automake && npm install && npm run build",
     "rootDir": ""
   }
 }

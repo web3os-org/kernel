@@ -120,20 +120,22 @@ export default class Web3osTerminal extends Terminal {
     this.customCommands.push({ name: '👨‍💻', run: () => Kernel.execute("alert You're a geek!", { doPrompt: true }) })
 
     // Wait for textarea and apply fixes for mobile
-    const waitInterval = setInterval(() => {
-      if (this.textarea) {
-        clearInterval(waitInterval)
-        this.textarea.setAttribute('enterkeyhint', 'send')
+    if (this.kernel.isMobile) {
+      const waitInterval = setInterval(() => {
+        if (this.textarea) {
+          clearInterval(waitInterval)
+          this.textarea.setAttribute('enterkeyhint', 'send')
 
-        const pollInterval = setInterval(() => {
-          const input = this.textarea.value
-          if (input.trim().length > 0 && this.cmd.trim().length < input.trim().length) {
-            this.cmd = input
-            this.cursorPosition = this.cmd.length
-          }
-        }, 100)
-      }
-    }, 100)
+          const pollInterval = setInterval(() => {
+            const input = this.textarea.value
+            if (input.trim().length > 0 && this.cmd.trim().length < input.trim().length) {
+              this.cmd = input
+              this.cursorPosition = this.cmd.length
+            }
+          }, 100)
+        }
+      }, 100)
+    }
   }
 
   /**
@@ -487,6 +489,7 @@ export default class Web3osTerminal extends Terminal {
       default:
         if (printable) {
           if (this.tabSelectMode) {
+            if (this.debug) console.log({ tabSelectChoices: this.tabSelectChoices })
             this.cmd = this.tabSelectChoices[this.tabSelectCurrentChoice]
             this.cursorPosition = this.cmd.length
             this.tabSelectMode = false
