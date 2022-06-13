@@ -495,6 +495,7 @@ Access the array of devices within an app: `Kernel.modules.bluetooth.devices`
 - Modify command interfaces to conform to IEEE Std 1003.1-2017
 - Flesh out rm command and remove rmdir; allow recursive delete
 - Migrate all global CSS to CSS modules
+- Improve offline mode handling
 - Add more things to the TODO list
 
 </details>

@@ -1,22 +1,23 @@
 export default {
   common: {
-    booting: 'Booten',
+    Booting: 'Booten',
     command: 'Befehl',
-    rebooting: 'Neustart',
-    donate: 'Spenden',
-    platform: 'Plattform',
-    battery: 'Batterie',
-    storage: 'Lagerung',
-    usage: 'Verwendungszweck',
-    used: 'Gebraucht',
-    free: 'Frei',
+    Rebooting: 'Neustart',
+    Donate: 'Spenden',
+    Platform: 'Plattform',
+    Battery: 'Batterie',
+    Storage: 'Lagerung',
+    Usage: 'Verwendungszweck',
+    Used: 'Gebraucht',
+    Free: 'Frei',
     invalidFilename: 'Ungültiger Dateiname',
-    options: 'Optionen',
+    Options: 'Optionen',
     language: 'Sprache',
     typeVerb: 'Tippen',
     typeNoun: 'Modell',
     printThisHelpMessage: 'Drucken Sie diese Hilfenachricht aus',
-    printVersionInformation: 'Drucken Sie die Versionsinformationen'
+    printVersionInformation: 'Drucken Sie die Versionsinformationen',
+    'Heap Limit': 'Heap-Grenze'
   },
 
   kernel: {

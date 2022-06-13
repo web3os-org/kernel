@@ -45,12 +45,13 @@
     "clean:kernel": "shx rm -rf dist/*",
     "clean:docs": "shx rm -rf docs/*",
     "testnet": "hardhat node",
-    "test": "cross-env CYPRESS_REMOTE_DEBUGGING_PORT=19222 cypress open",
+    "test": "env-cmd cypress open",
     "prepare": "npm-run-all clean build"
   },
   "dependencies": {
     "@assemblyscript/loader": "^0.19.22",
     "@babel/runtime": "^7.18.3",
+    "@iconify/iconify": "^2.2.1",
     "@material/mwc-button": "^0.25.3",
     "@material/mwc-dialog": "^0.25.3",
     "@material/mwc-icon-button": "^0.25.3",
@@ -137,6 +138,7 @@
     "cypress": "^9.5.3",
     "cypress-metamask-plugin": "^1.0.5",
     "cypress-metamask-v2": "^1.6.10",
+    "env-cmd": "^10.1.0",
     "eslint": "^8.0.1",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.25.2",

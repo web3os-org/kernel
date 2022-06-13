@@ -6,6 +6,7 @@ specifiers:
   '@babel/eslint-parser': ^7.17.0
   '@babel/preset-env': ^7.16.5
   '@babel/runtime': ^7.18.3
+  '@iconify/iconify': ^2.2.1
   '@material/mwc-button': ^0.25.3
   '@material/mwc-dialog': ^0.25.3
   '@material/mwc-icon-button': ^0.25.3
@@ -47,6 +48,7 @@ specifiers:
   cypress-metamask-plugin: ^1.0.5
   cypress-metamask-v2: ^1.6.10
   ecpair: ^2.0.1
+  env-cmd: ^10.1.0
   eslint: ^8.0.1
   eslint-config-standard: ^17.0.0
   eslint-plugin-import: ^2.25.2
@@ -123,6 +125,7 @@ specifiers:
 dependencies:
   '@assemblyscript/loader': 0.19.23
   '@babel/runtime': 7.18.3
+  '@iconify/iconify': 2.2.1
   '@material/mwc-button': 0.25.3
   '@material/mwc-dialog': 0.25.3
   '@material/mwc-icon-button': 0.25.3
@@ -209,6 +212,7 @@ devDependencies:
   cypress: 9.7.0
   cypress-metamask-plugin: 1.0.5_hbjuv4ikzwai4rl5zsulnwqava
   cypress-metamask-v2: 1.6.10_zz5ur2wgrj7nhmchofddbhvboe
+  env-cmd: 10.1.0
   eslint: 8.17.0
   eslint-config-standard: 17.0.0_k2gkawvnhbuxb7ddaipaawnv5q
   eslint-plugin-import: 2.26.0_eslint@8.17.0
@@ -2531,6 +2535,10 @@ packages:
   /@humanwhocodes/object-schema/1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
+
+  /@iconify/iconify/2.2.1:
+    resolution: {integrity: sha512-WJzw+3iicrF/tbjbxxRinSgy5FHdJoz/egTqwi3xCDkNRJPq482RX1iyaWrjNuY2vMNSPkQMuqHvZDXgA+WnwQ==}
+    dev: false
 
   /@ipld/car/4.1.3:
     resolution: {integrity: sha512-m1dIx3IRHN57cRtodFfOgvPGlF9wl4nGPLt6HzJQupusP0A0eHcYNH1dbe+0t25aStSFHWkAoGa7rUWqdFscNA==}
@@ -7870,6 +7878,11 @@ packages:
     resolution: {integrity: sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==}
     dev: true
 
+  /commander/4.1.1:
+    resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
+    engines: {node: '>= 6'}
+    dev: true
+
   /commander/5.1.0:
     resolution: {integrity: sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==}
     engines: {node: '>= 6'}
@@ -9647,6 +9660,15 @@ packages:
       execa: 5.1.1
       fromentries: 1.3.2
       java-properties: 1.0.2
+    dev: true
+
+  /env-cmd/10.1.0:
+    resolution: {integrity: sha512-mMdWTT9XKN7yNth/6N6g2GuKuJTsKMDHlQFUDacb/heQRRWOTIZ42t1rMHnQu4jYxU1ajdTeJM+9eEETlqToMA==}
+    engines: {node: '>=8.0.0'}
+    hasBin: true
+    dependencies:
+      commander: 4.1.1
+      cross-spawn: 7.0.3
     dev: true
 
   /env-paths/2.2.1:
@@ -18754,7 +18776,7 @@ packages:
     dev: true
 
   /read-pkg-up/1.0.1:
-    resolution: {integrity: sha1-nWPBMnbAZZGNV/ACpX9AobZD+wI=}
+    resolution: {integrity: sha512-WD9MTlNtI55IwYUS27iHh9tK3YoIVhxis8yKhLpTqWtml739uXc9NWTpxoHkfZf3+DkCCsXox94/VWZniuZm6A==}
     engines: {node: '>=0.10.0'}
     dependencies:
       find-up: 1.1.2
@@ -18780,7 +18802,7 @@ packages:
     dev: true
 
   /read-pkg/1.1.0:
-    resolution: {integrity: sha1-9f+qXs0pyzHAR0vKfXVra7KePyg=}
+    resolution: {integrity: sha512-7BGwRHqt4s/uVbuyoeejRn4YmFnYZiFl4AuaeXHlgZf3sONF0SOGlxs2Pw8g6hCKupo08RafIO5YXFNOKTfwsQ==}
     engines: {node: '>=0.10.0'}
     dependencies:
       load-json-file: 1.1.0
@@ -19718,7 +19740,7 @@ packages:
     dev: true
 
   /shebang-command/1.2.0:
-    resolution: {integrity: sha1-RKrGW2lbAzmJaMOfNj/uXer98eo=}
+    resolution: {integrity: sha512-EV3L1+UQWGor21OmnvojK36mhg+TyIKDh3iFBKBohr5xeXIhNBcx8oWdgkTEEQ+BEFFYdLRuqMfd5L84N1V5Vg==}
     engines: {node: '>=0.10.0'}
     dependencies:
       shebang-regex: 1.0.0
@@ -19731,7 +19753,7 @@ packages:
       shebang-regex: 3.0.0
 
   /shebang-regex/1.0.0:
-    resolution: {integrity: sha1-2kL0l0DAtC2yypcoVxyxkMmO/qM=}
+    resolution: {integrity: sha512-wpoSFAxys6b2a2wHZ1XpDSgD7N9iVjg29Ph9uV/uaP9Ex/KXlkTZTeddxDPSYQpgvzKLGJke2UU0AzoGCjNIvQ==}
     engines: {node: '>=0.10.0'}
     dev: true
 
@@ -20615,7 +20637,7 @@ packages:
       is-hex-prefixed: 1.0.0
 
   /strip-indent/1.0.1:
-    resolution: {integrity: sha1-DHlipq3vp7vUrDZkYKY4VSrhoKI=}
+    resolution: {integrity: sha512-I5iQq6aFMM62fBEAIB/hXzwJD6EEZ0xEGCX2t7oXqaKPIRgt4WruAQ285BISgdkP+HLGWyeGmNJcpIwFeRYRUA==}
     engines: {node: '>=0.10.0'}
     hasBin: true
     dependencies:
@@ -21849,14 +21871,14 @@ packages:
     dev: true
 
   /upper-case-first/1.1.2:
-    resolution: {integrity: sha1-XXm+3P8UQZUY/S7bCgUHybaFkRU=}
+    resolution: {integrity: sha512-wINKYvI3Db8dtjikdAqoBbZoP6Q+PZUyfMR7pmwHzjC2quzSkUq5DmPrTtPEqHaz8AGtmsB4TqwapMTM1QAQOQ==}
     dependencies:
       upper-case: 1.1.3
     dev: true
     optional: true
 
   /upper-case/1.1.3:
-    resolution: {integrity: sha1-9rRQHC7EzdJrp4vnIilh3ndiFZg=}
+    resolution: {integrity: sha512-WRbjgmYzgXkCV7zNVpy5YgrHgbBv126rMALQQMrmzOVC4GM2waQ9x7xtm8VU+1yF2kWyPzI9zbZ48n4vSxwfSA==}
     dev: true
     optional: true
 

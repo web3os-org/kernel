@@ -94,13 +94,17 @@ export async function launchTerminal (options = {}) {
 
   const termKernel = options.kernel ? options.kernel : (kernel || globalThis.Kernel)
 
+  let fitInterval
   win = termKernel.windows.create({
     title: options.windowTitle || options.command || 'web3os.sh',
     mount: container,
     width: options.windowWidth || '75%',
     height: options.windowHeight || '70%',
     x: 'center',
-    y: 'center'
+    y: 'center',
+    onclose: () => {
+      clearInterval(fitInterval)
+    }
   })
 
   win.term = newTerm
@@ -113,7 +117,7 @@ export async function launchTerminal (options = {}) {
 
   // TODO: There's gotta be a better way, but for now we'll just setInterval
   // Running .fit in win.onresize doesn't work
-  setInterval(newTerm.fit, 100)
+  fitInterval = setInterval(newTerm.fit, 200)
   setTimeout(() => win.window.focus(), 10)
 
   return win
