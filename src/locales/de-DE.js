@@ -40,33 +40,42 @@ export default {
     },
 
     bins: {
-      alertDescription: 'Benachrichtigung anzeigen',
-      aliasDescription: 'Befehlsaliasnamen festlegen oder auflisten',
-      clearDescription: 'Löschen Sie das Terminal',
-      clipDescription: 'Rückgabewert des Befehls in die Zwischenablage kopieren',
-      dateDescription: 'Datum/Uhrzeit anzeigen',
-      docsDescription: 'Öffnen Sie die Dokumentation',
-      dumpDescription: 'Dump den Speicherzustand',
-      echoDescription: 'Geben Sie einen Text an das Terminal zurück',
-      evalDescription: 'Laden und Auswerten einer Javascript-Datei',
-      getDescription: 'Rufen Sie einen Kernel-Speicher-Namespace oder -Schlüssel ab',
-      heightDescription: 'Körpergröße einstellen',
-      historyDescription: 'Befehlshistorie anzeigen',
-      importDescription: 'Importieren Sie ein Modul von einer URL',
-      ipechoDescription: 'Geben Sie Ihre öffentliche IP-Adresse wieder',
-      lsmodDescription: 'Geladene Kernel-Module auflisten',
-      manDescription: 'Alias der Hilfe',
-      objectUrlDescription: 'Erstellen Sie eine ObjectURL für eine Datei',
-      setDescription: 'Legen Sie einen Kernel-Speicherwert fest',
-      shDescription: 'Führen Sie ein web3os-Skript aus',
-      storageDescription: 'Informationen zur Speichernutzung anzeigen',
-      systemnotifyDescription: 'Zeigen Sie eine Browser-/Plattformbenachrichtigung mit z. B. systemnotify Title Body an',
-      rebootDescription: 'web3os neu laden',
-      restoreDescription: 'Stellen Sie den Speicherzustand wieder her',
-      snackbarDescription: 'Zeigen Sie eine Snackbar; z.B. snackbar Alarm!',
-      unsetDescription: 'Angegebenen Speichernamensraum oder Schlüssel löschen',
-      waitDescription: 'Warten Sie die angegebene Anzahl von Millisekunden',
-      widthDescription: 'Körperbreite einstellen'
+      descriptions: {
+        alert: 'Benachrichtigung anzeigen',
+        alias: 'Befehlsaliasnamen festlegen oder auflisten',
+        clear: 'Löschen Sie das Terminal',
+        clip: 'Rückgabewert des Befehls in die Zwischenablage kopieren',
+        date: 'Datum/Uhrzeit anzeigen',
+        docs: 'Öffnen Sie die Dokumentation',
+        dump: 'Dump den Speicherzustand',
+        echo: 'Geben Sie einen Text an das Terminal zurück',
+        eval: 'Laden und Auswerten einer Javascript-Datei',
+        get: 'Rufen Sie einen Kernel-Speicher-Namespace oder -Schlüssel ab',
+        height: 'Körpergröße einstellen',
+        history: 'Befehlshistorie anzeigen',
+        import: 'Importieren Sie ein Modul von einer URL',
+        ipecho: 'Geben Sie Ihre öffentliche IP-Adresse wieder',
+        lsmod: 'Geladene Kernel-Module auflisten',
+        man: 'Alias der Hilfe',
+        objectUrl: 'Erstellen Sie eine ObjectURL für eine Datei',
+        set: 'Legen Sie einen Kernel-Speicherwert fest',
+        sh: 'Führen Sie ein web3os-Skript aus',
+        storage: 'Informationen zur Speichernutzung anzeigen',
+        systemnotify: 'Zeigen Sie eine Browser-/Plattformbenachrichtigung mit z. B. systemnotify Title Body an',
+        reboot: 'web3os neu laden',
+        restore: 'Stellen Sie den Speicherzustand wieder her',
+        snackbar: 'Zeigen Sie eine Snackbar; z.B. snackbar Alarm!',
+        unset: 'Angegebenen Speichernamensraum oder Schlüssel löschen',
+        wait: 'Warten Sie die angegebene Anzahl von Millisekunden',
+        width: 'Körperbreite einstellen'
+      }
+    },
+
+    config: {
+      descriptions: {
+        autostart: 'Wird beim Start zeilenweise ausgeführt',
+        packages: 'Meistern Sie die lokale Paketliste'
+      }
     }
   }
 }

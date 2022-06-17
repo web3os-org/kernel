@@ -31,7 +31,7 @@
     "npm": ">=8.1.0"
   },
   "scripts": {
-    "start": "npm-run-all --parallel start:kernel start:docs start:browser",
+    "start": "npm-run-all --parallel start:kernel start:docs",
     "start:kernel": "cross-env NODE_ENV=development webpack serve",
     "start:docs": "npm run watch:docs",
     "start:browser": "google-chrome --remote-debugging-port=9222 https://localhost:2160",
