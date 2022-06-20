@@ -107,7 +107,7 @@ export default class Web3osTerminal extends Terminal {
     })
 
     this.customCommands.push({
-      name: 'env',
+      name: '$env',
       run: (term, context) => {
         let result
         const [key, value] = context.split(' ')
@@ -121,6 +121,7 @@ export default class Web3osTerminal extends Terminal {
       }
     })
 
+    // 🐇🥚
     this.customCommands.push({ name: '👨‍💻', run: () => Kernel.execute("alert You're a geek!", { doPrompt: true }) })
 
     // Wait for textarea and apply fixes for mobile

@@ -108,7 +108,6 @@ export async function launchTerminal (options = {}) {
   })
 
   win.term = newTerm
-  termKernel.modules.account?.setPrompt(newTerm)
   if (options.startup) termKernel.execute(options.startup, { terminal: newTerm })
   newTerm.prompt()
   newTerm.focus()

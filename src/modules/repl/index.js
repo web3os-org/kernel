@@ -5,14 +5,20 @@ export const version = '0.1.0'
 export const description = 'Read Eval Print Loop'
 export const help = `
   An interactive Javascript command line
+
+  To store and retrieve values, either use the global/window object or the "env" object.
+
+  To log to the REPL, use "term.log".
+
+  E.g., term.log(env)
 `
 
 export const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 
-export async function execute (cmd, term = globalThis.Terminal) {
+export async function execute (cmd = () => {}, term = globalThis.Terminal) {
   try {
-    const func = new AsyncFunction(cmd)
-    const results = await func()
+    const func = new AsyncFunction('term', 'env', cmd)
+    const results = await func(term, term.env)
     if (results) console.dir(results)
     term.log(results)
   } catch (err) {
@@ -29,7 +35,13 @@ export default async function (term, context) {
   const replTerm = Web3osTerminal.create({
     kernel: term.kernel,
     fontSize: 22,
-    promptFormat: '> '
+    promptFormat: '> ',
+    customCommands: [
+      {
+        name: '.clear',
+        run: term => { term.clear(); term.prompt() }
+      }
+    ]
   })
 
   replTerm.execute = line => execute(line, replTerm)
@@ -51,6 +63,6 @@ export default async function (term, context) {
   mount.querySelector('.xterm').style.position = 'unset'
   fitInterval = setInterval(() => replTerm.fit(), 200)
   replTerm.focus()
-  replTerm.log(`Welcome to 3os REPL v${version}`)
+  replTerm.log(`3os REPL v${version}`)
   replTerm.prompt()
 }
