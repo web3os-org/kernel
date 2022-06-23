@@ -6,11 +6,11 @@ export const help = `
 
   To store and retrieve values, either use the global/window object or the "env" object.
 
-  To log to the REPL, use "term.log".
+  E.g.:
+    > env.testValue = 'test!'
+    > console.log(env)
 
-  E.g., term.log(env)
-
-  Use the command "$custom" to see other builtin REPL commands
+  Use the command "$custom" to see builtin REPL commands
 `
 
 let originalConsoleLog
@@ -78,6 +78,7 @@ export default async function (term, context) {
   replTerm.open(mount)
   mount.querySelector('.xterm').style.position = 'unset'
   fitInterval = setInterval(() => replTerm.fit(), 200)
+
   replTerm.focus()
   replTerm.log(`3os REPL v${version}`)
   replTerm.log(help)
