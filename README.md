@@ -20,7 +20,7 @@
 
 [![Sponsors](https://img.shields.io/github/sponsors/web3os-org?color=red)](https://github.com/web3os-org/kernel/blob/master/LICENSE)
 [![Contributors](https://img.shields.io/github/contributors/web3os-org/kernel?color=yellow)](https://github.com/web3os-org/kernel/graphs/contributors)
-[![GitHub license](https://img.shields.io/github/license/web3os-org/kernel.svg?color=blue)](https://github.com/web3os-org/kernel/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/web3os-org/kernel/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](https://github.com/web3os-org/kernel/compare)
 [![Discord](https://img.shields.io/discord/926916877689700373?label=discord)](https://discord.gg/yA4M83fXn9)
 [![Observatory Grade](https://img.shields.io/mozilla-observatory/grade/web3os.sh?publish)](https://observatory.mozilla.org/analyze/web3os.sh)
@@ -181,8 +181,8 @@ See [CONTRIBUTING.md](https://github.com/web3os-org/kernel/blob/master/CONTRIBUT
 ```sh
 git clone git@github.com:web3os-org/kernel.git
 cd kernel
-yarn # or npm install
-yarn start # or npm start
+pnpm install # or npm install
+pnpm start # or npm start
 ```
 
 From here, simply connect to [https://localhost:2160](https://localhost:2160) and accept the certificate warning.
