@@ -380,6 +380,8 @@ export function log (message, options = { console: true }) {
  *
  * @property {Function} find - Find a window by ID
  * @property {string} find.id - The ID of the window (usually winbox-#; stored on app.window.id)
+ * 
+ * @see https://nextapps-de.github.io/winbox/
  */
 export const windows = {
   _collection: new Set(),
