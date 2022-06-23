@@ -40,7 +40,7 @@ A decentralized web-based operating system for the next web, empowering users an
 - Easily install virtually any npm browser package
 - Customize the OS to suit your individual needs
 - Write scripts to perform particular tasks
-- Write full applications that can create windows
+- Write full applications that can create windows and interface with the kernel
 - Interact with crypto wallets and smart contracts
 - Utilize a number of P2P protocols within the browser
 
@@ -290,7 +290,6 @@ Here are a few examples of npm libraries that can be successfully loaded in web3
 
 ---
 
-- [@web3os-apps/code](https://npmjs.org/@web3os-apps/code)
 - [@web3os-apps/doom](https://npmjs.org/@web3os-apps/doom)
 - [@web3os-apps/gun](https://npmjs.org/@web3os-apps/gun)
 - [@web3os-apps/minipaint](https://npmjs.org/@web3os-apps/minipaint)
