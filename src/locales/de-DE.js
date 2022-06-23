@@ -1,3 +1,5 @@
+// TODO: Cleanup and improve consistency
+
 export default {
   common: {
     Booting: 'Booten',

@@ -11,11 +11,11 @@ export const version = '0.1.0'
 export const description = t('app:lang.description', 'Internationalization Utility')
 
 export const help = `
-  ${t('usage', 'Usage')}:
+  ${t('Usage', 'Usage')}:
     lang                            ${t('app:lang.helpShowCurrentLanguage', 'Show the current system language')}
     lang <${t('language', 'Language')}>                 ${t('app:lang.helpSetLanguage', 'Set the system language')}
 
-  ${t('options', 'Options')}:
+  ${t('Options', 'Options')}:
     --help                          ${t('printThisHelpMessage', 'Print this help message')}
     --version                       ${t('printVersionInformation', 'Print the version information')}
 `

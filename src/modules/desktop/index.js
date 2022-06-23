@@ -8,9 +8,8 @@ import './index.css'
 import README from '../../../README.md'
 import defaultWallpaperURL from './default_wallpaper.png'
 import { default as defaultAppIcon } from '../../assets/default-app-icon.svg'
-import Web3osTerminal from '../../terminal'
 
-const { create: createTerminal } = Web3osTerminal
+// const { create: createTerminal } = Web3osTerminal
 
 export const name = 'desktop'
 export const version = '1.0.0'
@@ -78,7 +77,9 @@ export async function launchTerminal (options = {}) {
   const customCommands = options.customCommands || []
   customCommands.push({ name: 'exit', run: () => win.window.close() })
 
-  const newTerm = createTerminal({
+  const termKernel = options.kernel ? options.kernel : (kernel || globalThis.Kernel)
+
+  const newTerm = termKernel.Web3osTerminal.create({
     fontFamily: options.fontFamily || "'Fira Mono', monospace",
     fontSize: options.fontSize || 18,
     fontWeight: options.fontWeight || 900,
@@ -91,8 +92,6 @@ export async function launchTerminal (options = {}) {
   container.style.height = '100%'
   newTerm.open(container)
   newTerm.cwd = options.path || '/'
-
-  const termKernel = options.kernel ? options.kernel : (kernel || globalThis.Kernel)
 
   let fitInterval
   win = termKernel.windows.create({

@@ -121,9 +121,6 @@ export default class Web3osTerminal extends Terminal {
       }
     })
 
-    // 🐇🥚
-    this.customCommands.push({ name: '👨‍💻', run: () => Kernel.execute("alert You're a geek!", { doPrompt: true }) })
-
     // Wait for textarea and apply fixes for mobile
     if (this.kernel.isMobile) {
       const waitInterval = setInterval(() => {

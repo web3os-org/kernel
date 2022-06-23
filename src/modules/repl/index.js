@@ -1,5 +1,3 @@
-import Web3osTerminal from '../../terminal'
-
 export const name = 'repl'
 export const version = '0.1.0'
 export const description = 'Read Eval Print Loop'
@@ -11,6 +9,8 @@ export const help = `
   To log to the REPL, use "term.log".
 
   E.g., term.log(env)
+
+  Use the command "$custom" to see other builtin REPL commands
 `
 
 export const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
@@ -32,20 +32,6 @@ export async function execute (cmd = () => {}, term = globalThis.Terminal) {
 export default async function (term, context) {
   let fitInterval
 
-  const replTerm = Web3osTerminal.create({
-    kernel: term.kernel,
-    fontSize: 22,
-    promptFormat: '> ',
-    customCommands: [
-      {
-        name: '.clear',
-        run: term => { term.clear(); term.prompt() }
-      }
-    ]
-  })
-
-  replTerm.execute = line => execute(line, replTerm)
-
   const mount = document.createElement('div')
   mount.style.height = '100%'
 
@@ -59,10 +45,30 @@ export default async function (term, context) {
   })
 
   app.window.body.style.overflowY = 'hidden'
+
+  const replTerm = term.kernel.Web3osTerminal.create({
+    kernel: term.kernel,
+    fontSize: 22,
+    promptFormat: '> ',
+    customCommands: [
+      {
+        name: '.clear',
+        run: term => { term.clear(); term.prompt() }
+      },
+      {
+        name: '.exit',
+        run: () => app.window.close()
+      }
+    ]
+  })
+
+  replTerm.execute = line => execute(line, replTerm)
+
   replTerm.open(mount)
   mount.querySelector('.xterm').style.position = 'unset'
   fitInterval = setInterval(() => replTerm.fit(), 200)
   replTerm.focus()
   replTerm.log(`3os REPL v${version}`)
+  replTerm.log(help)
   replTerm.prompt()
 }
