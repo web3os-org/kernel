@@ -13,6 +13,7 @@ export const help = `
   Use the command "$custom" to see other builtin REPL commands
 `
 
+let originalConsoleLog
 export const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
 
 export async function execute (cmd = () => {}, term = globalThis.Terminal) {
@@ -41,8 +42,18 @@ export default async function (term, context) {
     max: true,
     x: 'center',
     y: 'center',
-    onclose: () => clearInterval(fitInterval)
+    onclose: () => {
+      clearInterval(fitInterval)
+      console.log = originalConsoleLog ? originalConsoleLog : console.log
+      originalConsoleLog = null
+    }
   })
+
+  originalConsoleLog = console.log
+  console.log = function () {
+    replTerm.log(...arguments)
+    originalConsoleLog.apply(console, arguments)
+  }
 
   app.window.body.style.overflowY = 'hidden'
 

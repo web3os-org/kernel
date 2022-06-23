@@ -1,6 +1,6 @@
 /**
  * Web3os Kernel
- * 
+ *
  * @description Entrypoint of the web3os kernel
  * @author Jay Mathis <code@mathis.network>
  * @license MIT
@@ -70,10 +70,17 @@ export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/gun'
 ]
 
-// TODO: i18n this (and everything else). This doesn't even belong here anymore.
-const configDescriptions = {
-  'autostart.sh': 'Executed at startup line by line',
-  packages: 'Master local package list'
+/**
+ * References the initialized i18next instance
+ * @type {Object}
+ * @see https://i18next.com
+ */
+export const i18n = i18next
+
+// TODO: This doesn't even belong here anymore.
+export const configDescriptions = {
+  'autostart.sh': i18n.t('kernel:config.descriptions.autostart', 'Executed at startup line by line'),
+  packages: i18n.t('kernel:config.descriptions.packages', 'Master local package list')
 }
 
 export const Web3osTerminal = W3OSTerminal
@@ -89,13 +96,6 @@ export const utils = { path, bytes }
  * @type {Object}
  */
 export const modules = {}
-
-/**
- * References the initialized i18next instance
- * @type {Object}
- * @see https://i18next.com
- */
-export const i18n = i18next
 
 /**
  * References the @iconify/iconify library
@@ -568,7 +568,12 @@ export function colorChars (str, options = {}) {
  * @see https://f3oall.github.io/awesome-notifications
  */
 export const notify = new AwesomeNotifications({
-  position: 'top-right'
+  position: 'top-right',
+  icons: {
+    enabled: true,
+    prefix: '<i class="iconify" data-icon="fa6-regular:',
+    suffix: '" />'
+  }
 })
 
 /**
@@ -953,7 +958,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.ipecho = {
-    description: t('kernel:bins.ipechoDescription', 'Echo your public IP address'),
+    description: t('kernel:bins.descriptions.ipecho', 'Echo your public IP address'),
     run: async term => {
       const result = await fetch('https://ipecho.net/plain')
       const ip = await result.text()
@@ -964,7 +969,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.lsmod = {
-    description: t('kernel:bins.lsmodDescription', 'List loaded kernel modules'),
+    description: t('kernel:bins.descriptions.lsmod', 'List loaded kernel modules'),
     run: async term => {
       const mods = {
         ...modules,
@@ -978,7 +983,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.memoryinfo = {
-    description: `${t('kernel:bins.memoryinfoDescription', 'Show Javascript heap information')}`,
+    description: `${t('kernel:bins.memoryinfo.description', 'Show Javascript heap information')}`,
     run: async term => {
       const { jsHeapSizeLimit, totalJSHeapSize, usedJSHeapSize } = console.memory
 
@@ -1052,7 +1057,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.eval = {
-    description: t('kernel:bins.evalDescription', 'Load and evaluate a Javascript file'),
+    description: t('kernel:bins.descriptions.eval', 'Load and evaluate a Javascript file'),
     run: (term, filename) => {
       if (!filename || filename === '') return term.log(colors.danger('Invalid filename'))
       filename = utils.path.resolve(term.cwd, filename)
@@ -1074,17 +1079,17 @@ async function registerKernelBins () {
   }
 
   kernelBins.height = {
-    description: t('kernel:bins.heightDescription', 'Set body height'),
+    description: t('kernel:bins.descriptions.height', 'Set body height'),
     run: (term, context) => { document.body.style.height = context }
   }
 
   kernelBins.width = {
-    description: t('kernel:bins.widthDescription', 'Set body width'),
+    description: t('kernel:bins.descriptions.width', 'Set body width'),
     run: (term, context) => { document.body.style.width = context }
   }
 
   kernelBins.objectUrl = {
-    description: t('kernel:bins.objectUrlDescription', 'Create an ObjectURL for a file'),
+    description: t('kernel:bins.descriptions.objectUrl', 'Create an ObjectURL for a file'),
     run: (term, filename) => {
       const { t } = Kernel.i18n
       if (!filename || filename === '') throw new Error(t('invalidFilename', 'Invalid filename'))
@@ -1376,7 +1381,7 @@ export async function boot () {
   topbar.show()
   const bootArgs = new URLSearchParams(globalThis.location.search)
   globalThis.addEventListener('beforeunload', async () => {
-    await showSplash(`${t('rebooting', 'Rebooting')}...`, { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })
+    await showSplash(`${t('Rebooting', 'Rebooting')}...`, { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })
     document.querySelector('#web3os-splash-icon').classList.add('rotating')
   })
 
