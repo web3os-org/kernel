@@ -1,6 +1,6 @@
 {
   "name": "@web3os-core/kernel",
-  "description": "A developer-friendly ecosystem of apps designed to build a crypto-focused web-based operating system",
+  "description": "The OS for the next web",
   "homepage": "https://web3os.sh",
   "funding": "https://github.com/sponsors/mathiscode",
   "version": "0.5.4",

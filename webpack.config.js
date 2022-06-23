@@ -26,13 +26,16 @@ module.exports = {
       }
     }
   },
+  performance: {
+    hints: false
+  },
   experiments: {
     topLevelAwait: true,
     asyncWebAssembly: true
     // lazyCompilation: true
   },
   plugins: [
-    new WebpackBundleAnalyzer(),
+    // new WebpackBundleAnalyzer(),
 
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
