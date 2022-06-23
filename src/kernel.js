@@ -262,6 +262,7 @@ export async function showBootIntro () {
   log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('account connect')} ${t('kernel:bootIntro.account', 'to connect your wallet')}`))
   log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('files /bin')} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
   log(colors.warning(`${t('typeVerb', 'Type')} ${colors.bold.underline('lsmod')} ${t('kernel:bootIntro.lsmod', 'to list all kernel modules')}`))
+  log(colors.white(`${t('typeVerb', 'Type')} ${colors.bold.underline('repl')} ${t('kernel:bootIntro.repl', 'to run the interactive Javascript terminal')}`))
   log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline('confetti')} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
   log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
   log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}\n`))
