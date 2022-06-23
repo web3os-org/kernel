@@ -15,7 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
-import 'cypress-metamask-v2'
+import 'cypress-metamask-plugin/support/commands'
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

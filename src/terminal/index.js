@@ -22,6 +22,7 @@
  * @property {string} cwd - The current working directory
  * @property {Object} env - The terminal's environment variables
  * @property {boolean} debug - Enable verbose output
+ * @property {Function} execute - Override command execution
  * @property {Object} aliases - Map of command aliases
  * @property {Array.<string>} history - The history of commands entered
  * @property {Array.<string>} binSearchPath - An array of package scopes to search (in order) for executables
@@ -70,6 +71,7 @@ export default class Web3osTerminal extends Terminal {
   cwd = '/'
   env = {}
   debug = false
+  execute = false
   aliases = {}
   history = []
   binSearchPath = []
@@ -79,7 +81,7 @@ export default class Web3osTerminal extends Terminal {
   tabSelectMode = false
   tabSelectChoices = []
   tabSelectCurrentChoice = -1
-  promptFormat = `<${colors.cyan('3os')}>${colors.blue('{cwd}')}${colors.green('#')} `
+  promptFormat = ''
 
   escapes = escapes
 
@@ -89,6 +91,8 @@ export default class Web3osTerminal extends Terminal {
     this.customCommands = options.customCommands || []
     this.binSearchPath = options.binSearchPath || ['@web3os-core', '@web3os-fs', '@web3os-apps', '@web3os-utils']
     this.debug = options.debug || false
+    this.execute = options.execute || false
+    this.promptFormat = options.promptFormat || `<${colors.cyan('3os')}>${colors.blue('{cwd}')}${colors.green('#')} `
     this.log = this.log.bind(this)
     if (this.debug) console.log('New Terminal Created:', this, { options, kernel: this.kernel })
 
@@ -103,7 +107,7 @@ export default class Web3osTerminal extends Terminal {
     })
 
     this.customCommands.push({
-      name: 'env',
+      name: '$env',
       run: (term, context) => {
         let result
         const [key, value] = context.split(' ')
@@ -118,20 +122,22 @@ export default class Web3osTerminal extends Terminal {
     })
 
     // Wait for textarea and apply fixes for mobile
-    const waitInterval = setInterval(() => {
-      if (this.textarea) {
-        clearInterval(waitInterval)
-        this.textarea.setAttribute('enterkeyhint', 'send')
+    if (this.kernel.isMobile) {
+      const waitInterval = setInterval(() => {
+        if (this.textarea) {
+          clearInterval(waitInterval)
+          this.textarea.setAttribute('enterkeyhint', 'send')
 
-        const pollInterval = setInterval(() => {
-          const input = this.textarea.value
-          if (input.trim().length > 0 && this.cmd.trim().length < input.trim().length) {
-            this.cmd = input
-            this.cursorPosition = this.cmd.length
-          }
-        }, 100)
-      }
-    }, 100)
+          const pollInterval = setInterval(() => {
+            const input = this.textarea.value
+            if (input.trim().length > 0 && this.cmd.trim().length < input.trim().length) {
+              this.cmd = input
+              this.cursorPosition = this.cmd.length
+            }
+          }, 100)
+        }
+      }, 100)
+    }
   }
 
   /**
@@ -331,7 +337,7 @@ export default class Web3osTerminal extends Terminal {
             const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
             const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
             if (match) exec = path.join(`${match}/${exec.split(' ')[0]}`) + ' ' + exec.split(' ').slice(1).join(' ')
-            this.kernel.execute(exec, options)
+            this.execute ? this.execute(exec, options) : this.kernel.execute(exec, options)
           }
         }
 
@@ -485,6 +491,7 @@ export default class Web3osTerminal extends Terminal {
       default:
         if (printable) {
           if (this.tabSelectMode) {
+            if (this.debug) console.log({ tabSelectChoices: this.tabSelectChoices })
             this.cmd = this.tabSelectChoices[this.tabSelectCurrentChoice]
             this.cursorPosition = this.cmd.length
             this.tabSelectMode = false

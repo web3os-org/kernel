@@ -4,7 +4,7 @@
 
 const { expect } = require('chai')
 
-describe('bin/account', () => {
+describe('modules/account', () => {
   before(() => {
     cy.setupMetamask()
     cy.changeMetamaskNetwork('localhost')

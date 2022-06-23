@@ -31,7 +31,7 @@ function listenForKeypress (callback) {
   keyTrap.style.opacity = 0
 
   keyTrap.addEventListener('keydown', e => {
-    events.dispatch('ScreensaverEnd')
+    kernel.events.dispatch('ScreensaverEnd')
     e.preventDefault()
     callback(e)
     keyTrap.remove()

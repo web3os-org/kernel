@@ -1,8 +1,5 @@
 import colors from 'ansi-colors'
-import Web3osTerminal from '../../terminal'
 import { term } from '../account'
-
-const { create: createTerminal } = Web3osTerminal
 
 export const name = 'backend'
 export const description = 'Manages the connection to a Backend server'
@@ -33,7 +30,7 @@ export async function launchShell (options = {}) {
   if (connection?.readyState !== 1) throw new Error('Not connected')
   let win
 
-  const newTerm = createTerminal({
+  const newTerm = kernel.Web3osTerminal.create({
     fontFamily: options.fontFamily || `'Fira Mono', monospace`,
     fontSize: options.fontSize || 18,
     fontWeight: options.fontWeight || 900,

@@ -4,7 +4,7 @@ const webpack = require('webpack')
 
 const CopyPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-// const WebpackBundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const WebpackBundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
   mode: process.env.NODE_ENV || 'production',
@@ -32,7 +32,7 @@ module.exports = {
     // lazyCompilation: true
   },
   plugins: [
-    // new WebpackBundleAnalyzer(),
+    new WebpackBundleAnalyzer(),
 
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],

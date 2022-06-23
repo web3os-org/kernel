@@ -1,6 +1,6 @@
-# Migrated to Fleek officially, but leaving this for Netlify deploys
+# Migrated to Fleek officially, but leaving this for possible Netlify deploys
 [build]
-  command = "yarn build"
+  command = "npm run build"
   publish = "dist"
 
 [[headers]]

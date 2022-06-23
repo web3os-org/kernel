@@ -22,8 +22,10 @@ export function speak (utterance) {
 }
 
 export async function run (term, context) {
-  for (const voice of voices) {
+  console.log({ voices })
+  for (const voice of speechSynthesis.getVoices()) {
     console.log('Voice:', voice.name, voice.lang)
+    speak(getUtterance(context, voice, 1, _.random(0.1,2), _.random(0.1,2)))
   }
 
   // For testing and hilarity

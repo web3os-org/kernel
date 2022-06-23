@@ -292,7 +292,7 @@ async function loadFolder (browser, url) {
   }
 }
 
-export async function run (terminal, url) {
+export async function run (terminal = globalThis.Terminal, url) {
   kernel = terminal.kernel || globalThis.Kernel
   url = (!url || url === '') ? '/' : url
   history = [url]
