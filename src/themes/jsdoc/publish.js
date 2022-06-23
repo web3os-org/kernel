@@ -710,7 +710,7 @@ function buildNav(members) {
     if (!isHTML(title)) {
         nav = `
           <a href="index.html"><img class="navbar-logo" src="http://github.com/web3os-org/kernel/raw/master/.github/iconlogo.png" /></a>
-          <div class="navbar-heading" id="navbar-heading"><a href="index.html"><h2 class="navbar-heading-text">${title}</h2></a></div>
+          <div class="navbar-heading" id="navbar-heading"><a href="index.html"><h2 class="navbar-heading-text">Documentation</h2></a></div>
           <div class="navbar-badges">
             <a class="navbar-badge" href="https://web3os.sh" target="_blank">
               <img alt="Launch web3os.sh" src="https://img.shields.io/badge/launch-web3os.sh-blue?style=for-the-badge" style="max-width: 100%;"></a>
