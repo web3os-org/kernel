@@ -265,6 +265,34 @@ export default class Web3osTerminal extends Terminal {
   }
 
   /**
+   * Run the command
+   * @memberof Web3osTerminal
+   * @instance
+   */
+  run (cmd) {
+    let exec = this.aliases[cmd] ? this.aliases[cmd] : cmd
+    const options = { terminal: this, doPrompt: true }
+
+    const customCommand = this.customCommands?.find(c => c.name === cmd.split(' ')[0])
+    if (customCommand) customCommand.run(this, cmd.split(' ').slice(1).join(' '))
+    else {
+      if (/^\/bin\/.+/.test(this.cwd)) {
+        const scopedBin = path.join(this.cwd, cmd)
+        if (this.kernel.fs.existsSync(scopedBin)) {
+          this.kernel.execute(scopedBin.replace('/bin/', ''), options)
+        } else {
+          this.kernel.execute(exec, options)
+        }
+      } else {
+        const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
+        const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
+        if (match) exec = path.join(`${match}/${exec.split(' ')[0]}`) + ' ' + exec.split(' ').slice(1).join(' ')
+        this.execute ? this.execute(exec, options) : this.kernel.execute(exec, options)
+      }
+    }
+  }
+
+  /**
    * Handle the keypress event
    * @memberof Web3osTerminal
    * @instance
@@ -314,33 +342,14 @@ export default class Web3osTerminal extends Terminal {
 
         // Mobileish keyboard
         if (this.cmd.trim().length === 0 && this.textarea.value.trim().length > 0) this.cmd = this.textarea.value.trim()
-
         if (this.cmd.trim().length === 0) return this.prompt()
 
         this.interruptListener = this.onKey(this.interruptHandler.bind(this))
+
+        const cmds = this.cmd.split(';').map(cmd => cmd.trim())
+        for (const cmd of cmds) this.run(cmd)
+
         this.history.push(this.cmd)
-
-        let exec = this.aliases[this.cmd] ? this.aliases[this.cmd] : this.cmd
-        const options = { terminal: this, doPrompt: true }
-
-        const customCommand = this.customCommands?.find(c => c.name === this.cmd.split(' ')[0])
-        if (customCommand) customCommand.run(this, this.cmd.split(' ').slice(1).join(' '))
-        else {
-          if (/^\/bin\/.+/.test(this.cwd)) {
-            const scopedBin = path.join(this.cwd, this.cmd)
-            if (this.kernel.fs.existsSync(scopedBin)) {
-              this.kernel.execute(scopedBin.replace('/bin/', ''), options)
-            } else {
-              this.kernel.execute(exec, options)
-            }
-          } else {
-            const searchPaths = [...this.cwd, ...this.binSearchPath.map(p => `/bin/${p}`)]
-            const match = searchPaths.find(p => p !== '/' && this.kernel.fs.existsSync(`${p}/${exec.split(' ')[0]}`))
-            if (match) exec = path.join(`${match}/${exec.split(' ')[0]}`) + ' ' + exec.split(' ').slice(1).join(' ')
-            this.execute ? this.execute(exec, options) : this.kernel.execute(exec, options)
-          }
-        }
-
         this.cmd = ''
         this.cursorPosition = 0
         this.historyPosition = 0

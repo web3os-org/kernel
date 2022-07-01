@@ -17,17 +17,19 @@ export async function run (term, context) {
   return log(`
     ${colors.underline.info('Web3os Help:')}
     
-    web3os has many commands, which you can list by typing ${colors.green('ls /bin/@web3os-core')} or ${colors.blue('files /bin/@web3os-core')}
-    To learn more about a command, type ${colors.green('help <command>')}
+    web3os has many commands, which you can browse by typing
+    \t${colors.green('ls /bin')} or ${colors.blue('files /bin')}
+    To learn more about a command, type
+    \t${colors.green('help <command>')} or ${colors.blue('<command> --help')}
 
     ${colors.info('💾   Development:')}
     \tAll the cool shit happens over at ${colors.underline('https://github.com/web3os-org')}
     \tAlso check out the API documentation at ${colors.underline('https://docs.web3os.sh')}
 
     ${colors.info('🚀   Quick Start:')}
-    \t1. Connect your MetaMask account using the ${colors.green('account connect')} command
-    \t2. Check your coin balance with the ${colors.green('account balance')} command
-    \t3. Check your token balance with the ${colors.green('account balance <token>')} command
+    \t1. Browse the filesystem: ${colors.green('files')}
+    \t2. Start the desktop: ${colors.green('desktop')}
+    \t3. Interact with your wallets: ${colors.green('wallet')}
   `)
 }
 

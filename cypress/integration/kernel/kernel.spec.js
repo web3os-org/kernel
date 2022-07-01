@@ -4,7 +4,7 @@ const testValue = Math.random()
 
 describe('Kernel', () => {
   before(() => {
-    cy.visit('https://localhost:2160')
+    cy.visit('https://localhost:30443')
   })
 
   it('should boot to a prompt', () => {

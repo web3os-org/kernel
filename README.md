@@ -76,11 +76,18 @@ The project is still very young, and more documentation and organization is Comi
 <details open>
 <summary><strong>Expand Features</strong></summary>
 
+- [3pm: The web3os package manager](#web3os-package-manager)
 - Runs completely in the browser (Chromium-based browsers are ideal)
+- Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
+- Installable as a Progressive Web App
 - Optional desktop environment
 - Optional backend environment runs in Docker container
-- Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
-- [3pm: The Web3OS Package Manager](#web3os-package-manager)
+- Provides interfaces for many standard and experimental browser APIs
+- WebSocket support
+- WebUSB support
+- WebHID support
+- Web Bluetooth support
+- Gamepad support
 - Modules may also be imported with [SystemJS](https://github.com/systemjs/systemjs)
 - Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
@@ -95,17 +102,16 @@ The project is still very young, and more documentation and organization is Comi
 - P2P communication with [PeerJS](https://peerjs.com)
 - Torrent integration with [WebTorrent](https://webtorrent.io)
 - It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/)
-- WebUSB support *(Chrome only; very experimental)*
-- WebAssembly executable support *(very experimental - incomplete)*:
+- WebAssembly executable support *(WIP)*:
   - [Native](https://developer.mozilla.org/en-US/docs/WebAssembly)
   - [WIP] [WASI](https://wasi.dev/)
   - [WIP] [Emscripten](https://emscripten.org/)
   - [WIP] [AssemblyScript](https://www.assemblyscript.org/)
 - Decentralized:
-  - Open source to run and customize your own copy
-  - Included Fleek and Netlify configs for easy deployment
-  - Main site hosted on [Fleek](https://fleek.co)
-  - Backup site hosted on IPFS
+  - Open source to customize and host your own copy
+  - Included [Fleek](https://github.com/web3os-org/kernel/blob/master/.fleek.json) and [Netlify](https://github.com/web3os-org/kernel/blob/master/netlify.toml) configs for easy deployment
+  - Main site hosted by [Fleek](https://fleek.co) at [https://web3os.sh](https://web3os.sh)
+  - Backup site hosted on IPFS at [https://web3os-sh.ipns.dweb.link/](https://web3os-sh.ipns.dweb.link/)
 - Developer-friendly:
   - Easily scriptable and customizable
   - Use an [initfsUrl](https://docs.web3os.sh/global.html#setupFilesystem) query param to load a ZIP file from a URL to populate your filesystem
@@ -185,7 +191,7 @@ pnpm install # or npm install
 pnpm start # or npm start
 ```
 
-From here, simply connect to [https://localhost:2160](https://localhost:2160) and accept the certificate warning.
+From here, simply connect to [https://localhost:30443](https://localhost:30443) and accept the certificate warning.
 
 Alternatively, install [src/assets/ssl/localhost.crt](https://github.com/web3os-org/kernel/blob/master/src/assets/ssl/localhost.crt) to your trusted certificate store.
 

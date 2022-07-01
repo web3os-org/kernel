@@ -57,11 +57,12 @@ export const KernelEvents = [
 // TODO: Whittle this down and migrate to packages
 /** The array of default builtin modules */
 export const builtinModules = [
-  '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'help', 'lang', 'markdown', 'peer', 'ping', 'repl', 'screensaver', 'speak', 'three',
-  'usb', 'view', 'wasm', 'www'
+  '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'croquet', 'desktop', 'edit',
+  'files', 'gamepad', 'help', 'hid', 'lang', 'markdown', 'peer', 'ping', 'repl', 'screensaver',
+  'speak', 'socket', 'three', 'usb', 'view', 'wallet', 'wasm', 'worker', 'www'
 ]
 
+/** The array of default 3pm packages to install on new system */
 export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/doom',
   'https://unpkg.com/@web3os-apps/wolfenstein',
@@ -89,7 +90,7 @@ export const Web3osTerminal = W3OSTerminal
  * Contains miscellaneous utilities
  * @type {Object}
  */
-export const utils = { path, bytes }
+export const utils = { bytes, colorChars, path, wait }
 
 /**
  * Contains all registered kernel modules
@@ -211,9 +212,12 @@ export async function showBootIntro () {
   const { t } = i18n
   const isSmall = window.innerWidth <= 445
 
-  log(colors.info(`${isSmall ? '' : '\t '}${t('kernel:bootIntroSubtitle', `Made with  ${colors.red('♥')}  by Jay Mathis`)}`))
-  log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}    web3os kernel v${rootPkgJson.version}    `))
-  log(colors.warning(`${isSmall ? '' : '\t '}⚠           BETA          ⚠\n`))
+  // I think this is vain? I dunno.
+  // log(colors.info(`${isSmall ? '' : '\t '}${t('kernel:bootIntroSubtitle', `Made with  ${colors.red('♥')}  by Jay Mathis`)}`))
+  log(colors.info(`${t('kernel:bootIntroSubtitle', '\t      https://web3os.sh')}`))
+
+  log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}   web3os kernel v${rootPkgJson.version}    `))
+  log(colors.warning(`${isSmall ? '' : '\t '}⚠          BETA          ⚠\n`))
 
   // log(colors.success(`${t('donate', 'Donate')}:`))
   // log(`${colors.success('BTC:')} ${colors.success.underline('BTCADDR')}`)
@@ -247,6 +251,12 @@ export async function showBootIntro () {
   }
 
   if (console.memory) log(`${colors.info(t('Heap Limit') + ':')}\t${bytes(console.memory.jsHeapSizeLimit)}`)
+  if (navigator.hardwareConcurrency) log(`${colors.info(t('Cores') + ':')}\t\t${navigator.hardwareConcurrency}`)
+  if (typeof navigator.onLine === 'boolean') log(`${colors.info(t('Online') + ':')}\t\t${navigator.onLine ? t('Yes') : t('No')}`)
+
+  if (navigator.connection) {
+    log(`${colors.info(t('Downlink') + ':')}\t${navigator.connection.downlink} Mbps`)
+  }
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
     log(colors.danger(`\n⚠ ${t('kernel:firstBootWarning', 'The first boot will take the longest, please be patient!')} ⚠`))
@@ -259,15 +269,19 @@ export async function showBootIntro () {
   log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline('help')} ${t('kernel:bootIntro.help', 'for help')}`))
   log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline('docs')} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
   log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline('desktop')} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
-  log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('account connect')} ${t('kernel:bootIntro.account', 'to connect your wallet')}`))
+  log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('wallet connect')} ${t('kernel:bootIntro.wallet', 'to connect your wallet')}`))
   log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('files /bin')} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
   log(colors.warning(`${t('typeVerb', 'Type')} ${colors.bold.underline('lsmod')} ${t('kernel:bootIntro.lsmod', 'to list all kernel modules')}`))
   log(colors.white(`${t('typeVerb', 'Type')} ${colors.bold.underline('repl')} ${t('kernel:bootIntro.repl', 'to run the interactive Javascript terminal')}`))
   log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline('confetti')} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
   log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
-  log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}\n`))
+  log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('Command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}\n`))
 
-  log('https://docs.web3os.sh')
+  isSmall ? log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('install')} ${t('kernel:bootIntro.install', 'to install web3os to your device')}`))
+  isSmall ? log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+
+  log('\nhttps://docs.web3os.sh')
   log('https://github.com/web3os-org')
   log(colors.muted(`\n${t('Booting')}...`))
 }
@@ -438,9 +452,13 @@ export async function execute (cmd, options = {}) {
     }
   }
 
-  if (options.topbar) topbar.hide()
-  if (!command?.run) { term.log(colors.danger(`Invalid command; try ${colors.underline.white('help')}`)); return term.prompt() }
   options.doPrompt = options.doPrompt || false
+  if (options.topbar) topbar.hide()
+  if (!command?.run) {
+    term.log(colors.danger(`Invalid command; try ${colors.underline.white('help')}`))
+    navigator.vibrate([200, 50, 200])
+    return term.prompt()
+  }
 
   try {
     if (options.topbar) topbar.show()
@@ -450,6 +468,7 @@ export async function execute (cmd, options = {}) {
     if (options.doPrompt) term.prompt()
     return result
   } catch (err) {
+    navigator.vibrate([200, 50, 200])
     console.error(command, err)
     if (err) term.log(err.message || 'An unknown error occurred')
     if (options.doPrompt) term.prompt()
@@ -552,7 +571,6 @@ export async function upload (term) {
 
 /**
  * Colorize a string to differentiate numbers and letters
- * @todo Move to .utils
  * @param {string} str - The string to colorize
  * @param {Object=} options - Options for colorization
  * @param {Function=} [options.numbers=colors.blue()] - The function to colorize numbers
@@ -720,12 +738,6 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
         if (!fs.existsSync('/config')) fs.mkdirSync('/config')
         if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
-  
-        // Populate /docs
-        try {
-          const docs = fs.readdirSync('/docs')
-          if (docs.length === 0) fs.writeFileSync('/docs/README.md', README)
-        } catch {}
   
         // Drag and drop on terminal
         // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
@@ -1099,7 +1111,38 @@ async function registerKernelBins () {
       const data = fs.readFileSync(utils.path.join(term.cwd, filename))
       const file = new File([data], utils.path.parse(filename).base, { type: 'application/octet-stream' })
       const url = URL.createObjectURL(file)
-      return term.log(url)
+      return url
+    }
+  }
+
+  kernelBins.geo = {
+    description: t('kernel:bins.descriptions.geo', 'Geolocation Utility'),
+    run: async term => {
+      if (!navigator.geolocation) throw new Error('Geolocation is not available')
+      return new Promise((resolve, reject) => {
+        try {
+          navigator.geolocation.getCurrentPosition(pos => {
+            const { latitude, longitude } = pos.coords
+            const link = `https://www.openstreetmap.org/search?query=${latitude}%2C${longitude}`
+            term.log({ latitude, longitude, link })
+            resolve(pos)
+          })
+        } catch (err) {
+          console.error(err)
+          if (err.message) term.log(colors.danger(err.message))
+          reject(err)
+        }
+      })
+    }
+  }
+
+  kernelBins.eyedropper = {
+    description: t('kernel:bins.descriptions.eyeDropper', 'Pick colors using the eyedropper'),
+    run: async term => {
+      const dropper = new EyeDropper()
+      const color = await dropper.open()
+      term.log(color)
+      return color
     }
   }
 
@@ -1436,9 +1479,9 @@ export async function boot () {
     console.log('%chttps://github.com/web3os-org/kernel', 'font-size:14px;')
     console.log({ Kernel, Terminal, System })
 
-    for (const evt of KernelEvents) events.on(evt, console.log(evt))
+    for (const evt of KernelEvents) events.on(evt, console.log('Kernel Event:', evt))
 
-    await showBootIntro()
+    if (!bootArgs.has('nobootintro')) await showBootIntro()
     await loadLocalStorage()
     events.dispatch('MemoryLoaded', memory)
     await setupFilesystem()
@@ -1471,8 +1514,8 @@ export async function boot () {
     events.dispatch('AutostartEnd')
     await execute('confetti --startVelocity 90 --particleCount 150')
     topbar.hide()
-    // const heartbeat = setInterval(() => navigator.vibrate([200, 50, 200]), 1000)
-    // setTimeout(() => clearInterval(heartbeat), 5000)
+    const heartbeat = setInterval(() => navigator.vibrate([200, 50, 200]), 1000)
+    setTimeout(() => clearInterval(heartbeat), 5000)
     
     // Expose this globally in case it needs to be cleared externally by an app
     window.blinkyTitleInterval = setInterval(() => {
@@ -1486,7 +1529,6 @@ export async function boot () {
 /**
  * Wait for the specified number of milliseconds
  * @async
- * @todo Move this to .utils
  * @param {number} ms - The number of milliseconds to wait
  * @return {Module}
  */
@@ -1505,6 +1547,7 @@ const resetIdleTime = () => {
   }, get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
 }
 
+// Activity listeners to reset idle time
 globalThis.addEventListener('load', resetIdleTime)
 globalThis.addEventListener('mousemove', resetIdleTime)
 globalThis.addEventListener('keydown', resetIdleTime)
@@ -1512,10 +1555,15 @@ globalThis.addEventListener('keyup', resetIdleTime)
 globalThis.addEventListener('keypress', resetIdleTime)
 globalThis.addEventListener('pointerdown', resetIdleTime)
 
+// Handle PWA installability
+globalThis.addEventListener('beforeinstallprompt', e => {
+  modules.install = { name: '@web3os-core/install', description: 'Install web3os as a PWA', run: async () => Terminal.log(await e.prompt()) }
+})
+
 globalThis.global = globalThis.global || globalThis
 
 // Register service worker
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
   globalThis.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
   })

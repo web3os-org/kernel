@@ -11,9 +11,10 @@ module.exports = {
   devtool: 'source-map',
   devServer: {
     hot: 'only',
-    port: process.env.PORT || 2160,
+    port: process.env.PORT || 30443,
     static: './dist',
     // devMiddleware: { writeToDisk: true },
+    allowedHosts: ['localhost', '.web3os.dev', '.web3os.local'],
     client: {
       logging: 'info',
       // progress: true
@@ -21,8 +22,8 @@ module.exports = {
     server: {
       type: 'https',
       options: {
-        cert: './src/assets/ssl/localhost.crt',
-        key: './src/assets/ssl/localhost.key'
+        cert: './src/assets/ssl/web3os.dev.crt',
+        key: './src/assets/ssl/web3os.dev.key'
       }
     }
   },
@@ -36,6 +37,18 @@ module.exports = {
   },
   plugins: [
     // new WebpackBundleAnalyzer(),
+
+    new webpack.NormalModuleReplacementPlugin(/node:/, resource => {
+      const mod = resource.request.replace(/^node:/, '')
+  
+      switch (mod) {
+        case 'path':
+          resource.request = 'path-browserify'
+          break
+        default:
+          throw new Error(`Not found ${mod}`)
+        }
+    }),
 
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
@@ -77,7 +90,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
 
     fallback: {
-      assert: false,
+      assert: require.resolve('assert'),
       buffer: require.resolve('buffer'),
       os: require.resolve('os-browserify/browser'),
       url: require.resolve('url/'),
@@ -85,7 +98,9 @@ module.exports = {
       http: require.resolve('stream-http'),
       https: require.resolve('https-browserify'),
       crypto: require.resolve('crypto-browserify'),
-      stream: require.resolve('stream-browserify')
+      stream: require.resolve('stream-browserify'),
+      process: require.resolve('process/browser'),
+      util: require.resolve('util')
     }
   },
 

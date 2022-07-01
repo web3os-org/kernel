@@ -2,8 +2,16 @@
 
 export default {
   common: {
+    Yes: 'Ja',
+    No: 'Nein',
+    Cancel: 'Absagen',
+
     Booting: 'Booten',
-    command: 'Befehl',
+    Cores: 'Kerne',
+    Command: 'Befehl',
+    Commands: 'Befehle',
+    Arguments: 'Argumente',
+    Options: 'Optionen',
     Rebooting: 'Neustart',
     Donate: 'Spenden',
     Platform: 'Plattform',
@@ -13,17 +21,18 @@ export default {
     Used: 'Gebraucht',
     Free: 'Frei',
     invalidFilename: 'Ungültiger Dateiname',
-    Options: 'Optionen',
     language: 'Sprache',
     typeVerb: 'Tippen',
     typeNoun: 'Modell',
     printThisHelpMessage: 'Drucken Sie diese Hilfenachricht aus',
     printVersionInformation: 'Drucken Sie die Versionsinformationen',
-    'Heap Limit': 'Heap-Grenze'
+
+    'Heap Limit': 'Heap-Grenze',
+    'Powered by': 'Unterstützt von'
   },
 
   kernel: {
-    bootIntroSubtitle: 'Hergestellt mit ♥ von Jay Mathis',
+    // bootIntroSubtitle: 'Hergestellt mit ♥ von Jay Mathis',
     firstBootWarning: 'Der erste Start dauert am längsten, bitte haben Sie etwas Geduld!',
     mobileExperienceWarning: 'HINWEIS: Das mobile Erlebnis ist ziemlich verrückt und experimentell – gehen Sie mit Vorsicht vor!',
     invalidModule: 'Ungültiges Modul bereitgestellt',
@@ -33,8 +42,9 @@ export default {
       help: 'für Hilfe',
       docs: 'um die Dokumentation zu öffnen',
       desktop: 'um den Desktop zu starten',
-      account: 'um sich mit Ihrer Brieftasche zu verbinden',
+      wallet: 'um sich mit Ihrer Brieftasche zu verbinden',
       filesBin: 'um alle ausführbaren Befehle zu erkunden',
+      install: 'um web3os auf Ihrem Gerät zu installieren',
       lsmod: 'um alle Kernelmodule aufzulisten',
       confetti: 'um die Konfettipistole abzufeuern 🎉',
       minipaint: 'Art™ zu zeichnen 🎨',
