@@ -60,10 +60,12 @@ export const KernelEvents = [
   'PackagesLoaded', 'AutostartStart', 'AutostartEnd', 'ScreensaverStart'
 ]
 
-// TODO: Whittle this down and migrate to packages
-/** The array of default builtin modules */
+/** 
+ * The array of default builtin modules 
+ * @todo Whittle this down and migrate to packages
+*/
 export const builtinModules = [
-  '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'croquet', 'desktop', 'edit',
+  '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
   'files', 'gamepad', 'help', 'hid', 'lang', 'markdown', 'peer', 'ping', 'repl', 'screensaver',
   'speak', 'socket', 'three', 'usb', 'view', 'vm', 'wallet', 'wasm', 'worker', 'www'
 ]
@@ -74,7 +76,6 @@ export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/wolfenstein',
   'https://unpkg.com/@web3os-apps/minipaint',
   'https://unpkg.com/@web3os-apps/rubikscube',
-  'https://unpkg.com/@web3os-apps/gun'
 ]
 
 const FileSystemOverlayConfig = {
