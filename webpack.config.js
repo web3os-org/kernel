@@ -130,7 +130,7 @@ module.exports = {
         use: 'raw-loader'
       },
       {
-        test: /\.(gif|mp3|wav|mp4|ogg|jsdos)$/i,
+        test: /\.(gif|mp3|wav|mp4|ogg|jsdos|img|bin|zst|iso)$/i,
         type: 'asset/resource'
       },
       {

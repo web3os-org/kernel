@@ -24,7 +24,7 @@ export async function run (term, context) {
 
     ${colors.info('💾   Development:')}
     \tAll the cool shit happens over at ${colors.underline('https://github.com/web3os-org')}
-    \tAlso check out the API documentation at ${colors.underline('https://docs.web3os.sh')}
+    \tAlso check out the documentation at ${colors.underline('https://docs.web3os.sh')} or type ${colors.blue('docs')}
 
     ${colors.info('🚀   Quick Start:')}
     \t1. Browse the filesystem: ${colors.green('files')}

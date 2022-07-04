@@ -18,7 +18,7 @@ import('./kernel').then(kernel => {
 
   globalThis.Kernel = kernel
 
-  import('./terminal').then(term => {
+  import('./terminal').then(async term => {
     if (globalThis.Terminal) document.querySelector('#web3os-terminal').innerHTML = ''
 
     globalThis.Terminal = term.default.create({
@@ -32,7 +32,13 @@ import('./kernel').then(kernel => {
     globalThis.Terminal.fit()
     globalThis.Terminal.focus()
 
-    kernel.boot()
+    try {
+      await kernel.boot()
+    } catch (err) {
+      console.error(err)
+      Terminal.log(err.message)
+      globalThis.alert?.(`Kernel Boot Error: ${err.message}`)
+    }
 
     if (document.querySelector('#web3os-desktop')) document.querySelector('#web3os-terminal').style.display = 'none'
   })

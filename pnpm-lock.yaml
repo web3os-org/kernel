@@ -124,6 +124,7 @@ specifiers:
   unzipit: ^1.4.0
   url: ^0.11.0
   util: ^0.12.4
+  v86: ^0.3.7
   web3: ^1.6.1
   web3-eth-contract: ^1.7.3
   webpack: ^5.65.0
@@ -223,6 +224,7 @@ dependencies:
   trezor-connect: 8.2.8
   unzipit: 1.4.0
   url: 0.11.0
+  v86: 0.3.7
   web3: 1.7.3_22kvxa7zeyivx4jp72v2w3pkvy
   web3-eth-contract: 1.7.3
   webtorrent: 1.8.22
@@ -25448,6 +25450,10 @@ packages:
   /v8-compile-cache/2.3.0:
     resolution: {integrity: sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA==}
     dev: true
+
+  /v86/0.3.7:
+    resolution: {integrity: sha512-f+zIINRY3cO2orntDJ+Gvts6vThb3rj1uwzh1KgQKge7krrb79vJCjH0S7RKrKQBvXeqAh2vV34BK3znUoFE3Q==}
+    dev: false
 
   /valid-url/1.0.9:
     resolution: {integrity: sha1-HBRHm0DxOXp1eC8RXkCGRHQzogA=}

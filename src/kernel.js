@@ -47,6 +47,12 @@ import README from '../README.md'
 import theme from './themes/default/index.js'
 import { default as W3OSTerminal } from './terminal'
 
+let BrowserFS
+let memory
+const figletFontName = 'Graffiti'
+const fsModules = {}
+globalThis.topbar = topbar
+
 export const isMobile = window.matchMedia('only screen and (max-width: 760px)').matches
 export const version = rootPkgJson.version
 export const KernelEvents = [
@@ -59,7 +65,7 @@ export const KernelEvents = [
 export const builtinModules = [
   '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'croquet', 'desktop', 'edit',
   'files', 'gamepad', 'help', 'hid', 'lang', 'markdown', 'peer', 'ping', 'repl', 'screensaver',
-  'speak', 'socket', 'three', 'usb', 'view', 'wallet', 'wasm', 'worker', 'www'
+  'speak', 'socket', 'three', 'usb', 'view', 'vm', 'wallet', 'wasm', 'worker', 'www'
 ]
 
 /** The array of default 3pm packages to install on new system */
@@ -71,17 +77,57 @@ export const defaultPackages = [
   'https://unpkg.com/@web3os-apps/gun'
 ]
 
+const FileSystemOverlayConfig = {
+  // AsyncMirror is not the ideal way to handle this, but it works for now
+  // until migration from sync to async in the fsModules is complete
+  '/': {
+    fs: 'AsyncMirror',
+    options: {
+      sync: { fs: 'InMemory' },
+      async: {
+        fs: 'IndexedDB',
+        options: {
+          storeName: 'web3os'
+        }
+      }
+    }
+  },
+
+  '/bin': { fs: 'InMemory' },
+  '/tmp': { fs: 'InMemory' },
+  '/mount': { fs: 'InMemory' }
+}
+
+// Add HTML5FS
+// Broken on firefox
+// see: webkitStorageOptions
+if (!navigator.userAgent.includes('Firefox')) {
+  FileSystemOverlayConfig['/mount/html5fs'] = {
+    fs: 'AsyncMirror',
+    options: {
+      sync: { fs: 'InMemory' },
+      async: {
+        fs: 'HTML5FS',
+        options: {}
+      }
+    }
+  }
+}
+
+colors.theme(theme)
+
 /**
  * References the initialized i18next instance
  * @type {Object}
  * @see https://i18next.com
  */
 export const i18n = i18next
+const t = i18n.t
 
 // TODO: This doesn't even belong here anymore.
 export const configDescriptions = {
-  'autostart.sh': i18n.t('kernel:config.descriptions.autostart', 'Executed at startup line by line'),
-  packages: i18n.t('kernel:config.descriptions.packages', 'Master local package list')
+  'autostart.sh': t('kernel:config.descriptions.autostart', 'Executed at startup line by line'),
+  packages: t('kernel:config.descriptions.packages', 'Master local package list')
 }
 
 export const Web3osTerminal = W3OSTerminal
@@ -164,47 +210,6 @@ broadcast.onmessage = msg => {
   console.log('Incoming Broadcast:', msg)
 }
 
-let BrowserFS
-let memory
-const figletFontName = 'Graffiti'
-const fsModules = {}
-globalThis.topbar = topbar
-
-const FileSystemOverlayConfig = {
-  // AsyncMirror is not the ideal way to handle this, but it works for now
-  // until migration from sync to async in the fsModules is complete
-  '/': {
-    fs: 'AsyncMirror',
-    options: {
-      sync: { fs: 'InMemory' },
-      async: {
-        fs: 'IndexedDB',
-        options: {
-          storeName: 'web3os'
-        }
-      }
-    }
-  },
-
-  '/mount/html5fs': {
-    fs: 'AsyncMirror',
-    options: {
-      sync: { fs: 'InMemory' },
-      async: {
-        fs: 'HTML5FS',
-        options: {}
-      }
-    }
-  },
-
-  '/bin': { fs: 'InMemory' },
-  '/tmp': { fs: 'InMemory' },
-  '/docs': { fs: 'InMemory' },
-  '/mount': { fs: 'InMemory' }
-}
-
-colors.theme(theme)
-
 /**
  * Output the boot introduction
  * */
@@ -214,7 +219,7 @@ export async function showBootIntro () {
 
   // I think this is vain? I dunno.
   // log(colors.info(`${isSmall ? '' : '\t '}${t('kernel:bootIntroSubtitle', `Made with  ${colors.red('♥')}  by Jay Mathis`)}`))
-  log(colors.info(`${t('kernel:bootIntroSubtitle', '\t      https://web3os.sh')}`))
+  log(colors.info(`${t('kernel:bootIntroSubtitle', '\t     https://web3os.sh')}`))
 
   log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}   web3os kernel v${rootPkgJson.version}    `))
   log(colors.warning(`${isSmall ? '' : '\t '}⚠          BETA          ⚠\n`))
@@ -262,7 +267,7 @@ export async function showBootIntro () {
     log(colors.danger(`\n⚠ ${t('kernel:firstBootWarning', 'The first boot will take the longest, please be patient!')} ⚠`))
   }
 
-  if (navigator.userAgentData.platform === 'Android' || window.innerWidth < 500 || window.innerHeight < 500) {
+  if (navigator.userAgentData?.platform === 'Android' || window.innerWidth < 500 || window.innerHeight < 500) {
     log(colors.danger(`\n⚠ 🐉  ${t('kernel:mobileExperienceWarning', 'NOTE: The mobile experience is pretty wacky and experimental - proceed with caution!')} ⚠`))
   }
 

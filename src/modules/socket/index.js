@@ -12,13 +12,14 @@ export const version = '0.1.0'
 export const description = 'WebSocket Utility'
 export const help = `
   Usage:
-    socket connect <url>                        Create a WebSocket connection
-    socket attach <id>                          Attach a new terminal to the socket (id may be a partial match)
-    socket ls                                   List connected sockets
+    socket attach <id>               Attach a new terminal to the socket (id may be a partial match)
+    socket connect <url>             Create a WebSocket connection
+    socket disconnect <id>           Disconnect the WebSocket session (id may be a partial match)
+    socket ls                        List connected sockets
 
   Options:
-    --help                                      Print this help message
-    --version                                   Print the version information
+    --help                           Print this help message
+    --version                        Print the version information
 `
 
 export const spec = {
@@ -103,6 +104,12 @@ export async function connect (url, args) {
   connections.push({ id: `${id}#${socket.url}`, socket })
 }
 
+export async function disconnect (id, args) {
+  const socket = connections.find(socket => socket.id.includes(id))
+  if (!socket) throw new Error(t('app:socket.socketNotFound', 'Socket not found'))
+  socket.socket.close()
+}
+
 export async function list () {
   return term.log(connections.map(socket => socket.id))
 }
@@ -113,6 +120,8 @@ export async function execute (cmd, args) {
       return await attach(args._?.[1], args)
     case 'connect':
       return await connect(args._?.[1], args)
+    case 'disconnect':
+      return await disconnect(args._?.[1], args)
     case 'ls':
       return await list(args)
     default:
