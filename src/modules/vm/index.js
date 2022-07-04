@@ -2,7 +2,7 @@ import arg from 'arg'
 import colors from 'ansi-colors'
 import columnify from 'columnify'
 import { parse as cliParse } from 'shell-quote'
-import { v86WASM, seabios, vgabios } from 'v86/build/binaries'
+// import { v86WASM, seabios, vgabios } from 'v86/build/binaries'
 
 // import osList from './os-list'
 
