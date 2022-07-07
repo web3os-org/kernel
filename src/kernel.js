@@ -212,9 +212,53 @@ broadcast.onmessage = msg => {
 }
 
 /**
+ * Output system information
+ */
+export async function printSystemInfo () {
+  const isSmall = window.innerWidth <= 445
+  let output = ''
+
+  // if (navigator.deviceMemory) output += `\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}\n`
+
+  if (navigator.userAgentData) {
+    const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
+    const browser = `${brand} v${version}`
+
+    output += `${colors.info(`${t('Host')}:    `)}\t${colors.muted(location.host)}\n`
+    output += `${colors.info(`${t('Platform')}:`)}\t${colors.muted(navigator.userAgentData.platform || t('unknown', 'Unknown'))}\n`
+    output += `${colors.info(`${t('Browser')}:`)}\t${colors.muted(browser)}\n`
+  }
+
+  if (navigator.getBattery) {
+    const batt = await navigator.getBattery()
+
+    batt.addEventListener('chargingchange', () => {
+      if (batt.charging) execute('confetti')
+    })
+
+    output += `${colors.info(`${t('Battery')}:`)}\t${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}\n`
+  }
+
+  if (navigator.storage?.estimate) {
+    const storageDetails = await navigator.storage.estimate()
+    const used = bytes(storageDetails.usage)
+    const free = bytes(storageDetails.quota - storageDetails.usage)
+    output += `${colors.info(`${t('Storage')}:`)}\t${colors.muted(`${t('Used')}:`)} ${used} ${isSmall ? '\n\t ' : '-'} ${colors.muted(`${t('Free')}:`)} ${free}\n`
+  }
+
+  if (console.memory) output += `${colors.info(t('Heap Limit') + ':')}\t${bytes(console.memory.jsHeapSizeLimit)}\n`
+  if (navigator.hardwareConcurrency) output += `${colors.info(t('Cores') + ':')}\t\t${navigator.hardwareConcurrency}\n`
+  if (typeof navigator.onLine === 'boolean') output += `${colors.info(t('Online') + ':')}\t\t${navigator.onLine ? t('Yes') : t('No')}\n`
+  if (navigator.connection) output += `${colors.info(t('Downlink') + ':')}\t${navigator.connection.downlink} Mbps\n`
+
+  log(output)
+  return output
+}
+
+/**
  * Output the boot introduction
  * */
-export async function showBootIntro () {
+export async function printBootIntro () {
   const { t } = i18n
   const isSmall = window.innerWidth <= 445
 
@@ -229,40 +273,7 @@ export async function showBootIntro () {
   // log(`${colors.success('BTC:')} ${colors.success.underline('BTCADDR')}`)
   // log(`${colors.success('ETH/MATIC/similar:')} ${colors.success.underline('0x67d2bDf37c779303010363420709F047d95E1c26')}\n`)
 
-  // if (navigator.deviceMemory) log(`\n${colors.info('RAM:')} >= ${colors.muted(navigator.deviceMemory + 'GB')}`)
-
-  if (navigator.userAgentData) {
-    const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
-    const browser = `${brand} v${version}`
-
-    Terminal.log(`${colors.info(`${t('Platform')}:`)}\t${colors.muted(navigator.userAgentData.platform || t('unknown', 'Unknown'))}`)
-    Terminal.log(`${colors.info(`${t('Browser')}:`)}\t${colors.muted(browser)}`)
-  }
-
-  if (navigator.getBattery) {
-    const batt = await navigator.getBattery()
-
-    batt.addEventListener('chargingchange', () => {
-      if (batt.charging) execute('confetti')
-    })
-
-    log(`${colors.info(`${t('Battery')}:`)}\t${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}`)
-  }
-
-  if (navigator.storage?.estimate) {
-    const storageDetails = await navigator.storage.estimate()
-    const used = bytes(storageDetails.usage)
-    const free = bytes(storageDetails.quota - storageDetails.usage)
-    log(`${colors.info(`${t('Storage')}:`)}\t${colors.muted(`${t('Used')}:`)} ${used} ${isSmall ? '\n\t ' : '-'} ${colors.muted(`${t('Free')}:`)} ${free}`)
-  }
-
-  if (console.memory) log(`${colors.info(t('Heap Limit') + ':')}\t${bytes(console.memory.jsHeapSizeLimit)}`)
-  if (navigator.hardwareConcurrency) log(`${colors.info(t('Cores') + ':')}\t\t${navigator.hardwareConcurrency}`)
-  if (typeof navigator.onLine === 'boolean') log(`${colors.info(t('Online') + ':')}\t\t${navigator.onLine ? t('Yes') : t('No')}`)
-
-  if (navigator.connection) {
-    log(`${colors.info(t('Downlink') + ':')}\t${navigator.connection.downlink} Mbps`)
-  }
+  await printSystemInfo()
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
     log(colors.danger(`\n⚠ ${t('kernel:firstBootWarning', 'The first boot will take the longest, please be patient!')} ⚠`))
@@ -272,6 +283,7 @@ export async function showBootIntro () {
     log(colors.danger(`\n⚠ 🐉  ${t('kernel:mobileExperienceWarning', 'NOTE: The mobile experience is pretty wacky and experimental - proceed with caution!')} ⚠`))
   }
 
+  log(colors.underline(t('A few examples') + ':'))
   log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline('help')} ${t('kernel:bootIntro.help', 'for help')}`))
   log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline('docs')} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
   log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline('desktop')} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
@@ -528,7 +540,7 @@ export async function download (term, context) {
   let filename = context
   if (!filename || filename === '') return log(colors.danger('Invalid filename'))
 
-  if (/^(http|ftp|blob)\:/i.test(context) || /^blob/i.test(context)) {
+  if (/^(http|https|ftp|blob)\:/i.test(context) || /^blob/i.test(context)) {
     const url = new URL(context.split(' ')[0])
     filename = utils.path.parse(url.pathname).base
     if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
@@ -770,7 +782,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         // terminal.addEventListener('dragenter', dragenter)
         // terminal.addEventListener('dragover', dragover)
         // terminal.addEventListener('drop', drop)
-  
+
         // Setup FS commands
         fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
         fsModules.cd = {
@@ -782,7 +794,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
             term.cwd = newCwd
           }
         }
-  
+
         fsModules.read = {
           description: 'Read contents of file',
           run: (term, context) => {
@@ -791,13 +803,13 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
             return term.log(fs.readFileSync(dir, 'utf8'))
           }
         }
-  
+
         fsModules.upload = { description: 'Upload files', run: upload }
         fsModules.download = {
           description: 'Download URL to CWD, or download FILE to PC',
           run: download
         }
-  
+
         fsModules.mkdir = {
           description: 'Create a directory',
           run: (term, context) => {
@@ -805,7 +817,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
             fs.mkdirSync(utils.path.resolve(term.cwd, context))
           }
         }
-  
+
         fsModules.rm = {
           description: 'Remove a file',
           run: (term, context) => {
@@ -816,29 +828,37 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
             fs.unlinkSync(target)
           }
         }
-  
+
         fsModules.rmdir = {
           description: 'Remove a directory and all of its contents',
-          run: (term, context) => {
+          run: async (term, context) => {
             const target = utils.path.resolve(term.cwd, context)
             if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
             if (!fs.existsSync(target)) throw new Error(`rmdir: ${context}: No such directory`)
-            if (!fs.statSync(target).isDirectory()) throw new Error(`rm: ${context}: Is not a directory, use rm`)
-  
+            if (!fs.statSync(target).isDirectory()) throw new Error(`rmdir: ${context}: Is not a directory, use rm`)
+
             const entries = fs.readdirSync(target)
-  
-            if (entries.length === 0) {
-              return
-            }
-  
+            if (entries.length === 0) return fs.rmdirSync(target)
+
             for (const entry of entries) {
               const entryPath = utils.path.join(target, entry)
               const entryStat = fs.statSync(entryPath)
-              if (entryStat.isDirectory()) fsModules.rmdir.run(term, entryPath)
-              else fs.unlinkSync(entryPath)
+              if (entryStat.isDirectory()) {
+                await fsModules.rmdir.run(term, entryPath)
+                await fsModules.rmdir.run(term, target)
+              } else await fs.unlink(entryPath)
             }
-  
-            console.log({ emptyDirs })
+
+            return fs.rmdirSync(target)
+          }
+        }
+
+        fsModules.touch = {
+          description: 'Touch a file',
+          run: (term, context) => {
+            const target = utils.path.resolve(term.cwd, context)
+            if (!context || context === '') throw new Error(`touch: ${context}: Invalid path`)
+            fs.appendFileSync(target, '')
           }
         }
   
@@ -961,6 +981,7 @@ async function registerKernelBins () {
   kernelBins.import = { description: t('kernel:bins.importDescription', 'Import a module from a URL'), run: async (term, context) => await importModuleUrl(context) }
   kernelBins.man = { description: t('kernel:bins.manDescription', 'Alias of help'), run: (term, context) => modules.help.run(term, context) }
   kernelBins.sh = { description: t('kernel:bins.shDescription', 'Execute a web3os script'), run: (term, context) => executeScript(context, { terminal: term }) }
+  kernelBins.systeminfo = { description: t('kernel:bins.systeminfoDescription', 'Print system information'), run: async () => await printSystemInfo() }
   kernelBins.systemnotify = { description: t('kernel:bins.systemnotifyDescription', 'Show a browser/platform notification; e.g., systemnotify Title Body'), run: (term, context) => systemNotify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
   kernelBins.reboot = { description: t('kernel:bins.rebootDescription', 'Reload web3os'), run: () => location.reload() }
   kernelBins.restore = { description: t('kernel:bins.restoreDescription', 'Restore the memory state'), run: (term, context) => restore(context) }
@@ -1124,14 +1145,14 @@ async function registerKernelBins () {
   kernelBins.geo = {
     description: t('kernel:bins.descriptions.geo', 'Geolocation Utility'),
     run: async term => {
-      if (!navigator.geolocation) throw new Error('Geolocation is not available')
+      if (!navigator.geolocation) throw new Error(t('kernel:bins.errors.geo.geolocationUnavailable', 'Geolocation is not available'))
       return new Promise((resolve, reject) => {
         try {
           navigator.geolocation.getCurrentPosition(pos => {
             const { latitude, longitude } = pos.coords
             const link = `https://www.openstreetmap.org/search?query=${latitude}%2C${longitude}`
-            term.log({ latitude, longitude, link })
-            resolve(pos)
+            term.log({ latitude, longitude, link, pos })
+            resolve({ latitude, longitude, link, pos })
           })
         } catch (err) {
           console.error(err)
@@ -1487,7 +1508,7 @@ export async function boot () {
 
     for (const evt of KernelEvents) events.on(evt, console.log('Kernel Event:', evt))
 
-    if (!bootArgs.has('nobootintro')) await showBootIntro()
+    if (!bootArgs.has('nobootintro')) await printBootIntro()
     await loadLocalStorage()
     events.dispatch('MemoryLoaded', memory)
     await setupFilesystem()

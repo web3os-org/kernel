@@ -403,7 +403,7 @@ export const help = `
 `
 
 export async function run (terminal, context) {
-// or: export default function (terminal, context) {
+// or: export default async function (terminal, context) {
   console.log(terminal) // the xterm.js terminal in which your app is running
   console.log(context) // the plain string of arguments passed to your app
   terminal.log('Thanks for checking out myapp!')
@@ -489,25 +489,22 @@ Access the array of devices within an app: `Kernel.modules.bluetooth.devices`
 <summary><strong>Expand TODO</strong></summary>
 
 - There's a lot to do... please help. 😅
+- IO piping
 - Typescriptify everything
 - Finish internationalization/translations
-- Decoupling of built-in modules into their own packages
-- Unified WASM handling (or just give up and focus on Emscripten)
-- Finish development of backend Node.js web3os-server API
+- Decoupling of most built-in modules into their own packages
+- Unified WASM handling
 - Rewrite expensive core modules using Emscripten
 - Improve security/isolation
 - Some apps are just placeholders; flesh them out
 - Modify command interfaces to conform to IEEE Std 1003.1-2017
-- Flesh out rm command and remove rmdir; allow recursive delete
-- Migrate all global CSS to CSS modules
-- Improve offline mode handling
 - Add more things to the TODO list
 
 </details>
 
 ## Can it do *thing*?
 
-If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. PR's are always welcome and encouraged. Let's talk about it on [Discord](https://discord.gg/yA4M83fXn9)!
+If it's not in this README or not readily apparent in the included apps, the answer is probably not **yet**. PR's are always welcome and encouraged. Let's talk about it on [Discord](https://discord.gg/yA4M83fXn9)! But remember, you can always just use Javascript!
 
 Better yet, if you can make it do the thing, please [submit a PR](https://github.com/web3os-org/kernel/blob/master/CONTRIBUTING.md)! This project will never grow without a thriving community of developers!
 

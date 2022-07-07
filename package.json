@@ -3,7 +3,7 @@
   "description": "The OS for the next web",
   "homepage": "https://web3os.sh",
   "funding": "https://github.com/sponsors/mathiscode",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "license": "MIT",
   "main": "dist/kernel.js",
   "module": "src/kernel.js",
@@ -49,6 +49,7 @@
     "test": "env-cmd cypress open",
     "prepare": "npm-run-all clean build",
     "server:socket": "node scripts/server-socket.js",
+    "server:bbs": "bin/websocketd --devconsole --port=30103 nodemon scripts/server-bbs.js",
     "server:testnet": "hardhat node"
   },
   "dependencies": {
@@ -118,6 +119,7 @@
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "peerjs": "^2.0.0-beta.3",
+    "reblessed": "^0.1.84",
     "regenerator-runtime": "^0.13.9",
     "remark-html": "^15.0.1",
     "shell-quote": "^1.7.3",

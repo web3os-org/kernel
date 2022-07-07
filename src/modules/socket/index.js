@@ -65,7 +65,14 @@ export async function attach (id, args) {
     app.window.close()
   })
 
-  return { app, socket, socketTerm }
+  socket.socket.messageListeners.push((message, socket) => {
+    let data = message.data
+    if (typeof data !== 'string') data = (new TextDecoder()).decode(message.data)
+    console.log('ATTACHED:', socket.id, { data }, { message }, socketTerm)
+  })
+
+  socket.terminal = socketTerm
+  return { app, socket }
 }
 
 export async function connect (url, args) {
@@ -75,29 +82,33 @@ export async function connect (url, args) {
   socket.openListeners = []
   socket.closeListeners = [() => connections = connections.filter(c => c === socket)]
   socket.errorListeners = [() => connections = connections.filter(c => c === socket)]
-  socket.messageListeners = [message => console.log(id, { data: message.data }, { message })]
+  socket.messageListeners = [(message, socket) => {
+    let data = message.data
+    if (typeof data !== 'string') data = (new TextDecoder()).decode(message.data)
+    console.log(id, { data }, { message }, socket.terminal)
+  }]
 
   socket.onopen = data => {
     for (const listener of socket.openListeners) {
-      if (typeof listener === 'function') listener(data)
+      if (typeof listener === 'function') listener(data, socket)
     }
   }
 
   socket.onclose = data => {
     for (const listener of socket.closeListeners) {
-      if (typeof listener === 'function') listener(data)
+      if (typeof listener === 'function') listener(data, socket)
     }
   }
 
   socket.onerror = data => {
     for (const listener of socket.errorListeners) {
-      if (typeof listener === 'function') listener(data)
+      if (typeof listener === 'function') listener(data, socket)
     }
   }
 
   socket.onmessage = message => {
     for (const listener of socket.messageListeners) {
-      if (typeof listener === 'function') listener(message)
+      if (typeof listener === 'function') listener(message, socket)
     }
   }
 

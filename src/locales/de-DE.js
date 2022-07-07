@@ -14,6 +14,7 @@ export default {
     Options: 'Optionen',
     Rebooting: 'Neustart',
     Donate: 'Spenden',
+    Host: 'Gastgeber',
     Platform: 'Plattform',
     Battery: 'Batterie',
     Storage: 'Lagerung',
@@ -28,7 +29,8 @@ export default {
     printVersionInformation: 'Drucken Sie die Versionsinformationen',
 
     'Heap Limit': 'Heap-Grenze',
-    'Powered by': 'Unterstützt von'
+    'Powered by': 'Unterstützt von',
+    'A few examples': 'Ein paar Beispiele'
   },
 
   kernel: {
