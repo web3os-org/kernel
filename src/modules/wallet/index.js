@@ -10,7 +10,7 @@ import allChains from './chains.json'
 import locales from './locales'
 
 const { t } = Kernel.i18n
-for (const [key, data] of Object.entries(locales)) Kernel.i18n.addResourceBundle(key, 'app', data, true)
+Kernel.i18n.loadAppLocales(locales)
 
 export const name = '@web3os-core/wallet'
 export const version = '0.1.0'

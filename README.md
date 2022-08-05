@@ -37,7 +37,8 @@
 
 A decentralized web-based operating system for the next web, empowering users and developers to:
 
-- Easily install virtually any npm browser package
+- Easily install many npm browser packages
+- Run Node.js code using [RunKit](https://runkit.com)
 - Customize the OS to suit your individual needs
 - Write scripts to perform particular tasks
 - Write full applications that can create windows and interface with the kernel
@@ -76,9 +77,10 @@ The project is still very young, and more documentation and organization is Comi
 <details open>
 <summary><strong>Expand Features</strong></summary>
 
-- [3pm: The web3os package manager](#web3os-package-manager)
 - Runs completely in the browser (Chromium-based browsers are ideal)
 - Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
+- [3pm: The web3os package manager](#web3os-package-manager)
+- Modules may also be imported with [SystemJS](https://github.com/systemjs/systemjs)
 - Installable as a Progressive Web App
 - Optional desktop environment
 - Optional backend environment runs in Docker container
@@ -88,7 +90,6 @@ The project is still very young, and more documentation and organization is Comi
 - WebHID support
 - Web Bluetooth support
 - Gamepad support
-- Modules may also be imported with [SystemJS](https://github.com/systemjs/systemjs)
 - Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)

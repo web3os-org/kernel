@@ -64,8 +64,8 @@ export async function run (terminal, filename) {
 
   if (filename === '') filename = `/tmp/editor-${Math.random().toString(36).slice(2)}`
   if (!filename) return terminal.log(colors.danger('Invalid filename') + '\n' + help)
-  filename =kernel.utils.path.resolve(terminal.cwd, filename)
-  const fileParts =kernel.utils.path.parse(filename)
+  filename = kernel.utils.path.resolve(terminal.cwd, filename)
+  const fileParts = kernel.utils.path.parse(filename)
   const extension = fileParts.ext
 
   let mode, executable

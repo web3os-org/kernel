@@ -588,18 +588,36 @@ export default class Web3osTerminal extends Terminal {
    */
   async tabCompletion (input) {
     if (!this.tabSelectMode) {
+      const inputParts = input.split(' ')
       const binPaths = this.binSearchPath.map(searchPath => `/bin/${searchPath}`)
-      const entries = binPaths
-        .filter(exe => this.kernel.fs.existsSync(exe))
-        .map(exe => ({ path: exe, files: this.kernel.fs.readdirSync(exe) }))
+      
+      const inputIsBin = binPaths.some(binPath => {
+        return this.kernel.fs.existsSync(`${binPath}/${inputParts[0]}`)
+      })
 
-      const choices = []
-      for (const entry of entries) {
-        const reg = new RegExp(`^${input}`)
-        const file = entry.files.find(file => reg.test(file))
-        if (!file) continue
-        choices.push(file)
+      let choices =
+        (
+          inputIsBin ?
+            this.kernel.modules[inputParts[0]]?.autocomplete?.(input)
+            : []
+        ) || []
+
+      if (inputIsBin && choices.length === 0) choices = this.kernel.fs.readdirSync(this.cwd).sort()
+
+      if (choices.length === 0) {
+        const entries = binPaths
+          .filter(exe => this.kernel.fs.existsSync(exe))
+          .map(exe => ({ path: exe, files: this.kernel.fs.readdirSync(exe) }))
+
+        for (const entry of entries) {
+          const reg = new RegExp(`^${input}`)
+          const file = entry.files.find(file => reg.test(file))
+          if (!file) continue
+          choices.push(file)
+        }
       }
+
+      console.log({ choices })
 
       if (choices.length > 0) {
         this.tabSelectMode = true
@@ -609,7 +627,7 @@ export default class Web3osTerminal extends Terminal {
       }
     } else {
       const currentChoice = this.tabSelectChoices[this.tabSelectCurrentChoice]
-      const goBack = currentChoice.slice(input.length).length
+      const goBack = currentChoice.slice(input.length + currentChoice.length).length
       if (goBack > 0) this.write(escapes.cursor.back(goBack))
       this.write(escapes.erase.inLine())
       this.tabSelectCurrentChoice++

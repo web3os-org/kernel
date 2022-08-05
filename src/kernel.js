@@ -55,6 +55,7 @@ globalThis.topbar = topbar
 
 export const isMobile = window.matchMedia('only screen and (max-width: 760px)').matches
 export const version = rootPkgJson.version
+
 export const KernelEvents = [
   'MemoryLoaded', 'FilesystemLoaded', 'KernelBinsLoaded', 'BuiltinModulesLoaded',
   'PackagesLoaded', 'AutostartStart', 'AutostartEnd', 'ScreensaverStart'
@@ -65,8 +66,8 @@ export const KernelEvents = [
  * @todo Whittle this down and migrate to packages
 */
 export const builtinModules = [
-  '3pm', 'account', 'backend', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'gamepad', 'help', 'hid', 'lang', 'markdown', 'peer', 'ping', 'repl', 'screensaver',
+  '3pm', 'account', 'backend', 'backup', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
+  'files', 'gamepad', 'help', 'hid', 'lang', 'markdown', 'peer', 'ping', 'repl', 'runkit', 'screensaver',
   'speak', 'socket', 'three', 'usb', 'view', 'vm', 'wallet', 'wasm', 'worker', 'www'
 ]
 
@@ -96,12 +97,16 @@ const FileSystemOverlayConfig = {
 
   '/bin': { fs: 'InMemory' },
   '/tmp': { fs: 'InMemory' },
-  '/mount': { fs: 'InMemory' }
+  '/mount': { fs: 'InMemory' },
+  '/proc': { fs: 'InMemory' }
 }
 
-// Add HTML5FS
-// Broken on firefox
-// see: webkitStorageOptions
+/**
+ * Add HTML5
+ * @todo Broken on Firefox
+ * @see: webkitStorageOptions
+ */
+
 if (!navigator.userAgent.includes('Firefox')) {
   FileSystemOverlayConfig['/mount/html5fs'] = {
     fs: 'AsyncMirror',
@@ -125,10 +130,11 @@ colors.theme(theme)
 export const i18n = i18next
 const t = i18n.t
 
-// TODO: This doesn't even belong here anymore.
-export const configDescriptions = {
-  'autostart.sh': t('kernel:config.descriptions.autostart', 'Executed at startup line by line'),
-  packages: t('kernel:config.descriptions.packages', 'Master local package list')
+i18n.loadAppLocales = locales => {
+  for (const [key, data] of Object.entries(locales)) {
+    i18n.addResourceBundle(key, 'app', data, true)
+    if (data.common) i18n.addResources(key, 'common', data.common, true)
+  }
 }
 
 export const Web3osTerminal = W3OSTerminal
@@ -144,6 +150,12 @@ export const utils = { bytes, colorChars, path, wait }
  * @type {Object}
  */
 export const modules = {}
+
+/**
+ * Contains all registered kernel intervals
+ * @type {Object}
+ */
+export const intervals = {}
 
 /**
  * References the @iconify/iconify library
@@ -756,6 +768,12 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
         if (!fs.existsSync('/config')) fs.mkdirSync('/config')
         if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
+
+        // Populate initial procfs
+        fs.writeFileSync('/proc/host', location.host)
+        fs.writeFileSync('/proc/version', rootPkgJson.version)
+        fs.writeFileSync('/proc/platform', navigator.userAgentData.platform)
+        fs.writeFileSync('/proc/querystring', location.search)
   
         // Drag and drop on terminal
         // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
@@ -784,9 +802,13 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         // terminal.addEventListener('drop', drop)
 
         // Setup FS commands
-        fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
+        fsModules.cwd = {
+          description: t('kernel:fsModules.descriptions.cwd', 'Get the current working directory'),
+          run: term => term.log(term.cwd)
+        }
+
         fsModules.cd = {
-          description: 'Change the current working directory',
+          description: t('kernel:fsModules.descriptions.cd', 'Change the current working directory'),
           run: (term, context) => {
             const newCwd = utils.path.resolve(term.cwd, context)
             if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
@@ -796,7 +818,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         }
 
         fsModules.read = {
-          description: 'Read contents of file',
+          description: t('kernel:fsModules.descriptions.cwd', 'Read contents of file'),
           run: (term, context) => {
             const dir = utils.path.resolve(term.cwd, context)
             if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
@@ -804,14 +826,14 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
           }
         }
 
-        fsModules.upload = { description: 'Upload files', run: upload }
+        fsModules.upload = { description: t('kernel:fsModules.descriptions.upload', 'Upload files'), run: upload }
         fsModules.download = {
-          description: 'Download URL to CWD, or download FILE to PC',
+          description: t('kernel:fsModules.descriptions.download', 'Download URL to CWD, or download FILE to PC'),
           run: download
         }
 
         fsModules.mkdir = {
-          description: 'Create a directory',
+          description: t('kernel:fsModules.descriptions.mkdir', 'Create a directory'),
           run: (term, context) => {
             if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
             fs.mkdirSync(utils.path.resolve(term.cwd, context))
@@ -819,7 +841,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         }
 
         fsModules.rm = {
-          description: 'Remove a file',
+          description: t('kernel:fsModules.descriptions.rm', 'Remove a file'),
           run: (term, context) => {
             const target = utils.path.resolve(term.cwd, context)
             if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
@@ -830,7 +852,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         }
 
         fsModules.rmdir = {
-          description: 'Remove a directory and all of its contents',
+          description: t('kernel:fsModules.descriptions.rmdir', 'Remove a directory and all of its contents'),
           run: async (term, context) => {
             const target = utils.path.resolve(term.cwd, context)
             if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
@@ -854,16 +876,16 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         }
 
         fsModules.touch = {
-          description: 'Touch a file',
+          description: t('kernel:fsModules.descriptions.touch', 'Touch a file'),
           run: (term, context) => {
             const target = utils.path.resolve(term.cwd, context)
             if (!context || context === '') throw new Error(`touch: ${context}: Invalid path`)
             fs.appendFileSync(target, '')
           }
         }
-  
+
         fsModules.mv = {
-          description: 'Move a file or directory',
+          description: t('kernel:fsModules.descriptions.mv', 'Move a file or directory'),
           run: (term, context) => {
             const [fromStr, toStr] = context.split(' ')
             const from = utils.path.resolve(term.cwd, fromStr)
@@ -873,9 +895,9 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
             fs.renameSync(from, to)
           }
         }
-  
+
         fsModules.cp = {
-          description: 'Copy a file or directory',
+          description: t('kernel:fsModules.descriptions.cp', 'Copy a file or directory'),
           run: (term, context) => {
             const [fromStr, toStr] = context.split(' ')
             const from = utils.path.resolve(term.cwd, fromStr)
@@ -885,19 +907,33 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
             fs.copySync(from, to)
           }
         }
-  
+
         fsModules.ls = {
-          description: 'List directory contents',
+          description: t('kernel:fsModules.descriptions.ls', 'List directory contents'),
           run: (term, context) => {
             if (!context || context === '') context = term.cwd
             const entries = fs.readdirSync(utils.path.resolve(term.cwd, context)).sort()
             const data = []
-  
+
+            const rootDescriptions = {
+              bin: t('Applications') + colors.blue(` [${t('ephemeral')}]`),
+              config: t('Configuration'),
+              mount: t('Mounts') + colors.blue(` [${t('ephemeral')}]`),
+              proc: t('Kernel Data')+ colors.blue(` [${t('ephemeral')}]`),
+              tmp: t('Temporary Files') + colors.blue(` [${t('ephemeral')}]`),
+              var: t('System Data')
+            }
+
+            const configDescriptions = {
+              'autostart.sh': t('kernel:config.descriptions.autostart', 'Executed at startup line by line'),
+              packages: t('kernel:config.descriptions.packages', 'Master local package list')
+            }
+
             entries.forEach(entry => {
               const filename = utils.path.resolve(term.cwd, context, entry)
               const stat = fs.statSync(filename)
               const isNamespacedBin = stat.isFile() && /^\/bin\/.+\//.test(filename)
-  
+
               const info = modules[filename.replace('/bin/', '')]
               if (isNamespacedBin && context !== 'bin') {
                 data.push({
@@ -905,19 +941,25 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
                   description: colors.muted(info.description?.substr(0, 75) || '')
                 })
               }
-  
+
               // Show custom output for special dirs
               switch (utils.path.resolve(context)) {
+                case '/':
+                  data.push({
+                    name: colors.cyanBright(entry),
+                    description: colors.muted(rootDescriptions[entry] || '')
+                  })
+                  break
                 case '/bin':
                   data.push({
                     name: colors.cyanBright(entry),
                     description: colors.muted(
                       stat.isDirectory()
-                        ? `Packages in the ${entry} namespace`
+                        ? `${t('Packages in the')} ${entry} ${t('namespace')}`
                         : (modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
                     )
                   })
-  
+
                   break
                 case '/config':
                   data.push({
@@ -925,7 +967,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
                     size: colors.muted(bytes(stat.size).toLowerCase()),
                     description: colors.muted(configDescriptions[entry] || '')
                   })
-  
+
                   break
                 default:
                   if (!isNamespacedBin) {
@@ -949,9 +991,9 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         }
   
         // FS command aliases
-        fsModules.cat = { description: 'Alias of read', run: fsModules.read.run }
-        fsModules.dir = { description: 'Alias of ls', run: fsModules.ls.run }
-        fsModules.rename = { description: 'Alias of mv', run: fsModules.mv.run }
+        fsModules.cat = { description: `${t('Alias of')} read`, run: fsModules.read.run }
+        fsModules.dir = { description: `${t('Alias of')} ls`, run: fsModules.ls.run }
+        fsModules.rename = { description: `${t('Alias of')} mv`, run: fsModules.mv.run }
 
         resolve(fs)
       }
@@ -971,25 +1013,25 @@ async function registerKernelBins () {
   const { t } = Kernel.i18n
   const kernelBins = []
 
-  kernelBins.alert = { description: t('kernel:bins.alertDescription', 'Show an alert'), run: (term, context) => dialog({ text: context }) }
-  kernelBins.clear = { description: t('kernel:bins.clearDescription', 'Clear the terminal'), run: term => term.clear() }
-  kernelBins.date = { description: t('kernel:bins.dateDescription', 'Display the date/time'), run: term => term.log(new Intl.DateTimeFormat(Kernel.i18n.language || 'en-US', { dateStyle: 'long', timeStyle: 'short' }).format(new Date()))}
-  kernelBins.docs = { description: t('kernel:bins.docsDescription', 'Open the documentation'), run: term => { modules.www.run(term, '--title "Web3os Documentation" --no-toolbar /docs') }}
-  kernelBins.dump = { description: t('kernel:bins.dumpDescription', 'Dump the memory state'), run: term => term.log(dump()) }
-  kernelBins.echo = { description: t('kernel:bins.echoDescription', 'Echo some text to the terminal'), run: (term, context) => term.log(context) }
-  kernelBins.history = { description: t('kernel:bins.historyDescription', 'Show command history'), run: term => { return term.log(JSON.stringify(term.history)) } }
-  kernelBins.import = { description: t('kernel:bins.importDescription', 'Import a module from a URL'), run: async (term, context) => await importModuleUrl(context) }
-  kernelBins.man = { description: t('kernel:bins.manDescription', 'Alias of help'), run: (term, context) => modules.help.run(term, context) }
-  kernelBins.sh = { description: t('kernel:bins.shDescription', 'Execute a web3os script'), run: (term, context) => executeScript(context, { terminal: term }) }
-  kernelBins.systeminfo = { description: t('kernel:bins.systeminfoDescription', 'Print system information'), run: async () => await printSystemInfo() }
-  kernelBins.systemnotify = { description: t('kernel:bins.systemnotifyDescription', 'Show a browser/platform notification; e.g., systemnotify Title Body'), run: (term, context) => systemNotify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
-  kernelBins.reboot = { description: t('kernel:bins.rebootDescription', 'Reload web3os'), run: () => location.reload() }
-  kernelBins.restore = { description: t('kernel:bins.restoreDescription', 'Restore the memory state'), run: (term, context) => restore(context) }
-  kernelBins.snackbar = { description: t('kernel:bins.snackbarDescription', 'Show a snackbar; e.g. snackbar Alert!'), run: (term, context) => snackbar({ labelText: context }) }
-  kernelBins.wait = { description: t('kernel:bins.waitDescription', 'Wait for the specified number of milliseconds'), run: (term, context) => wait(context) }
+  kernelBins.alert = { description: t('kernel:bins.descriptions.alert', 'Show an alert'), run: (term, context) => dialog({ text: context }) }
+  kernelBins.clear = { description: t('kernel:bins.descriptions.clear', 'Clear the terminal'), run: term => term.clear() }
+  kernelBins.date = { description: t('kernel:bins.descriptions.date', 'Display the date/time'), run: term => term.log(new Intl.DateTimeFormat(Kernel.i18n.language || 'en-US', { dateStyle: 'long', timeStyle: 'short' }).format(new Date()))}
+  kernelBins.docs = { description: t('kernel:bins.descriptions.docs', 'Open the documentation'), run: term => { modules.www.run(term, '--title "Web3os Documentation" --no-toolbar /docs') }}
+  kernelBins.dump = { description: t('kernel:bins.descriptions.dump', 'Dump the memory state'), run: term => term.log(dump()) }
+  kernelBins.echo = { description: t('kernel:bins.descriptions.echo', 'Echo some text to the terminal'), run: (term, context) => term.log(context) }
+  kernelBins.history = { description: t('kernel:bins.descriptions.history', 'Show command history'), run: term => { return term.log(JSON.stringify(term.history)) } }
+  kernelBins.import = { description: t('kernel:bins.descriptions.import', 'Import a module from a URL'), run: async (term, context) => await importModuleUrl(context) }
+  kernelBins.man = { description: t('kernel:bins.descriptions.man', 'Alias of help'), run: (term, context) => modules.help.run(term, context) }
+  kernelBins.sh = { description: t('kernel:bins.descriptions.sh', 'Execute a web3os script'), run: (term, context) => executeScript(context, { terminal: term }) }
+  kernelBins.systeminfo = { description: t('kernel:bins.descriptions.systeminfo', 'Print system information'), run: async () => await printSystemInfo() }
+  kernelBins.systemnotify = { description: t('kernel:bins.descriptions.systemnotify', 'Show a browser/platform notification; e.g., systemnotify Title Body'), run: (term, context) => systemNotify({ title: context.split(' ')[0], body: context.split(' ')[1] }) }
+  kernelBins.reboot = { description: t('kernel:bins.descriptions.reboot', 'Reload web3os'), run: () => location.reload() }
+  kernelBins.restore = { description: t('kernel:bins.descriptions.restore', 'Restore the memory state'), run: (term, context) => restore(context) }
+  kernelBins.snackbar = { description: t('kernel:bins.descriptions.snackbar', 'Show a snackbar; e.g. snackbar Alert!'), run: (term, context) => snackbar({ labelText: context }) }
+  kernelBins.wait = { description: t('kernel:bins.descriptions.wait', 'Wait for the specified number of milliseconds'), run: (term, context) => wait(context) }
 
   kernelBins.alias = {
-    description: t('kernel:bins.aliasDescription', 'Set or list command aliases'),
+    description: t('kernel:bins.descriptions.alias', 'Set or list command aliases'),
     help: `${t('Usage', 'Usage')}: alias [src] [dest]`,
     run: (term, context) => {
       if (!context || context === '') return term.log(term.aliases)
@@ -1001,7 +1043,7 @@ async function registerKernelBins () {
 
   kernelBins.ipecho = {
     description: t('kernel:bins.descriptions.ipecho', 'Echo your public IP address'),
-    run: async term => {
+    run: async (term = globalThis.Terminal) => {
       const result = await fetch('https://ipecho.net/plain')
       const ip = await result.text()
       console.log({ ip })
@@ -1012,7 +1054,7 @@ async function registerKernelBins () {
 
   kernelBins.lsmod = {
     description: t('kernel:bins.descriptions.lsmod', 'List loaded kernel modules'),
-    run: async term => {
+    run: async (term = globalThis.Terminal) => {
       const mods = {
         ...modules,
         ...module.exports,
@@ -1026,7 +1068,7 @@ async function registerKernelBins () {
 
   kernelBins.memoryinfo = {
     description: `${t('kernel:bins.memoryinfo.description', 'Show Javascript heap information')}`,
-    run: async term => {
+    run: async (term = globalThis.Terminal) => {
       const { jsHeapSizeLimit, totalJSHeapSize, usedJSHeapSize } = console.memory
 
       const meminfo = {
@@ -1041,8 +1083,8 @@ async function registerKernelBins () {
   }
 
   kernelBins.storageinfo = {
-    description: t('kernel:bins.storageDescription', 'Display storage usage information'),
-    run: async term => {
+    description: t('kernel:bins.descriptions.storage', 'Display storage usage information'),
+    run: async (term = globalThis.Terminal) => {
       const rawData = await navigator.storage.estimate()
       const data = {
         quota: bytes(rawData.quota),
@@ -1060,7 +1102,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.set = {
-    description: t('kernel:bins.setDescription', 'Set a kernel memory value'),
+    description: t('kernel:bins.descriptions.set', 'Set a kernel memory value'),
     help: `${t('Usage', 'Usage')}: set <namespace> <key> <value>`,
     run: (term, context = '') => {
       const parts = context.split(' ')
@@ -1072,7 +1114,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.get = {
-    description: t('kernel:bins.getDescription', 'Get a kernel memory namespace or key'),
+    description: t('kernel:bins.descriptions.get', 'Get a kernel memory namespace or key'),
     help: `${t('Usage', 'Usage')}: get <namespace> [key]`,
     run: (term, context = '') => {
       const parts = context.split(' ')
@@ -1084,7 +1126,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.unset = {
-    description: t('kernel:bins.unsetDescription', 'Delete specified memory namespace or key'),
+    description: t('kernel:bins.descriptions.unset', 'Delete specified memory namespace or key'),
     help: `${t('Usage', 'Usage')}: unset <namespace> [key]`,
     run: (term, context = '') => {
       try {
@@ -1109,7 +1151,7 @@ async function registerKernelBins () {
   }
 
   kernelBins.clip = {
-    description: t('kernel:bins.clipDescription', 'Copy return value of command to clipboard'),
+    description: t('kernel:bins.descriptions.clip', 'Copy return value of command to clipboard'),
     help: `${t('Usage', 'Usage')}: clip <command>`,
     run: async (term, context) => {
       if (!context || context === '') return
@@ -1144,7 +1186,7 @@ async function registerKernelBins () {
 
   kernelBins.geo = {
     description: t('kernel:bins.descriptions.geo', 'Geolocation Utility'),
-    run: async term => {
+    run: async (term = globalThis.Terminal) => {
       if (!navigator.geolocation) throw new Error(t('kernel:bins.errors.geo.geolocationUnavailable', 'Geolocation is not available'))
       return new Promise((resolve, reject) => {
         try {
@@ -1165,7 +1207,7 @@ async function registerKernelBins () {
 
   kernelBins.eyedropper = {
     description: t('kernel:bins.descriptions.eyeDropper', 'Pick colors using the eyedropper'),
-    run: async term => {
+    run: async (term = globalThis.Terminal) => {
       const dropper = new EyeDropper()
       const color = await dropper.open()
       term.log(color)
@@ -1186,8 +1228,14 @@ async function registerBuiltinModules () {
   const mods = process.env.BUILTIN_MODULES ? process.env.BUILTIN_MODULES.split(',') : builtinModules
 
   for (const mod of mods) {
-    const modBin = await import(`./modules/${mod}`)
-    await loadModule(modBin, { name: `@web3os-core/${mod}` })
+    try {
+      const modBin = await import(`./modules/${mod}`)
+      await loadModule(modBin, { name: `@web3os-core/${mod}` })
+    } catch (err) {
+      console.error(err)
+      Terminal.log(colors.danger(`Error loading module: ${mod}`))
+      Terminal.log(err.message)
+    }
   }
 }
 
@@ -1584,7 +1632,11 @@ globalThis.addEventListener('pointerdown', resetIdleTime)
 
 // Handle PWA installability
 globalThis.addEventListener('beforeinstallprompt', e => {
-  modules.install = { name: '@web3os-core/install', description: 'Install web3os as a PWA', run: async () => Terminal.log(await e.prompt()) }
+  modules.install = {
+    name: '@web3os-core/install',
+    description: t('kernel:bins.descriptions.install', 'Install web3os as a PWA'),
+    run: async () => Terminal.log(await e.prompt())
+  }
 })
 
 globalThis.global = globalThis.global || globalThis
