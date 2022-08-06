@@ -46,13 +46,16 @@ import locales from './locales'
 import README from '../README.md'
 import theme from './themes/default/index.js'
 import { default as W3OSTerminal } from './terminal'
+import { fsModules } from './fs'
 
 let BrowserFS
 let memory
 const figletFontName = 'Graffiti'
-const fsModules = {}
-globalThis.topbar = topbar
 
+globalThis.topbar = topbar
+globalThis.global = globalThis.global || globalThis
+
+export const bootArgs = new URLSearchParams(globalThis.location.search)
 export const isMobile = window.matchMedia('only screen and (max-width: 760px)').matches
 export const version = rootPkgJson.version
 export const KernelEvents = [
@@ -135,6 +138,7 @@ export const Web3osTerminal = W3OSTerminal
 
 /**
  * Contains miscellaneous utilities
+ * @todo Do this better
  * @type {Object}
  */
 export const utils = { bytes, colorChars, path, wait }
@@ -224,9 +228,9 @@ export async function printSystemInfo () {
     const { brand, version } = navigator.userAgentData.brands.slice(-1)?.[0]
     const browser = `${brand} v${version}`
 
-    output += `${colors.info(`${t('Host')}:    `)}\t${colors.muted(location.host)}\n`
-    output += `${colors.info(`${t('Platform')}:`)}\t${colors.muted(navigator.userAgentData.platform || t('unknown', 'Unknown'))}\n`
-    output += `${colors.info(`${t('Browser')}:`)}\t${colors.muted(browser)}\n`
+    output += `${colors.info(`${t('Host')}:    `)}\t${location.host}\n`
+    output += `${colors.info(`${t('Platform')}:`)}\t${navigator.userAgentData.platform || t('unknown', 'Unknown')}\n`
+    output += `${colors.info(`${t('Browser')}:`)}\t${browser}\n`
   }
 
   if (navigator.getBattery) {
@@ -243,7 +247,7 @@ export async function printSystemInfo () {
     const storageDetails = await navigator.storage.estimate()
     const used = bytes(storageDetails.usage)
     const free = bytes(storageDetails.quota - storageDetails.usage)
-    output += `${colors.info(`${t('Storage')}:`)}\t${colors.muted(`${t('Used')}:`)} ${used} ${isSmall ? '\n\t ' : '-'} ${colors.muted(`${t('Free')}:`)} ${free}\n`
+    output += `${colors.info(`${t('Storage')}:`)}\t${used} ${isSmall ? '\n\t ' : '/'} ${free}\n`
   }
 
   if (console.memory) output += `${colors.info(t('Heap Limit') + ':')}\t${bytes(console.memory.jsHeapSizeLimit)}\n`
@@ -266,8 +270,8 @@ export async function printBootIntro () {
   // log(colors.info(`${isSmall ? '' : '\t '}${t('kernel:bootIntroSubtitle', `Made with  ${colors.red('♥')}  by Jay Mathis`)}`))
   log(colors.info(`${t('kernel:bootIntroSubtitle', '\t     https://web3os.sh')}`))
 
-  log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}   web3os kernel v${rootPkgJson.version}    `))
-  log(colors.warning(`${isSmall ? '' : '\t '}⚠          BETA          ⚠\n`))
+  log(colors.heading.success.bold(`\n${isSmall ? '' : '\t '}  web3os kernel v${rootPkgJson.version}   `))
+  log(colors.warning(`${isSmall ? '' : '\t '}⚠         BETA         ⚠\n`))
 
   // log(colors.success(`${t('donate', 'Donate')}:`))
   // log(`${colors.success('BTC:')} ${colors.success.underline('BTCADDR')}`)
@@ -518,9 +522,12 @@ export async function executeScript (filename, options = {}) {
  * @async
  * @param {string=} defaultAutoStart - Write autostart script with this content if it doesn't exist
  */
-export async function autostart (defaultAutoStart = '') {
+export async function autostart (defaultAutoStart) {
   try {
-    if (!fs.existsSync('/config/autostart.sh')) fs.writeFileSync('/config/autostart.sh', defaultAutoStart) // Setup default autostart.sh
+    if (defaultAutoStart && !fs.existsSync('/config/autostart.sh')) {
+      fs.writeFileSync('/config/autostart.sh', defaultAutoStart) // Setup default autostart.sh
+    }
+
     if (fs.existsSync('/config/autostart.sh')) await executeScript('/config/autostart.sh')
   } catch (err) {
     console.error(err)
@@ -528,63 +535,6 @@ export async function autostart (defaultAutoStart = '') {
   } finally {
     globalThis.Terminal?.prompt()
   }
-}
-
-/**
- * Download a file from web3os to your local PC, or from a URL to web3os
- * @async
- * @param {Web3osTerminal} term - The terminal to attach to
- * @param {string} context - Either a local path to download a file locally, or a URL to download to the current directory
- */
-export async function download (term, context) {
-  let filename = context
-  if (!filename || filename === '') return log(colors.danger('Invalid filename'))
-
-  if (/^(http|https|ftp|blob)\:/i.test(context) || /^blob/i.test(context)) {
-    const url = new URL(context.split(' ')[0])
-    filename = utils.path.parse(url.pathname).base
-    if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
-    const buffer = await (await fetch(url.href)).arrayBuffer()
-    const data = BrowserFS.Buffer.from(buffer)
-    console.log({ filename, data })
-    fs.writeFileSync(utils.path.resolve(term.cwd, filename), data)
-  } else {
-    filename = utils.path.resolve(term.cwd, filename)
-    const data = fs.readFileSync(filename)
-    const file = new File([data], utils.path.parse(filename).base, { type: 'application/octet-stream' })
-    const url = URL.createObjectURL(file)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = utils.path.parse(filename).base
-    link.click()
-  }
-}
-
-/**
- * Upload a file from your local PC to web3os
- * @async
- * @param {Web3osTerminal} term - The terminal to attach to
- */
-export async function upload (term) {
-  const input = document.createElement('input')
-  input.setAttribute('type', 'file')
-  input.setAttribute('multiple', true)
-  input.addEventListener('change', e => {
-    const { files } = e.target
-    for (const file of files) {
-      const reader = new FileReader()
-
-      reader.readAsArrayBuffer(file)
-      reader.onload = () => {
-        const buffer = BrowserFS.Buffer.from(reader.result)
-        const filepath = utils.path.resolve(term.cwd, file.name)
-        fs.writeFileSync(filepath, buffer)
-        snackbar({ labelText: `Uploaded ${filepath}` })
-      }
-    }
-  })
-
-  input.click()
 }
 
 /**
@@ -682,7 +632,6 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
     const filesystem = {}
   
     let initfs
-    const bootArgs = new URLSearchParams(globalThis.location.search)
     initfsUrl = initfsUrl || bootArgs.get('initfsUrl')
     mountableFilesystemConfig = initfsUrl || bootArgs.get('mountableFilesystemConfig')
       ? JSON.parse(bootArgs.get('mountableFilesystemConfig')) : FileSystemOverlayConfig
@@ -755,8 +704,10 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         if (!fs.existsSync('/var')) fs.mkdirSync('/var')
         if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
         if (!fs.existsSync('/config')) fs.mkdirSync('/config')
-        if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
-  
+        if (!bootArgs.has('noDefaultPackages') && !fs.existsSync('/config/packages')) {
+          fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
+        }
+
         // Drag and drop on terminal
         // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
         // const dragover = e => { e.stopPropagation(); e.preventDefault() }
@@ -772,186 +723,186 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         //     reader.readAsArrayBuffer(file)
         //     reader.onload = () => {
         //       const buffer = BrowserFS.Buffer.from(reader.result)
-        //       const filepath = utils.path.resolve(terminal.cwd, file.name)
+        //       const filepath = utils.path.resolve(Terminal.cwd, file.name)
         //       fs.writeFileSync(filepath, buffer)
         //       snackbar({ labelText: `Uploaded ${filepath}` })
         //     }
         //   }
         // }
   
-        // terminal.addEventListener('dragenter', dragenter)
-        // terminal.addEventListener('dragover', dragover)
-        // terminal.addEventListener('drop', drop)
+        // Terminal.addEventListener('dragenter', dragenter)
+        // Terminal.addEventListener('dragover', dragover)
+        // Terminal.addEventListener('drop', drop)
 
-        // Setup FS commands
-        fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
-        fsModules.cd = {
-          description: 'Change the current working directory',
-          run: (term, context) => {
-            const newCwd = utils.path.resolve(term.cwd, context)
-            if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
-            if (!fs.statSync(newCwd).isDirectory()) throw new Error(`cd: ${context}: No such directory`)
-            term.cwd = newCwd
-          }
-        }
+        // // Setup FS commands
+        // fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
+        // fsModules.cd = {
+        //   description: 'Change the current working directory',
+        //   run: (term, context) => {
+        //     const newCwd = utils.path.resolve(term.cwd, context)
+        //     if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
+        //     if (!fs.statSync(newCwd).isDirectory()) throw new Error(`cd: ${context}: No such directory`)
+        //     term.cwd = newCwd
+        //   }
+        // }
 
-        fsModules.read = {
-          description: 'Read contents of file',
-          run: (term, context) => {
-            const dir = utils.path.resolve(term.cwd, context)
-            if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
-            return term.log(fs.readFileSync(dir, 'utf8'))
-          }
-        }
+        // fsModules.read = {
+        //   description: 'Read contents of file',
+        //   run: (term, context) => {
+        //     const dir = utils.path.resolve(term.cwd, context)
+        //     if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
+        //     return term.log(fs.readFileSync(dir, 'utf8'))
+        //   }
+        // }
 
-        fsModules.upload = { description: 'Upload files', run: upload }
-        fsModules.download = {
-          description: 'Download URL to CWD, or download FILE to PC',
-          run: download
-        }
+        // fsModules.upload = { description: 'Upload files', run: upload }
+        // fsModules.download = {
+        //   description: 'Download URL to CWD, or download FILE to PC',
+        //   run: download
+        // }
 
-        fsModules.mkdir = {
-          description: 'Create a directory',
-          run: (term, context) => {
-            if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
-            fs.mkdirSync(utils.path.resolve(term.cwd, context))
-          }
-        }
+        // fsModules.mkdir = {
+        //   description: 'Create a directory',
+        //   run: (term, context) => {
+        //     if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
+        //     fs.mkdirSync(utils.path.resolve(term.cwd, context))
+        //   }
+        // }
 
-        fsModules.rm = {
-          description: 'Remove a file',
-          run: (term, context) => {
-            const target = utils.path.resolve(term.cwd, context)
-            if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
-            if (!fs.existsSync(target)) throw new Error(`rm: ${context}: No such file`)
-            if (fs.statSync(target).isDirectory()) throw new Error(`rm: ${context}: Is a directory, use rmdir`)
-            fs.unlinkSync(target)
-          }
-        }
+        // fsModules.rm = {
+        //   description: 'Remove a file',
+        //   run: (term, context) => {
+        //     const target = utils.path.resolve(term.cwd, context)
+        //     if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
+        //     if (!fs.existsSync(target)) throw new Error(`rm: ${context}: No such file`)
+        //     if (fs.statSync(target).isDirectory()) throw new Error(`rm: ${context}: Is a directory, use rmdir`)
+        //     fs.unlinkSync(target)
+        //   }
+        // }
 
-        fsModules.rmdir = {
-          description: 'Remove a directory and all of its contents',
-          run: async (term, context) => {
-            const target = utils.path.resolve(term.cwd, context)
-            if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
-            if (!fs.existsSync(target)) throw new Error(`rmdir: ${context}: No such directory`)
-            if (!fs.statSync(target).isDirectory()) throw new Error(`rmdir: ${context}: Is not a directory, use rm`)
+        // fsModules.rmdir = {
+        //   description: 'Remove a directory and all of its contents',
+        //   run: async (term, context) => {
+        //     const target = utils.path.resolve(term.cwd, context)
+        //     if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
+        //     if (!fs.existsSync(target)) throw new Error(`rmdir: ${context}: No such directory`)
+        //     if (!fs.statSync(target).isDirectory()) throw new Error(`rmdir: ${context}: Is not a directory, use rm`)
 
-            const entries = fs.readdirSync(target)
-            if (entries.length === 0) return fs.rmdirSync(target)
+        //     const entries = fs.readdirSync(target)
+        //     if (entries.length === 0) return fs.rmdirSync(target)
 
-            for (const entry of entries) {
-              const entryPath = utils.path.join(target, entry)
-              const entryStat = fs.statSync(entryPath)
-              if (entryStat.isDirectory()) {
-                await fsModules.rmdir.run(term, entryPath)
-                await fsModules.rmdir.run(term, target)
-              } else await fs.unlink(entryPath)
-            }
+        //     for (const entry of entries) {
+        //       const entryPath = utils.path.join(target, entry)
+        //       const entryStat = fs.statSync(entryPath)
+        //       if (entryStat.isDirectory()) {
+        //         await fsModules.rmdir.run(term, entryPath)
+        //         await fsModules.rmdir.run(term, target)
+        //       } else await fs.unlink(entryPath)
+        //     }
 
-            return fs.rmdirSync(target)
-          }
-        }
+        //     return fs.rmdirSync(target)
+        //   }
+        // }
 
-        fsModules.touch = {
-          description: 'Touch a file',
-          run: (term, context) => {
-            const target = utils.path.resolve(term.cwd, context)
-            if (!context || context === '') throw new Error(`touch: ${context}: Invalid path`)
-            fs.appendFileSync(target, '')
-          }
-        }
+        // fsModules.touch = {
+        //   description: 'Touch a file',
+        //   run: (term, context) => {
+        //     const target = utils.path.resolve(term.cwd, context)
+        //     if (!context || context === '') throw new Error(`touch: ${context}: Invalid path`)
+        //     fs.appendFileSync(target, '')
+        //   }
+        // }
   
-        fsModules.mv = {
-          description: 'Move a file or directory',
-          run: (term, context) => {
-            const [fromStr, toStr] = context.split(' ')
-            const from = utils.path.resolve(term.cwd, fromStr)
-            const to = utils.path.resolve(term.cwd, toStr)
-            if (!fs.existsSync(from)) throw new Error(`mv: source ${from} does not exist`)
-            if (fs.existsSync(to)) throw new Error(`mv: target ${to} already exists`)
-            fs.renameSync(from, to)
-          }
-        }
+        // fsModules.mv = {
+        //   description: 'Move a file or directory',
+        //   run: (term, context) => {
+        //     const [fromStr, toStr] = context.split(' ')
+        //     const from = utils.path.resolve(term.cwd, fromStr)
+        //     const to = utils.path.resolve(term.cwd, toStr)
+        //     if (!fs.existsSync(from)) throw new Error(`mv: source ${from} does not exist`)
+        //     if (fs.existsSync(to)) throw new Error(`mv: target ${to} already exists`)
+        //     fs.renameSync(from, to)
+        //   }
+        // }
   
-        fsModules.cp = {
-          description: 'Copy a file or directory',
-          run: (term, context) => {
-            const [fromStr, toStr] = context.split(' ')
-            const from = utils.path.resolve(term.cwd, fromStr)
-            const to = utils.path.resolve(term.cwd, toStr)
-            if (!fs.existsSync(from)) throw new Error(`cp: source ${from} does not exist`)
-            if (fs.existsSync(to)) throw new Error(`cp: target ${to} already exists`)
-            fs.copySync(from, to)
-          }
-        }
+        // fsModules.cp = {
+        //   description: 'Copy a file or directory',
+        //   run: (term, context) => {
+        //     const [fromStr, toStr] = context.split(' ')
+        //     const from = utils.path.resolve(term.cwd, fromStr)
+        //     const to = utils.path.resolve(term.cwd, toStr)
+        //     if (!fs.existsSync(from)) throw new Error(`cp: source ${from} does not exist`)
+        //     if (fs.existsSync(to)) throw new Error(`cp: target ${to} already exists`)
+        //     fs.copySync(from, to)
+        //   }
+        // }
   
-        fsModules.ls = {
-          description: 'List directory contents',
-          run: (term, context) => {
-            if (!context || context === '') context = term.cwd
-            const entries = fs.readdirSync(utils.path.resolve(term.cwd, context)).sort()
-            const data = []
+        // fsModules.ls = {
+        //   description: 'List directory contents',
+        //   run: (term, context) => {
+        //     if (!context || context === '') context = term.cwd
+        //     const entries = fs.readdirSync(utils.path.resolve(term.cwd, context)).sort()
+        //     const data = []
   
-            entries.forEach(entry => {
-              const filename = utils.path.resolve(term.cwd, context, entry)
-              const stat = fs.statSync(filename)
-              const isNamespacedBin = stat.isFile() && /^\/bin\/.+\//.test(filename)
+        //     entries.forEach(entry => {
+        //       const filename = utils.path.resolve(term.cwd, context, entry)
+        //       const stat = fs.statSync(filename)
+        //       const isNamespacedBin = stat.isFile() && /^\/bin\/.+\//.test(filename)
   
-              const info = modules[filename.replace('/bin/', '')]
-              if (isNamespacedBin && context !== 'bin') {
-                data.push({
-                  name: colors.cyanBright(entry),
-                  description: colors.muted(info.description?.substr(0, 75) || '')
-                })
-              }
+        //       const info = modules[filename.replace('/bin/', '')]
+        //       if (isNamespacedBin && context !== 'bin') {
+        //         data.push({
+        //           name: colors.cyanBright(entry),
+        //           description: colors.muted(info.description?.substr(0, 75) || '')
+        //         })
+        //       }
   
-              // Show custom output for special dirs
-              switch (utils.path.resolve(context)) {
-                case '/bin':
-                  data.push({
-                    name: colors.cyanBright(entry),
-                    description: colors.muted(
-                      stat.isDirectory()
-                        ? `Packages in the ${entry} namespace`
-                        : (modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
-                    )
-                  })
+        //       // Show custom output for special dirs
+        //       switch (utils.path.resolve(context)) {
+        //         case '/bin':
+        //           data.push({
+        //             name: colors.cyanBright(entry),
+        //             description: colors.muted(
+        //               stat.isDirectory()
+        //                 ? `Packages in the ${entry} namespace`
+        //                 : (modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
+        //             )
+        //           })
   
-                  break
-                case '/config':
-                  data.push({
-                    name: colors.cyanBright(entry),
-                    size: colors.muted(bytes(stat.size).toLowerCase()),
-                    description: colors.muted(configDescriptions[entry] || '')
-                  })
+        //           break
+        //         case '/config':
+        //           data.push({
+        //             name: colors.cyanBright(entry),
+        //             size: colors.muted(bytes(stat.size).toLowerCase()),
+        //             description: colors.muted(configDescriptions[entry] || '')
+        //           })
   
-                  break
-                default:
-                  if (!isNamespacedBin) {
-                    data.push({
-                      name: stat.isDirectory() ? colors.green('/' + entry) : colors.blue(entry),
-                      type: colors.muted.em(stat.isDirectory() ? 'dir' : 'file'),
-                      size: colors.muted(bytes(stat.size).toLowerCase())
-                    })
-                  }
-              }
-            })
+        //           break
+        //         default:
+        //           if (!isNamespacedBin) {
+        //             data.push({
+        //               name: stat.isDirectory() ? colors.green('/' + entry) : colors.blue(entry),
+        //               type: colors.muted.em(stat.isDirectory() ? 'dir' : 'file'),
+        //               size: colors.muted(bytes(stat.size).toLowerCase())
+        //             })
+        //           }
+        //       }
+        //     })
   
-            return term.log(columnify(data, {
-              config: {
-                name: { minWidth: 20 },
-                type: { minWidth: 8 },
-                size: { minWidth: 8 }
-              }
-            }))
-          }
-        }
+        //     return term.log(columnify(data, {
+        //       config: {
+        //         name: { minWidth: 20 },
+        //         type: { minWidth: 8 },
+        //         size: { minWidth: 8 }
+        //       }
+        //     }))
+        //   }
+        // }
   
-        // FS command aliases
-        fsModules.cat = { description: 'Alias of read', run: fsModules.read.run }
-        fsModules.dir = { description: 'Alias of ls', run: fsModules.ls.run }
-        fsModules.rename = { description: 'Alias of mv', run: fsModules.mv.run }
+        // // FS command aliases
+        // fsModules.cat = { description: 'Alias of read', run: fsModules.read.run }
+        // fsModules.dir = { description: 'Alias of ls', run: fsModules.ls.run }
+        // fsModules.rename = { description: 'Alias of mv', run: fsModules.mv.run }
 
         resolve(fs)
       }
@@ -1513,14 +1464,16 @@ export async function boot () {
     events.dispatch('MemoryLoaded', memory)
     await setupFilesystem()
     events.dispatch('FilesystemLoaded')
-
-    // Load builtin kernel FS modules into the kernel
-    for await (const [name, mod] of Object.entries(fsModules)) loadModule(mod, { name: `@web3os-fs/${name}` })
-
     await registerKernelBins()
     events.dispatch('KernelBinsLoaded')
     await registerBuiltinModules()
     events.dispatch('BuiltinModulesLoaded')
+
+    // Load builtin kernel FS modules into the kernel
+    for await (const [name, mod] of Object.entries(await fsModules({ BrowserFS, fs, execute, modules, utils }))) {
+      loadModule(mod, { name: `@web3os-fs/${name}` })
+    }
+
     await loadPackages() // TODO: This should be offloaded to 3pm
     events.dispatch('PackagesLoaded')
 
@@ -1563,6 +1516,8 @@ export async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// ----------------------------------------------------------------
+
 // Setup screensaver interval
 let idleTimer
 const resetIdleTime = () => {
@@ -1582,12 +1537,13 @@ globalThis.addEventListener('keyup', resetIdleTime)
 globalThis.addEventListener('keypress', resetIdleTime)
 globalThis.addEventListener('pointerdown', resetIdleTime)
 
+// Setup protocol handler
+navigator.registerProtocolHandler('web+threeos', '?destination=%s')
+
 // Handle PWA installability
 globalThis.addEventListener('beforeinstallprompt', e => {
   modules.install = { name: '@web3os-core/install', description: 'Install web3os as a PWA', run: async () => Terminal.log(await e.prompt()) }
 })
-
-globalThis.global = globalThis.global || globalThis
 
 // Register service worker
 if ('serviceWorker' in navigator && location.hostname !== 'localhost') {

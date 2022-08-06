@@ -85,9 +85,11 @@ async function loadFolder (browser, url) {
         case '/config':
         case '/desktop':
         case '/usr':
-        case '/bin':
         case '/var/packages':
           fileIcon = 'source'
+          break
+        case '/bin':
+          fileIcon = 'folder_special'
           break
         case '/config/packages':
           fileIcon = 'apps'
@@ -185,7 +187,7 @@ async function loadFolder (browser, url) {
 
             if (isConfirmed) {
               if (fileData.type !== 'dir') await kernel.execute(`rm ${location}`)
-              else await kernel.execute(`rmdir -f ${location}`)
+              else await kernel.execute(`rmdir ${location}`)
               loadFolder(browser, url)
             }
           }

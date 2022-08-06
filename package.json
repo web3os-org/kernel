@@ -3,7 +3,7 @@
   "description": "The OS for the next web",
   "homepage": "https://web3os.sh",
   "funding": "https://github.com/sponsors/mathiscode",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "license": "MIT",
   "main": "dist/kernel.js",
   "module": "src/kernel.js",
@@ -100,6 +100,7 @@
     "canvas-confetti": "^1.4.0",
     "codemirror": "^5.64.0",
     "columnify": "^1.5.4",
+    "commander": "^9.3.0",
     "ctxmenu": "^1.4.3",
     "custom-event-js": "^1.0.3",
     "ecpair": "^2.0.1",
@@ -196,6 +197,7 @@
     "workbox-expiration": "^6.4.2",
     "workbox-routing": "^6.4.2",
     "workbox-strategies": "^6.4.2",
+    "ws": "^8.8.0",
     "wss": "^3.3.4"
   }
 }
