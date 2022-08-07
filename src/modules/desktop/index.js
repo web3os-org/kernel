@@ -9,8 +9,6 @@ import README from '../../../README.md'
 import defaultWallpaperURL from './default_wallpaper.png'
 import { default as defaultAppIcon } from '../../assets/default-app-icon.svg'
 
-// const { create: createTerminal } = Web3osTerminal
-
 export const name = 'desktop'
 export const version = '1.0.0'
 export const description = 'Web3OS Desktop'
