@@ -26,6 +26,8 @@ export const spec = {
   '--version': Boolean
 }
 
+let kernel = globalThis.Kernel
+
 export function play (cid, args) {
   const video = document.createElement('video')
   video.autoplay = true
@@ -64,6 +66,7 @@ export async function run (term, context = '') {
   if (args['--help']) return term.log(help)
 
   const cmd = args._?.[0]
+  kernel = term.kernel
   args.terminal = term
 
   switch (cmd) {
