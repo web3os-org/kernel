@@ -143,8 +143,8 @@ specifiers:
   wss: ^3.3.4
   xterm: ^4.19.0
   xterm-addon-attach: ^0.6.0
-  xterm-addon-fit: ^0.6.0-beta.6
-  xterm-addon-web-links: ^0.4.0
+  xterm-addon-fit: ^0.5.0
+  xterm-addon-web-links: ^0.6.0
 
 dependencies:
   '@assemblyscript/loader': 0.19.23
@@ -236,8 +236,8 @@ dependencies:
   winbox: 0.2.1
   xterm: 4.19.0
   xterm-addon-attach: 0.6.0_xterm@4.19.0
-  xterm-addon-fit: 0.6.0-beta.9_xterm@4.19.0
-  xterm-addon-web-links: 0.4.0_xterm@4.19.0
+  xterm-addon-fit: 0.5.0_xterm@4.19.0
+  xterm-addon-web-links: 0.6.0_xterm@4.19.0
 
 devDependencies:
   '@babel/core': 7.18.2
@@ -27473,8 +27473,8 @@ packages:
       xterm: 4.19.0
     dev: false
 
-  /xterm-addon-fit/0.6.0-beta.9_xterm@4.19.0:
-    resolution: {integrity: sha512-QrlwItVFiapkiJ2YL2rj2drtOvFmr8luDyV286MCrVSK4iGxSnsOdT+NcjeNig1lqYmy5FAo8iuP4FPY//NDog==}
+  /xterm-addon-fit/0.5.0_xterm@4.19.0:
+    resolution: {integrity: sha512-DsS9fqhXHacEmsPxBJZvfj2la30Iz9xk+UKjhQgnYNkrUIN5CYLbw7WEfz117c7+S86S/tpHPfvNxJsF5/G8wQ==}
     peerDependencies:
       xterm: ^4.0.0
     dependencies:
@@ -27489,8 +27489,8 @@ packages:
       xterm: 4.19.0
     dev: false
 
-  /xterm-addon-web-links/0.4.0_xterm@4.19.0:
-    resolution: {integrity: sha512-xv8GeiINmx0zENO9hf5k+5bnkaE8mRzF+OBAr9WeFq2eLaQSudioQSiT34M1ofKbzcdjSsKiZm19Rw3i4eXamg==}
+  /xterm-addon-web-links/0.6.0_xterm@4.19.0:
+    resolution: {integrity: sha512-H6XzjWWZu8FBo+fnYpxdPk9w5M6drbsvwPEJZGRS38MihiQaVFpKlCMKdfRgDbKGE530tw1yH54rhpZfHgt2/A==}
     peerDependencies:
       xterm: ^4.0.0
     dependencies:
