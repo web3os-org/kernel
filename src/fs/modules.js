@@ -14,9 +14,13 @@ import columnify from 'columnify'
 const fsModules = {}
 
 export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
-  fsModules.cwd = { description: 'Get the current working directory', run: term => term.log(term.cwd) }
+  fsModules.cwd = {
+    description: t('kernel:fsModules.descriptions.cwd', 'Get the current working directory'),
+    run: term => term.log(term.cwd)
+  }
+
   fsModules.cd = {
-    description: 'Change the current working directory',
+    description: t('kernel:fsModules.descriptions.cd', 'Change the current working directory'),
     run: (term, context) => {
       const newCwd = utils.path.resolve(term.cwd, context)
       if (!fs.existsSync(newCwd)) throw new Error(`cd: ${context}: No such directory`)
@@ -26,7 +30,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.read = {
-    description: 'Read contents of file',
+    description: t('kernel:fsModules.descriptions.read', 'Read contents of file'),
     run: (term, context) => {
       const dir = utils.path.resolve(term.cwd, context)
       if (!fs.existsSync(dir)) throw new Error(`read: ${dir}: No such file`)
@@ -34,9 +38,8 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
     }
   }
 
-  // TODO: These implementations should be moved here as well
   fsModules.upload = {
-    description: 'Upload files',
+    description: t('kernel:fsModules.descriptions.upload', 'Upload files'),
     run: term => {
       const input = document.createElement('input')
       input.setAttribute('type', 'file')
@@ -61,7 +64,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.download = {
-    description: 'Download URL to CWD, or download FILE to PC',
+    description: t('kernel:fsModules.descriptions.download', 'Download URL to CWD, or download FILE to PC'),
     run: async (term, context) => {
       let filename = context
       if (!filename || filename === '') return log(colors.danger('Invalid filename'))
@@ -88,7 +91,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.mkdir = {
-    description: 'Create a directory',
+    description: t('kernel:fsModules.descriptions.mkdir', 'Create a directory'),
     run: (term, context) => {
       if (!context || context === '') throw new Error(`mkdir: ${context}: Invalid directory name`)
       fs.mkdirSync(utils.path.resolve(term.cwd, context))
@@ -96,7 +99,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.rm = {
-    description: 'Remove a file',
+    description: t('kernel:fsModules.descriptions.rm', 'Remove a file'),
     run: (term, context) => {
       const target = utils.path.resolve(term.cwd, context)
       if (!context || context === '') throw new Error(`rm: ${context}: Invalid path`)
@@ -107,7 +110,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.rmdir = {
-    description: 'Remove a directory and all of its contents',
+    description: t('kernel:fsModules.descriptions.rmdir', 'Remove a directory and all of its contents'),
     run: async (term, context) => {
       const target = utils.path.resolve(term.cwd, context)
       if (!context || context === '') throw new Error(`rmdir: ${context}: Invalid path`)
@@ -131,7 +134,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.touch = {
-    description: 'Touch a file',
+    description: t('kernel:fsModules.descriptions.touch', 'Touch a file'),
     run: (term, context) => {
       const target = utils.path.resolve(term.cwd, context)
       if (!context || context === '') throw new Error(`touch: ${context}: Invalid path`)
@@ -140,7 +143,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.mv = {
-    description: 'Move a file or directory',
+    description: t('kernel:fsModules.descriptions.mv', 'Move a file or directory'),
     run: (term, context) => {
       const [fromStr, toStr] = context.split(' ')
       const from = utils.path.resolve(term.cwd, fromStr)
@@ -152,7 +155,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.cp = {
-    description: 'Copy a file or directory',
+    description: t('kernel:fsModules.descriptions.cp', 'Copy a file or directory'),
     run: (term, context) => {
       const [fromStr, toStr] = context.split(' ')
       const from = utils.path.resolve(term.cwd, fromStr)
@@ -164,7 +167,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
   }
 
   fsModules.ls = {
-    description: 'List directory contents',
+    description: t('kernel:fsModules.descriptions.ls', 'List directory contents'),
     run: (term, context) => {
       if (!context || context === '') context = term.cwd
       const entries = fs.readdirSync(utils.path.resolve(term.cwd, context)).sort()
@@ -181,6 +184,52 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
             name: colors.cyanBright(entry),
             description: colors.muted(info.description?.substr(0, 75) || '')
           })
+        }
+
+        let filetype
+        if (!stat.isDirectory()) {
+          switch (filename.split('.')?.pop()?.toLowerCase()) {
+            case 'aac':
+            case 'aiff':
+            case 'flac':
+            case 'mp3':
+            case 'ogg':
+            case 'pcm':
+            case 'wav':
+            case 'wma':
+              filetype = 'audio'
+              break
+            case 'avi':
+            case 'mov':
+            case 'mkv':
+            case 'mp2':
+            case 'mp4':
+            case 'webm':
+              filetype = 'video'
+              break
+            case 'json':
+              filetype = 'json'
+              break
+            case 'md':
+              filetype = 'markdown'
+              break
+            case 'txt':
+              filetype = 'text'
+              break
+            case 'bz':
+            case 'gz':
+            case 'tar':
+            case 'xz':
+            case 'zip':
+              filetype = 'archive'
+              break
+            case 'js':
+              filetype = 'javascript'
+              break
+            case 'sh':
+              filetype = 'script'
+              break
+          }
         }
 
         // Show custom output for special dirs
@@ -208,7 +257,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
             if (!isNamespacedBin) {
               data.push({
                 name: stat.isDirectory() ? colors.green('/' + entry) : colors.blue(entry),
-                type: colors.muted.em(stat.isDirectory() ? 'dir' : 'file'),
+                type: colors.muted.em(stat.isDirectory() ? 'dir' : (filetype ? filetype : 'file')),
                 size: colors.muted(bytes(stat.size).toLowerCase())
               })
             }

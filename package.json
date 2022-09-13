@@ -36,7 +36,7 @@
     "start:dev": "npm-run-all --parallel start start:browser",
     "start:kernel": "cross-env NODE_ENV=development webpack serve",
     "start:docs": "npm run watch:docs",
-    "start:browser": "google-chrome --remote-debugging-port=39222 https://web3os.dev:30443",
+    "start:browser": "google-chrome --remote-debugging-port=39222 https://localhost:30443",
     "watch": "npm-run-all --parallel watch:kernel watch:docs",
     "watch:kernel": "webpack --watch",
     "watch:docs": "nodemon --exec npm run build:docs -w src",

@@ -24,27 +24,29 @@
       Kernel.get('peerjs', 'server-host') if set, or 0.peerjs.com
 
     Commands:
-      call <peer-id> [--video] [--audio]              Call a peer with media streams
-      chat <peer-id>                                  Open a text chat with a peer
-      connect <peer-id>                               Connect to a peer
-      id                                              Display your peer ID
-      list                                            List available peers
-      send <peer-id> [--text] [--json]                Send a message
-      screen <peer-id>                                Share your screen with a peer
-      upload <peer-id> [--file]                       Upload a file to a peer
+      call <peer-id> [--video] [--audio]                                     Call a peer with media streams
+      chat <peer-id>                                                         Open a text chat with a peer
+      connect <peer-id>                                                      Connect to a peer
+      id                                                                     Display your peer ID
+      list                                                                   List available peers
+      send <peer-id> [--text] [--text-file] [--json] [--json-file]           Send a raw message
+      screen <peer-id>                                                       Share your screen with a peer
+      upload <peer-id> [--file]                                              Upload a file to a peer
 
     Options:
-      --debug                                Debug level ({0},1,2,3)
-      --file                                 Path to the file to upload
-      --help                                 Print this help message
-      --id                                   Set your peer ID
-      --json                                 Path to JSON file to send
-      --server-host                          Set the peerjs broker host
-      --server-key                           Server API key (for 0.peerjs.com)
-      --server-path                          Set the peerjs broker path {/}
-      --server-port                          Set the peerjs broker port {443}
-      --text                                 Text message to send
-      --version                              Print the version information
+      --debug                                                                Debug level ({0},1,2,3)
+      --file                                                                 Path of the file to upload
+      --help                                                                 Print this help message
+      --id                                                                   Set your peer ID
+      --json                                                                 JSON string to send
+      --json-file                                                            Path to JSON file to send
+      --server-host                                                          Set the peerjs broker host
+      --server-key                                                           Server API key (for 0.peerjs.com)
+      --server-path                                                          Set the peerjs broker path {/}
+      --server-port                                                          Set the peerjs broker port {443}
+      --text                                                                 Text message to send
+      --text-file                                                            Path to the text file to send
+      --version                                                              Print the version information
  * </pre>
  */
 
@@ -71,27 +73,29 @@ export const help = `
     ${colors.bold("Kernel.get('peerjs', 'server-host')")} if set, or ${colors.bold('0.peerjs.com')}
 
   Commands:
-    call <peer-id> [--video] [--audio]     Call a peer with media streams
-    chat <peer-id>                         Open a text chat with a peer
-    connect <peer-id>                      Connect to a peer
-    id                                     Display your peer ID
-    list                                   List available peers
-    send <peer-id> [--text] [--json]       Send a message
-    screen <peer-id>                       Share your screen with a peer
-    upload <peer-id> [--file]              Upload a file to a peer
+    call <peer-id> [--video] [--audio]                                     Call a peer with media streams
+    chat <peer-id>                                                         Open a text chat with a peer
+    connect <peer-id>                                                      Connect to a peer
+    id                                                                     Display your peer ID
+    list                                                                   List available peers
+    send <peer-id> [--text] [--text-file] [--json] [--json-file]           Send a raw message
+    screen <peer-id>                                                       Share your screen with a peer
+    upload <peer-id> [--file]                                              Upload a file to a peer
 
   Options:
-    --debug                                Debug level ({0},1,2,3)
-    --file                                 Path to the file to upload
-    --help                                 Print this help message
-    --id                                   Set your peer ID
-    --json                                 Path to JSON file to send
-    --server-host                          Set the peerjs broker host
-    --server-key                           Server API key (for 0.peerjs.com)
-    --server-path                          Set the peerjs broker path {/}
-    --server-port                          Set the peerjs broker port {443}
-    --text                                 Text message to send
-    --version                              Print the version information
+    --debug                                                                Debug level ({0},1,2,3)
+    --file                                                                 Path of the file to upload
+    --help                                                                 Print this help message
+    --id                                                                   Set your peer ID
+    --json                                                                 JSON string to send
+    --json-file                                                            Path to JSON file to send
+    --server-host                                                          Set the peerjs broker host
+    --server-key                                                           Server API key (for 0.peerjs.com)
+    --server-path                                                          Set the peerjs broker path {/}
+    --server-port                                                          Set the peerjs broker port {443}
+    --text                                                                 Text message to send
+    --text-file                                                            Path to the text file to send
+    --version                                                              Print the version information
 `
 
 export const spec = {
@@ -101,6 +105,7 @@ export const spec = {
   '--id': String,
   '--help': Boolean,
   '--json': String,
+  '--json-file': String,
   '--server-key': String,
   '--server-host': String,
   '--server-port': Number,
@@ -108,12 +113,15 @@ export const spec = {
   '--server-secure': Boolean,
   '--server-ping-interval': Number,
   '--text': String,
+  '--text-file': String,
   '--version': Boolean,
   '--video': Boolean
 }
 
 let kernel = globalThis.Kernel
 let terminal
+const { t } = kernel.i18n
+
 export let id = ''
 export let instance
 export const connections = {}
@@ -178,11 +186,14 @@ export function setupInstance () {
 
           video.onloadedmetadata = () => video.play()
 
+          const title = call.metadata.screen ? t('Screen') : `${t('Call')} ${call.metadata.audio ? `(${t('Audio')})` : ''}${call.metadata.video ? `(${t('Video')})` : ''}`
+
           kernel.windows.create({
-            title: `${call.metadata.screen ? 'Screenshare' : 'Call'}: ${call.peer}`,
+            title: `${title}: ${call.peer}`,
             mount: video,
             max: true,
             onclose: () => {
+
               call.close()
             }
           })
@@ -197,7 +208,8 @@ export function setupInstance () {
 }
 
 async function processIncomingData (data, connection) {
-  if (typeof data === 'object') {
+  console.debug({ data, connection })
+  if (typeof data === 'object' && data.cmd) {
     let result
     switch (data.cmd) {
       case 'chat':
@@ -209,6 +221,21 @@ async function processIncomingData (data, connection) {
         })
 
         if (result.isConfirmed) openChatWindow(connections[connection.peer])
+        break
+      case 'upload':
+        result = await kernel.dialog({
+          title: t('Incoming Upload'),
+          html: `<p>${t('Peer ID')}:<br />${connection.peer}</p><p>${t('Filename')}:<br />${data.filename}</p>`,
+          inputLabel: t('Where would you like to save this file?'),
+          inputValue: kernel.get('peer', 'defaultReceivePath') || '/tmp',
+          reverseButtons: true,
+          showDenyButton: true,
+          denyButtonText: t('Cancel'),
+          confirmButtonText: t('Save'),
+          input: 'text'
+        })
+
+        if (result.isConfirmed) return kernel.fs.writeFileSync(data.filename, data.content)
         break
       default:
         throw new Error(`Invalid command ${JSON.stringify(data)} received from peer ${connection.peer}`)
@@ -254,8 +281,10 @@ export async function call (peerId, args) {
 
     video.onloadedmetadata = () => video.play()
 
+    const title = metadata.screen ? t('Screen') : `${t('Call')} ${metadata.audio ? `(${t('Audio')})` : ''}${metadata.video ? `(${t('Video')})` : ''}`
+
     kernel.windows.create({
-      title: `Screen: ${call.peer}`,
+      title: `${title}: ${call.peer}`,
       mount: video,
       max: true,
       onclose: () => {
@@ -340,6 +369,22 @@ export async function screen (peerId) {
   call(peerId, { screen: true })
 }
 
+export async function send (peerId, args) {
+  const peer = connections[peerId]
+  if (!peer) throw new Error('Not connected to that peer')
+  if (args['--text']) return peer.connection.send(args['--text'])
+  if (args['--text-file']) return peer.connection.send(kernel.fs.readFileSync(args['--text-file']).toString())
+  if (args['--json']) return peer.connection.send(JSON.parse(args['--json']))
+  if (args['--json-file']) return peer.connection.send(JSON.parse(kernel.fs.readFileSync(args['--json-file']).toString()))
+}
+
+export async function upload (peerId, args) {
+  const peer = connections[peerId]
+  if (!peer) throw new Error('Not connected to that peer')
+  const content = kernel.fs.readFileSync(args['--file'])
+  peer.connection.send({ cmd: 'upload', filename: kernel.utils.path.parse(args['--file']).base, content })
+}
+
 export async function run (term, context = '') {
   const args = arg(spec, { argv: cliParse(context) })
   if (args['--version']) return term.log(version)
@@ -375,18 +420,22 @@ export async function run (term, context = '') {
   }
 
   switch (cmd) {
-    case 'id':
-      return term.log(id)
-    case 'connect':
-      return await connect(args._?.[1], args)
-    case 'chat':
-      return await chat(args._?.[1], args)
     case 'call':
       return await call(args._?.[1], args)
-    case 'screen':
-      return await screen(args._?.[1], args)
+    case 'chat':
+      return await chat(args._?.[1], args)
+    case 'connect':
+      return await connect(args._?.[1], args)
+    case 'id':
+      return term.log(id)
     case 'list':
       return term.log(Object.keys(connections))
+    case 'screen':
+      return await screen(args._?.[1], args)
+    case 'send':
+      return await send(args._?.[1], args)
+    case 'upload':
+      return await upload(args._?.[1], args)
     default:
       return term.log(help)
   }

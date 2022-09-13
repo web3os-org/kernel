@@ -20,6 +20,7 @@
 .input {
   font-size: 2rem;
   width: 90%;
+  color: initial;
 }
 
 .button {

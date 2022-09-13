@@ -22,6 +22,7 @@ export default {
     Used: 'Gebraucht',
     Free: 'Frei',
     Type: 'Typ',
+    Save: 'Speichern',
     Size: 'Größe',
     Applications: 'Anwendungen',
     Configuration: 'Aufbau',
@@ -36,7 +37,6 @@ export default {
     printThisHelpMessage: 'Drucken Sie diese Hilfenachricht aus',
     printVersionInformation: 'Drucken Sie die Versionsinformationen',
 
-    'Alias of': 'Pseudonym von',
     'Heap Limit': 'Heap-Grenze',
     'Packages in the': 'Pakete im',
     'Powered by': 'Unterstützt von',
@@ -63,7 +63,8 @@ export default {
       lsmod: 'um alle Kernelmodule aufzulisten',
       confetti: 'um die Konfettipistole abzufeuern 🎉',
       minipaint: 'Art™ zu zeichnen 🎨',
-      clip: 'um die Ausgabe eines Befehls in die Zwischenablage zu kopieren'
+      clip: 'um die Ausgabe eines Befehls in die Zwischenablage zu kopieren',
+      repl: 'um das interaktive Javascript-Terminal auszuführen'
     },
 
     bins: {
@@ -84,7 +85,7 @@ export default {
         install: 'Installieren Sie web3os als PWA',
         ipecho: 'Geben Sie Ihre öffentliche IP-Adresse wieder',
         lsmod: 'Geladene Kernel-Module auflisten',
-        man: 'Alias der Hilfe',
+        man: 'Pseudonym der (help)',
         objectUrl: 'Erstellen Sie eine ObjectURL für eine Datei',
         set: 'Legen Sie einen Kernel-Speicherwert fest',
         sh: 'Führen Sie ein web3os-Skript aus',
