@@ -175,18 +175,19 @@ export async function run (term, context) {
     orb.style.boxShadow = ''
   }
 
-  const { getUtterance, speak } = Kernel.modules.speak
+  const { getUtterance, speak, voices } = Kernel.modules.speak
+  console.log({ voices })
   const selectedVoice = Kernel.get('three', 'voice') || 'Google UK English Female'
-  const volume = Kernel.get('three', 'volume') || 0.5
-  const pitch = Kernel.get('three', 'pitch') || 0.5
-  const rate = Kernel.get('three', 'rate') || 1
-  const voice = speechSynthesis.getVoices().find(v => v.name === selectedVoice)
+  const volume = parseFloat(Kernel.get('three', 'volume') || 0.5)
+  const pitch = parseFloat(Kernel.get('three', 'pitch') || 0.5)
+  const rate = parseFloat(Kernel.get('three', 'rate') || 1)
+  const voice = voices.find(v => v.name === selectedVoice)
 
   let utter
   utter = getUtterance("Welcome to web3 OH S", voice, volume, pitch, rate)
-  speak(utter)
+  await speak(utter)
   utter = getUtterance("I'm Three, and I'll be your guide.", voice, volume, pitch, rate)
-  speak(utter)
+  await speak(utter)
   utter = getUtterance("There's lots to explore, so let's get started!", voice, volume, pitch, rate)
-  speak(utter)
+  await speak(utter)
 }

@@ -6,14 +6,19 @@
 export const name = 'speak'
 export const description = 'Speech Synthesis Utility'
 
-export const voices = speechSynthesis.getVoices()
+export let voices = speechSynthesis.getVoices()
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices()
+}
 
 export function getUtterance (text, voice, volume = 1, pitch = 1, rate = 1) {
   const utter = new SpeechSynthesisUtterance(text)
+  utter.default = false
   utter.voice = voice
   utter.volume = volume
   utter.pitch = pitch
   utter.rate = rate
+  console.log({ text, voice, volume, pitch, rate, utter })
   return utter
 }
 

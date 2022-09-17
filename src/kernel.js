@@ -296,15 +296,15 @@ export async function printBootIntro () {
   log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline('help')} ${t('kernel:bootIntro.help', 'for help')}`))
   log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline('docs')} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
   log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline('desktop')} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
-  log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('wallet connect')} ${t('kernel:bootIntro.wallet', 'to connect your wallet')}`))
+  // log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('wallet connect')} ${t('kernel:bootIntro.wallet', 'to connect your wallet')}`))
   log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('files /bin')} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
-  log(colors.warning(`${t('typeVerb', 'Type')} ${colors.bold.underline('lsmod')} ${t('kernel:bootIntro.lsmod', 'to list all kernel modules')}`))
-  log(colors.white(`${t('typeVerb', 'Type')} ${colors.bold.underline('repl')} ${t('kernel:bootIntro.repl', 'to run the interactive Javascript terminal')}`))
+  // log(colors.warning(`${t('typeVerb', 'Type')} ${colors.bold.underline('lsmod')} ${t('kernel:bootIntro.lsmod', 'to list all kernel modules')}`))
+  log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('Command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}`))
+  // log(colors.white(`${t('typeVerb', 'Type')} ${colors.bold.underline('repl')} ${t('kernel:bootIntro.repl', 'to run the interactive Javascript terminal')}`))
   log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline('confetti')} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
-  log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
-  log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('Command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}\n`))
+  // log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
 
-  isSmall ? log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+  isSmall ? log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
   log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('install')} ${t('kernel:bootIntro.install', 'to install web3os to your device')}`))
   isSmall ? log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
 
@@ -1414,15 +1414,18 @@ globalThis.addEventListener('keypress', resetIdleTime)
 globalThis.addEventListener('pointerdown', resetIdleTime)
 
 // Setup protocol handler
-navigator.registerProtocolHandler('web+threeos', '?destination=%s')
+if (navigator.registerProtocolHandler) navigator.registerProtocolHandler('web+threeos', '?destination=%s')
 
 // Handle PWA installability
 globalThis.addEventListener('beforeinstallprompt', e => {
-  modules.install = {
+  const installer = {
     name: '@web3os-core/install',
     description: t('kernel:bins.descriptions.install', 'Install web3os as a PWA'),
     run: async () => Terminal.log(await e.prompt())
   }
+
+  modules[installer.name] = installer
+  modules.install = installer
 })
 
 // Register service worker

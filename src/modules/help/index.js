@@ -27,7 +27,7 @@ export async function run (term, context) {
     \t${colors.green(`help <${t('Command')}>`)} ${t('or')} ${colors.blue(`<${t('Command')}> --help`)}
 
     ${colors.info(`💾   ${t('Development')}:`)}
-    \t${t('All the cool shit happens over at')} ${colors.underline('https://github.com/web3os-org')}
+    \t${t('All the cool shit happens over at')} ${colors.underline('https://github.com/web3os-org/kernel')}
     \t${t('Also check out the documentation at')} ${colors.underline('https://docs.web3os.sh')} ${t('or type')} ${colors.blue('docs')}
 
     ${colors.info(`🚀   ${t('Quick Start')}:`)}

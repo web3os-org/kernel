@@ -239,7 +239,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
               name: colors.cyanBright(entry),
               description: colors.muted(
                 stat.isDirectory()
-                  ? t`Packages in the ${entry} namespace`
+                  ? `${t('Packages in the')} ${entry} ${t('namespace')}`
                   : (modules[filename.replace('/bin/', '')]?.description?.substr(0, 50) || '')
               )
             })
@@ -257,7 +257,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
             if (!isNamespacedBin) {
               data.push({
                 name: stat.isDirectory() ? colors.green('/' + entry) : colors.blue(entry),
-                type: colors.muted.em(stat.isDirectory() ? 'dir' : (filetype ? filetype : 'file')),
+                type: colors.muted.em(filetype ? filetype : (stat.isDirectory() ? 'directory' : 'file')),
                 size: colors.muted(bytes(stat.size).toLowerCase())
               })
             }
@@ -267,7 +267,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
       return term.log(columnify(data, {
         config: {
           name: { minWidth: 20 },
-          type: { minWidth: 8 },
+          type: { minWidth: 15 },
           size: { minWidth: 8 }
         }
       }))

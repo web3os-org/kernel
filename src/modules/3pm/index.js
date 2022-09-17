@@ -91,7 +91,9 @@ export async function install (url, args = { warn: true }) {
   const pkgJson = await (await fetch(`${url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
   const name = pkgJson.name
   const pkgName = name.split('/')
-  const main = args['--main'] || pkgJson.browser || pkgJson.module || pkgJson.main || 'index.js'
+  const pkgBrowser = pkgJson.browser ? (typeof pkgJson.browser === 'string' ? pkgJson.browser : Object.values(pkgJson.browser)[0]) : null
+  const pkgModule = pkgJson.module ? (typeof pkgJson.module === 'string' ? pkgJson.module : Object.values(pkgJson.module)[0]) : null
+  const main = args['--main'] || pkgBrowser || pkgModule || pkgJson.main || 'index.js'
   const mainUrl = `${url}/${main}`
 
   let type = 'es'
