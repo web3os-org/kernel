@@ -20,12 +20,14 @@ import('./kernel').then(kernel => {
 
   import('./terminal').then(async term => {
     if (globalThis.Terminal) document.querySelector('#web3os-terminal').innerHTML = ''
+    const bootArgs = new URLSearchParams(globalThis.location.search)
+    console.log({ bootArgs })
 
     globalThis.Terminal = term.default.create({
-      fontFamily: "'Fira Mono', monospace",
-      fontSize: 18,
-      fontWeight: 900,
-      theme: { background: '#121212' }
+      fontFamily: bootArgs.get('fontFamily') || "'Fira Mono', monospace",
+      fontSize: bootArgs.get('fontSize') || 18,
+      fontWeight: bootArgs.get('fontWeight') || 900,
+      theme: { background: bootArgs.get('themeBackground') || '#121212' }
     })
 
     globalThis.Terminal.open(document.querySelector('#web3os-terminal'))
