@@ -53,6 +53,7 @@ import colors from 'ansi-colors'
 import escapes from 'ansi-escape-sequences'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
+import { WebglAddon } from 'xterm-addon-webgl'
 import { AttachAddon } from 'xterm-addon-attach'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 
@@ -60,10 +61,12 @@ import 'xterm/css/xterm.css'
 import { term } from '../kernel'
 
 let defaults = {
+  fontSize: 16,
+  smoothScrollDuration: 100,
   convertEol: true,
   cursorBlink: true,
   macOptionIsMeta: true,
-  fontSize: 16
+  allowProposedApi: true
 }
 
 export default class Web3osTerminal extends Terminal {
@@ -87,6 +90,8 @@ export default class Web3osTerminal extends Terminal {
 
   constructor (options = {}) {
     super(options) // 🦸‍♂️⚙
+    const self = this
+
     this.kernel = options.kernel || globalThis.Kernel
     this.customCommands = options.customCommands || []
     this.binSearchPath = options.binSearchPath || ['@web3os-core', '@web3os-fs', '@web3os-apps', '@web3os-utils']
@@ -95,6 +100,12 @@ export default class Web3osTerminal extends Terminal {
     this.promptFormat = options.promptFormat || `<${colors.cyan('3os')}>${colors.blue('{cwd}')}${colors.green('#')} `
     this.log = this.log.bind(this)
     if (this.debug) console.log('New Terminal Created:', this, { options, kernel: this.kernel })
+
+    this.options.linkHandler = this.options.linkHandler || {
+      activate (event, text, range) {
+        globalThis.Kernel.specialLinkHandler(event, text, range, self)
+      }
+    }
 
     this.customCommands.push({
       name: '$custom',
@@ -152,9 +163,11 @@ export default class Web3osTerminal extends Terminal {
   static create (options = {}) {
     const term = new Web3osTerminal({ ...defaults, ...options })
     const fitAddon = new FitAddon()
+
   
     term.loadAddon(fitAddon)
     term.loadAddon(new WebLinksAddon())
+
     if (options.socket) {
       const attachAddon = new AttachAddon(options.socket)
       term.loadAddon(attachAddon)
@@ -162,6 +175,12 @@ export default class Web3osTerminal extends Terminal {
   
     term.fit = fitAddon.fit.bind(fitAddon)
     return term
+  }
+
+  loadWebglAddon () {
+    const addon = new WebglAddon()
+    addon.onContextLoss(() => addon.dispose())
+    this.loadAddon(addon)
   }
 
   /**
@@ -489,7 +508,7 @@ export default class Web3osTerminal extends Terminal {
         this.prompt()
         break
       case 'Insert':
-        this.setOption('cursorStyle', this.getOption('cursorStyle') === 'block' ? 'underline' : 'block')
+        this.setOption('cursorStyle', this.options.cursorStyle === 'block' ? 'underline' : 'block')
         break
       case 'PageUp':
         this.scrollPages(-1)
@@ -509,7 +528,7 @@ export default class Web3osTerminal extends Terminal {
             this.write(this.cmd)
           }
 
-          const replaceMode = this.getOption('cursorStyle') === 'underline'
+          const replaceMode = this.options.cursorStyle === 'underline'
           const remainderOffset = replaceMode && this.cursorPosition < this.cmd.length ? this.cursorPosition + 1: this.cursorPosition
           this.cmd = `${this.cmd.slice(0, this.cursorPosition)}${key}${this.cmd.slice(remainderOffset)}`
           const remainder = this.cmd.slice(remainderOffset)

@@ -31,6 +31,7 @@ import('./kernel').then(kernel => {
     })
 
     globalThis.Terminal.open(document.querySelector('#web3os-terminal'))
+    globalThis.Terminal.loadWebglAddon()
     globalThis.Terminal.fit()
     globalThis.Terminal.focus()
 

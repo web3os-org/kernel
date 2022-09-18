@@ -181,6 +181,32 @@ export const createIcon = (id, classes) => {
 }
 
 /**
+ * Create a special hyperlink introduced in xterm.js v5
+ * 
+ * @param 
+ */
+export function createSpecialLink (uri, text) {
+  return `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
+}
+
+/**
+ * Handle special hyperlinks introduced in xterm.js v5
+ */
+export function specialLinkHandler (event, text, range, term) {
+  const parts = text.split(':')
+  if (parts[0] !== 'web3os') return window.open(text)
+
+  const cmd = parts[1]
+  const args = parts[2]
+
+  switch (cmd) {
+    case 'execute':
+      execute(args)
+      return term ? term.prompt() : globalThis.Terminal.prompt()
+  }
+}
+
+/**
  * Gives access to the virtual keyboard
  * 
  * This gives us more control and consistency over mobile input
@@ -293,15 +319,15 @@ export async function printBootIntro () {
   }
 
   log(colors.underline(t('A few examples') + ':'))
-  log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline('help')} ${t('kernel:bootIntro.help', 'for help')}`))
-  log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline('docs')} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
-  log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline('desktop')} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
+  log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:help', 'help'))} ${t('kernel:bootIntro.help', 'for help')}`))
+  log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:docs', 'docs'))} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
+  log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:desktop', 'desktop'))} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
   // log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('wallet connect')} ${t('kernel:bootIntro.wallet', 'to connect your wallet')}`))
-  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('files /bin')} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
+  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:files /bin', 'files /bin'))} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
   // log(colors.warning(`${t('typeVerb', 'Type')} ${colors.bold.underline('lsmod')} ${t('kernel:bootIntro.lsmod', 'to list all kernel modules')}`))
   log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('Command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}`))
   // log(colors.white(`${t('typeVerb', 'Type')} ${colors.bold.underline('repl')} ${t('kernel:bootIntro.repl', 'to run the interactive Javascript terminal')}`))
-  log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline('confetti')} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
+  log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:confetti', 'confetti'))} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
   // log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
 
   isSmall ? log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
@@ -310,6 +336,7 @@ export async function printBootIntro () {
 
   log('\nhttps://docs.web3os.sh')
   log('https://github.com/web3os-org')
+
   log(colors.muted(`\n${t('Booting')}...`))
 }
 
