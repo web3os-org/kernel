@@ -199,6 +199,13 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
             case 'wma':
               filetype = 'audio'
               break
+            case 'png':
+            case 'gif':
+            case 'webp':
+            case 'jpg':
+            case 'svg':
+              filetype = 'image'
+              break
             case 'avi':
             case 'mov':
             case 'mkv':

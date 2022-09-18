@@ -24,7 +24,7 @@ export async function run (term, context) {
     ${t('web3os has many commands, which you can browse by typing')}
     \t${colors.green('ls /bin')} ${t('or')} ${colors.blue('files /bin')}
     \n\t${t('To learn more about a command, type')}
-    \t${colors.green(`help <${t('Command')}>`)} ${t('or')} ${colors.blue(`<${t('Command')}> --help`)}
+    \t${colors.green(`help <${t('Command')}>`)} ${t('or')} ${colors.blue(`<${t('Command')}> --help`)} ${t('or')} ${colors.blue(`<${t('lsmod')}>`)}
 
     ${colors.info(`💾   ${t('Development')}:`)}
     \t${t('All the cool shit happens over at')} ${colors.underline('https://github.com/web3os-org/kernel')}

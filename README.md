@@ -100,7 +100,7 @@ The project is still very young, and more documentation and organization is Comi
 - Git integration with [isomorphic-git](https://isomorphic-git.org/)
 - GunJS integration with [GUN](https://gun.eco)
 - Moralis integration with [Moralis](https://moralis.io)
-- P2P communication with [PeerJS](https://peerjs.com)
+- P2P communication (chat, audio, video, screenshare, fileshare) with [PeerJS](https://peerjs.com)
 - Torrent integration with [WebTorrent](https://webtorrent.io)
 - It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/)
 - WebAssembly executable support *(WIP)*:
