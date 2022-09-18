@@ -8,6 +8,7 @@ specifiers:
   '@material/mwc-button': ^0.25.3
   '@material/mwc-icon-button': ^0.25.3
   '@material/mwc-snackbar': ^0.25.3
+  '@sweetalert2/theme-dark': ^5.0.12
   '@web3-onboard/core': ^2.3.1
   '@web3-onboard/injected-wallets': ^2.0.11
   '@web3-onboard/trezor': ^2.1.3
@@ -107,6 +108,7 @@ dependencies:
   '@material/mwc-button': 0.25.3
   '@material/mwc-icon-button': 0.25.3
   '@material/mwc-snackbar': 0.25.3
+  '@sweetalert2/theme-dark': 5.0.12
   '@web3-onboard/core': 2.3.1_22kvxa7zeyivx4jp72v2w3pkvy
   '@web3-onboard/injected-wallets': 2.0.11_22kvxa7zeyivx4jp72v2w3pkvy
   '@web3-onboard/trezor': 2.1.3_22kvxa7zeyivx4jp72v2w3pkvy
@@ -2886,6 +2888,10 @@ packages:
     dependencies:
       antlr4ts: 0.5.0-alpha.4
     dev: true
+
+  /@sweetalert2/theme-dark/5.0.12:
+    resolution: {integrity: sha512-F0DxJJhVUixKD1Tk3gXwAy1goONgkP7BIDTZfTN7aZQdY9edLmiSp4d3LNPK49m0ORIG38eDAwJFodgQ5uuEZw==}
+    dev: false
 
   /@szmarczak/http-timer/1.1.2:
     resolution: {integrity: sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA==}

@@ -57,6 +57,7 @@
     "@material/mwc-button": "^0.25.3",
     "@material/mwc-icon-button": "^0.25.3",
     "@material/mwc-snackbar": "^0.25.3",
+    "@sweetalert2/theme-dark": "^5.0.12",
     "@web3-onboard/core": "^2.3.1",
     "@web3-onboard/injected-wallets": "^2.0.11",
     "@web3-onboard/trezor": "^2.1.3",
