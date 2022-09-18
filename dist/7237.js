@@ -1,0 +1,2 @@
+(self.webpackChunk_web3os_core_kernel=self.webpackChunk_web3os_core_kernel||[]).push([[7237],{67237:M=>{M.exports="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjIuODggODYuNzkiPjxwYXRoIGQ9Ik0yLjA4IDBoMTIwLjh2NzMuMzZINzcuNTd2OC4yOWg3LjI4djUuMTVIMzcuODh2LTUuMTVoNy4yOHYtOC4yOUgwVjBoMi4wOHptMTE2LjY1IDQuMTVINC4xNVY2OS4yaDExNC41N2wuMDEtNjUuMDV6Ii8+PC9zdmc+"}}]);
+//# sourceMappingURL=7237.js.map

@@ -1,0 +1,2 @@
+(()=>{"use strict";var e={63005:(e,r,t)=>{t.d(r,{default:()=>o});const o={wallet:{description:"Wallet-Dienstprogramm"}}}},r={};function t(o){var a=r[o];if(void 0!==a)return a.exports;var n=r[o]={exports:{}};return e[o](n,n.exports,t),n.exports}t.d=(e,r)=>{for(var o in r)t.o(r,o)&&!t.o(e,o)&&Object.defineProperty(e,o,{enumerable:!0,get:r[o]})},t.o=(e,r)=>Object.prototype.hasOwnProperty.call(e,r),t(63005).default})();
+//# sourceMappingURL=locales.js.map

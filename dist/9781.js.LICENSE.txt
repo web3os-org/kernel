@@ -1,0 +1,53 @@
+/*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
+
+/**
+ * @module @web3os-core/peer
+ * @author Jay Mathis <code@mathis.network>
+ * @license MIT
+ * @see https://peerjs.com
+ * @see https://github.com/web3os-org/kernel
+ * 
+ * @todo Fix receiving emojis causing BinaryPackFailure
+ * 
+ * @description
+ * PeerJS Utility
+ * 
+ * <pre>
+ * 
+ * 
+ * 
+    Usage:
+      peer <command> <args> [options]
+
+    To set your ID (default is UUID):
+      peer id --id myfirstdevice
+
+    Default Connection Broker:
+      Kernel.get('peerjs', 'server-host') if set, or 0.peerjs.com
+
+    Commands:
+      call <peer-id> [--video] [--audio]                                     Call a peer with media streams
+      chat <peer-id>                                                         Open a text chat with a peer
+      connect <peer-id>                                                      Connect to a peer
+      id                                                                     Display your peer ID
+      list                                                                   List available peers
+      send <peer-id> [--text] [--text-file] [--json] [--json-file]           Send a raw message
+      screen <peer-id>                                                       Share your screen with a peer
+      upload <peer-id> [--file]                                              Upload a file to a peer
+
+    Options:
+      --debug                                                                Debug level ({0},1,2,3)
+      --file                                                                 Path of the file to upload
+      --help                                                                 Print this help message
+      --id                                                                   Set your peer ID
+      --json                                                                 JSON string to send
+      --json-file                                                            Path to JSON file to send
+      --server-host                                                          Set the peerjs broker host
+      --server-key                                                           Server API key (for 0.peerjs.com)
+      --server-path                                                          Set the peerjs broker path {/}
+      --server-port                                                          Set the peerjs broker port {443}
+      --text                                                                 Text message to send
+      --text-file                                                            Path to the text file to send
+      --version                                                              Print the version information
+ * </pre>
+ */

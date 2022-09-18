@@ -1,0 +1,2 @@
+(()=>{"use strict";["rw apm=off vga=0x344 video=vesafb:ypan,vremap:8","root=host9p rootfstype=9p rootflags=trans=virtio,cache=loose","mitigations=off audit=0","page_poison=on","tsc=reliable","random.trust_cpu=on","nowatchdog","init=/usr/bin/init-openrc net.ifnames=0 biosdevname=0"].join(" ")})();
+//# sourceMappingURL=vm.js.map

@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk_web3os_core_kernel=self.webpackChunk_web3os_core_kernel||[]).push([[3005],{63005:(e,s,l)=>{l.r(s),l.d(s,{default:()=>r});const r={wallet:{description:"Wallet-Dienstprogramm"}}}}]);
+//# sourceMappingURL=3005.js.map

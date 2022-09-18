@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk_web3os_core_kernel=self.webpackChunk_web3os_core_kernel||[]).push([[9797,5916],{35916:(e,n,t)=>{t.r(n),t.d(n,{default:()=>a});const a={lang:{description:"Internationalisierungsdienstprogramm",helpShowCurrentLanguage:"Zeigt die aktuelle Systemsprache an",helpSetLanguage:"Stellen Sie die Systemsprache ein"}}},9797:(e,n,t)=>{t.r(n),t.d(n,{default:()=>a});const a={de:t(35916).default}}}]);
+//# sourceMappingURL=9797.js.map

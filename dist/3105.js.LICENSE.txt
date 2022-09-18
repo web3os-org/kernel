@@ -1,0 +1,19 @@
+/*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
+
+/**
+ * Web3os Core Filesystem Modules
+ *
+ * @description Entrypoint for core filesystem modules
+ * @author Jay Mathis <code@mathis.network>
+ * @license MIT
+ * @see https://github.com/web3os-org/kernel
+*/
+
+/**
+ * Web3os Kernel
+ *
+ * @description Entrypoint of the web3os kernel
+ * @author Jay Mathis <code@mathis.network>
+ * @license MIT
+ * @see https://github.com/web3os-org/kernel
+ */
