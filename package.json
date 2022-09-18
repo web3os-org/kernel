@@ -95,6 +95,7 @@
     "systemjs": "^6.12.1",
     "topbar": "^1.0.1",
     "unzipit": "^1.4.0",
+    "url": "^0.11.0",
     "web3": "^1.6.1",
     "web3-eth-contract": "^1.7.3",
     "webtorrent": "^1.8.13",
