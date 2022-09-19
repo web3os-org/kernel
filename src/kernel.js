@@ -28,6 +28,7 @@ import sweetalert from 'sweetalert2'
 import topbar from 'topbar'
 
 import { unzip } from 'unzipit'
+import { v4 as uuidv4 } from 'uuid'
 
 import 'systemjs'
 import 'animate.css'
@@ -181,32 +182,6 @@ export const createIcon = (id, classes) => {
 }
 
 /**
- * Create a special hyperlink introduced in xterm.js v5
- * 
- * @param 
- */
-export function createSpecialLink (uri, text) {
-  return `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
-}
-
-/**
- * Handle special hyperlinks introduced in xterm.js v5
- */
-export function specialLinkHandler (event, text, range, term) {
-  const parts = text.split(':')
-  if (parts[0] !== 'web3os') return window.open(text)
-
-  const cmd = parts[1]
-  const args = parts[2]
-
-  switch (cmd) {
-    case 'execute':
-      execute(args)
-      return term ? term.prompt() : globalThis.Terminal.prompt()
-  }
-}
-
-/**
  * Gives access to the virtual keyboard
  * 
  * This gives us more control and consistency over mobile input
@@ -251,6 +226,23 @@ export const events = CustomEvent
 export const broadcast = new BroadcastChannel('web3os')
 broadcast.onmessage = msg => {
   console.log('Incoming Broadcast:', msg)
+}
+
+/**
+ * 
+ */
+export async function analyticsEvent ({ event, user, details }) {
+  if (/^localhost/.test(location.host)) return
+  if (kernel.get('config', 'analytics-opt-out')) return
+
+  if (!get('user', 'uuid')) set('user', 'uuid', uuidv4())
+  user = user || get('user', 'uuid')
+
+  await fetch('https://zqqgwwumllncmhfcxexw.functions.supabase.co/logger', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event: event || 'log', user, details: details || {} })
+  })
 }
 
 /**
@@ -319,15 +311,15 @@ export async function printBootIntro () {
   }
 
   log(colors.underline(t('A few examples') + ':'))
-  log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:help', 'help'))} ${t('kernel:bootIntro.help', 'for help')}`))
-  log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:docs', 'docs'))} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
-  log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:desktop', 'desktop'))} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
+  log(colors.danger(`\n${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:help', 'help'))} ${t('kernel:bootIntro.help', 'for help')}`))
+  log(colors.gray(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:docs', 'docs'))} ${t('kernel:bootIntro.docs', 'to open the documentation')}`))
+  log(colors.info(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:desktop', 'desktop'))} ${t('kernel:bootIntro.desktop', 'to launch the desktop')}`))
   // log(colors.primary(`${t('typeVerb', 'Type')} ${colors.bold.underline('wallet connect')} ${t('kernel:bootIntro.wallet', 'to connect your wallet')}`))
-  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:files /bin', 'files /bin'))} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
+  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:files /bin', 'files /bin'))} ${t('kernel:bootIntro.filesBin', 'to explore all executable commands')}`))
   // log(colors.warning(`${t('typeVerb', 'Type')} ${colors.bold.underline('lsmod')} ${t('kernel:bootIntro.lsmod', 'to list all kernel modules')}`))
   log(colors.muted(`${t('typeVerb', 'Type')} ${colors.bold.underline(`clip <${t('Command')}>`)} ${t('kernel:bootIntro.clip', 'to copy the output of a command to the clipboard')}`))
   // log(colors.white(`${t('typeVerb', 'Type')} ${colors.bold.underline('repl')} ${t('kernel:bootIntro.repl', 'to run the interactive Javascript terminal')}`))
-  log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline(createSpecialLink('web3os:execute:confetti', 'confetti'))} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
+  log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:confetti', 'confetti'))} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
   // log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
 
   isSmall ? log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
@@ -351,7 +343,7 @@ function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(m
 function loadLocalStorage () {
   try {
     const storedMemory = localStorage.getItem('memory')
-    memory = storedMemory ? JSON.parse(storedMemory) : { firstBootVersion: rootPkgJson.version }
+    memory = storedMemory ? JSON.parse(storedMemory) : { firstBootVersion: rootPkgJson.version,  }
     updateLocalStorage()
   } catch (err) {
     console.error(err)
@@ -1406,6 +1398,7 @@ export async function boot () {
     }, 600)
 
     events.dispatch('BootComplete')
+    analyticsEvent({ event: 'boot-complete' })
   })
 }
 
@@ -1448,7 +1441,11 @@ globalThis.addEventListener('beforeinstallprompt', e => {
   const installer = {
     name: '@web3os-core/install',
     description: t('kernel:bins.descriptions.install', 'Install web3os as a PWA'),
-    run: async () => Terminal.log(await e.prompt())
+    run: async () => {
+      const result = await e.prompt()
+      Terminal.log(result)
+      analyticsEvent({ event: 'pwa-install', details: result })
+    }
   }
 
   modules[installer.name] = installer

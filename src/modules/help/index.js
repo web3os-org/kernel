@@ -22,18 +22,18 @@ export async function run (term, context) {
     ${colors.underline.info(`Web3os ${t('Help')}:`)}
     
     ${t('web3os has many commands, which you can browse by typing')}
-    \t${colors.green(kernel.createSpecialLink('web3os:execute:ls /bin', 'ls /bin'))} ${t('or')} ${colors.blue(kernel.createSpecialLink('web3os:execute:files /bin', 'files /bin'))}
+    \t${colors.green(term.createSpecialLink('web3os:execute:ls /bin', 'ls /bin'))} ${t('or')} ${colors.blue(term.createSpecialLink('web3os:execute:files /bin', 'files /bin'))}
     \n\t${t('To learn more about a command, type')}
-    \t${colors.green(`help <${t('Command')}>`)} ${t('or')} ${colors.blue(`<${t('Command')}> --help`)} ${t('or')} ${colors.blue(`${kernel.createSpecialLink('web3os:execute:lsmod', 'lsmod')}`)}
+    \t${colors.green(`help <${t('Command')}>`)} ${t('or')} ${colors.blue(`<${t('Command')}> --help`)} ${t('or')} ${colors.blue(`${term.createSpecialLink('web3os:execute:lsmod', 'lsmod')}`)}
 
     ${colors.info(`💾   ${t('Development')}:`)}
     \t${t('All the cool shit happens over at')} ${colors.underline('https://github.com/web3os-org/kernel')}
-    \t${t('Also check out the documentation at')} ${colors.underline('https://docs.web3os.sh')} ${t('or type')} ${colors.blue(kernel.createSpecialLink('web3os:execute:docs', 'docs'))}
+    \t${t('Also check out the documentation at')} ${colors.underline('https://docs.web3os.sh')} ${t('or type')} ${colors.blue(term.createSpecialLink('web3os:execute:docs', 'docs'))}
 
     ${colors.info(`🚀   ${t('Quick Start')}:`)}
-    \t1. ${t('Browse the filesystem')}: ${colors.green(kernel.createSpecialLink('web3os:execute:files', 'files'))}
-    \t2. ${t('Start the desktop')}: ${colors.green(kernel.createSpecialLink('web3os:execute:desktop', 'desktop'))}
-    \t3. ${t('Interact with your wallets')}: ${colors.green(kernel.createSpecialLink('web3os:execute:wallet', 'wallet'))}
+    \t1. ${t('Browse the filesystem')}: ${colors.green(term.createSpecialLink('web3os:execute:files', 'files'))}
+    \t2. ${t('Start the desktop')}: ${colors.green(term.createSpecialLink('web3os:execute:desktop', 'desktop'))}
+    \t3. ${t('Interact with your wallets')}: ${colors.green(term.createSpecialLink('web3os:execute:wallet', 'wallet'))}
   `)
 }
 

@@ -103,7 +103,7 @@ export default class Web3osTerminal extends Terminal {
 
     this.options.linkHandler = this.options.linkHandler || {
       activate (event, text, range) {
-        globalThis.Kernel.specialLinkHandler(event, text, range, self)
+        self.specialLinkHandler(event, text, range, self)
       }
     }
 
@@ -175,6 +175,32 @@ export default class Web3osTerminal extends Terminal {
   
     term.fit = fitAddon.fit.bind(fitAddon)
     return term
+  }
+
+  /**
+ * Create a special hyperlink introduced in xterm.js v5
+ * 
+ * @param {String} uri
+ * @param {String} text
+ */
+  createSpecialLink (uri, text) {
+    return `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
+  }
+
+  /**
+ * Handle special hyperlinks introduced in xterm.js v5
+ */
+  specialLinkHandler (event, text, range, term) {
+    const parts = text.split(':')
+    if (parts[0] !== 'web3os') return window.open(text)
+
+    const cmd = parts[1]
+    const args = parts[2]
+
+    switch (cmd) {
+      case 'execute':
+        return this.kernel.execute(args)
+    }
   }
 
   loadWebglAddon () {

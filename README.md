@@ -58,12 +58,13 @@ The project is still very young, and more documentation and organization is Comi
 - [Developer Quickstart](#developer-quickstart)
 - [Autostart](#autostart)
 - [Globals](#globals)
+- [Shortcuts](#shortcuts)
 - [Scripting](#scripting)
 - [Web3os Package Manager](#web3os-package-manager)
 - [Official Apps](#official-apps)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
-- [Backend (web3os-server)](#backend-web3os-server)
+- [Metal (@web3os-core/metal)](#metal-web3os-coremetal)
 - [WebUSB](#webusb)
 - [Web Bluetooth](#web-bluetooth)
 - [TODO](#todo)
@@ -225,6 +226,40 @@ These objects are available on the global object (globalThis/window):
 - `Kernel`: The global kernel
 - `Terminal`: The kernel's main terminal
 - `System`: The SystemJS library
+
+</details>
+
+## Shortcuts
+
+<details open>
+<summary><strong>Expand Shortcuts</strong></summary>
+
+Shortcuts are managed via a JSON object at `/config/shortcuts` and accessed using the `open` command.
+
+Current shortcut types: `execute` - `url`
+
+Example:
+
+```json
+{
+  "scarytime": {
+    "type": "execute",
+    "target": "snackbar Confetti attack! ; confetti --scalar 12"
+  },
+
+  "instacalc-app": {
+    "type": "execute",
+    "target": "www https://instacalc.com"
+  },
+    
+  "github": {
+    "type": "url",
+    "target": "https://github.com"
+  }
+}
+```
+
+To open a shortcut: `open <key>`, e.g. `open github`
 
 </details>
 
@@ -421,16 +456,20 @@ Apps can be written and bundled a number of different ways, for some ideas check
 
 </details>
 
-## Backend (web3os-server)
+## Metal (@web3os-core/metal)
 
 <details>
-<summary><strong>Expand Backend</strong></summary>
+<summary><strong>Expand Metal</strong></summary>
 
-The `backend` command is the utility to connect to and interact with backend servers. The web3os-server spins up a private Docker container for performing various server-side tasks at the request of the web3os client, authenticated with a user's wallet.
+(WIP)
 
-It offers multi-user capability while restricting access based on user's authenticated wallet address, or other attributes such as NFT ownership, etc.
+Metal is the web3os hardware link, allowing web3os access to certain hardware features and other capabilities of the host operating system.
 
-[View the web3os-server repository](https://github.com/web3os-org/server)
+It offers a multi-user environment while restricting access based on a user's authenticated wallet address, or other attributes such as NFT ownership, etc.
+
+The `metal` command is the utility to connect to and interact with web3os metal servers.
+
+[View the metal repository](https://github.com/web3os-org/metal)
 
 </details>
 
