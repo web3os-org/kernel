@@ -233,7 +233,7 @@ broadcast.onmessage = msg => {
  */
 export async function analyticsEvent ({ event, user, details }) {
   if (/^localhost/.test(location.host)) return
-  if (kernel.get('config', 'analytics-opt-out')) return
+  if (get('config', 'analytics-opt-out')) return
 
   if (!get('user', 'uuid')) set('user', 'uuid', uuidv4())
   user = user || get('user', 'uuid')
@@ -323,7 +323,7 @@ export async function printBootIntro () {
   // log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
 
   isSmall ? log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
-  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline('install')} ${t('kernel:bootIntro.install', 'to install web3os to your device')}`))
+  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:install', 'install'))} ${t('kernel:bootIntro.install', 'to install web3os to your device')}`))
   isSmall ? log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
 
   log('\nhttps://docs.web3os.sh')
