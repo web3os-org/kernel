@@ -577,6 +577,7 @@ export function colorChars (str, options = {}) {
 /**
  * Send an awesome-notification
  * @type {AwesomeNotifications}
+ * @todo awesome-notifications will likely eventually replace sweetalert
  * @see https://f3oall.github.io/awesome-notifications
  */
 export const notify = new AwesomeNotifications({

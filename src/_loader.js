@@ -21,7 +21,6 @@ import('./kernel').then(kernel => {
   import('./terminal').then(async term => {
     if (globalThis.Terminal) document.querySelector('#web3os-terminal').innerHTML = ''
     const bootArgs = new URLSearchParams(globalThis.location.search)
-    console.log({ bootArgs })
 
     globalThis.Terminal = term.default.create({
       fontFamily: bootArgs.get('fontFamily') || "'Fira Mono', monospace",
@@ -30,8 +29,10 @@ import('./kernel').then(kernel => {
       theme: { background: bootArgs.get('themeBackground') || '#121212' }
     })
 
+    console.log({ bootArgs, isMobile: kernel.isMobile })
+
     globalThis.Terminal.open(document.querySelector('#web3os-terminal'))
-    globalThis.Terminal.loadWebglAddon()
+    if (!kernel.isMobile) globalThis.Terminal.loadWebglAddon() // webgl addon does weird things on small screens
     globalThis.Terminal.fit()
     globalThis.Terminal.focus()
 
