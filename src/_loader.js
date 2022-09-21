@@ -8,6 +8,7 @@
  */
 
 import 'regenerator-runtime/runtime'
+import Config from './config'
 
 import('./kernel').then(kernel => {
   if (!globalThis.Kernel) {
@@ -17,6 +18,7 @@ import('./kernel').then(kernel => {
   }
 
   globalThis.Kernel = kernel
+  process.env = Config
 
   import('./terminal').then(async term => {
     if (globalThis.Terminal) document.querySelector('#web3os-terminal').innerHTML = ''
@@ -29,7 +31,7 @@ import('./kernel').then(kernel => {
       theme: { background: bootArgs.get('themeBackground') || '#121212' }
     })
 
-    console.log({ bootArgs, isMobile: kernel.isMobile })
+    console.log({ bootArgs, isMobile: kernel.isMobile, env: process.env })
 
     globalThis.Terminal.open(document.querySelector('#web3os-terminal'))
     if (!kernel.isMobile) globalThis.Terminal.loadWebglAddon() // webgl addon does weird things on small screens

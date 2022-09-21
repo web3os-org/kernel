@@ -11,6 +11,7 @@
 /* global fetch, File, FileReader, localStorage, location, Notification */
 
 import rootPkgJson from '../package.json'
+import Config from './config'
 
 import AwesomeNotifications from 'awesome-notifications'
 import bytes from 'bytes'
@@ -238,7 +239,10 @@ export async function analyticsEvent ({ event, user, details }) {
   if (!get('user', 'uuid')) set('user', 'uuid', uuidv4())
   user = user || get('user', 'uuid')
 
-  await fetch('https://zqqgwwumllncmhfcxexw.functions.supabase.co/logger', {
+  const analyticsEndpoint = get('config', 'analytics-endpoint') || Config.analyticsEndpoint
+  if (!analyticsEndpoint) return
+
+  await fetch(analyticsEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ event: event || 'log', user, details: details || {} })
