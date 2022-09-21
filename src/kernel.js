@@ -230,7 +230,7 @@ broadcast.onmessage = msg => {
 }
 
 /**
- * 
+ * Send an analytics event to the analytics endpoint
  */
 export async function analyticsEvent ({ event, user, details }) {
   if (/^localhost/.test(location.host)) return
