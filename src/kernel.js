@@ -232,11 +232,11 @@ broadcast.onmessage = msg => {
 /**
  * Send an analytics event to the analytics endpoint
  */
-export async function analyticsEvent ({ event, user, details }) {
+export async function analyticsEvent ({ event, user, details, severity }) {
   if (/^localhost/.test(location.host)) return
   if (get('config', 'analytics-opt-out')) return
 
-  if (!get('user', 'uuid')) set('user', 'uuid', uuidv4())
+  if (!user && !get('user', 'uuid')) set('user', 'uuid', uuidv4())
   user = user || get('user', 'uuid')
 
   const analyticsEndpoint = get('config', 'analytics-endpoint') || Config.analyticsEndpoint
@@ -245,7 +245,7 @@ export async function analyticsEvent ({ event, user, details }) {
   await fetch(analyticsEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event: event || 'log', user, details: details || {} })
+    body: JSON.stringify({ event: event || 'log', severity: severity || 'INFO', user, details: details || {} })
   })
 }
 
