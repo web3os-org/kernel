@@ -247,9 +247,9 @@ Example:
     "target": "snackbar Confetti attack! ; confetti --scalar 12"
   },
 
-  "instacalc-app": {
+  "instacalc": {
     "type": "execute",
-    "target": "www https://instacalc.com"
+    "target": "www --no-toolbar --title Instacalc https://instacalc.com"
   },
     
   "github": {
@@ -402,7 +402,7 @@ Developers should be able to create apps in any way they like, with as few requi
 
 To make your module executable from the command line, you may export an async function named `run`, or your default export must be a function.
 
-Your module or `package.json` may also contain a `help` property that contians your module's help text.
+Your module or `package.json` may also contain a `help` property that contains your module's help text.
 
 The best way to create applications for web3os is to create an `npm` package, using any bundler you'd like.
 

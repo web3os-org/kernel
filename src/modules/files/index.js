@@ -228,7 +228,7 @@ async function loadFolder (browser, url) {
           return loadFolder(browser, location)
         }
 
-        if (isBin) return kernel.execute(location) && appWindow.window.minimize()
+        if (isBin) return kernel.execute(location) // && appWindow.window.minimize()
 
         const promptExecute = async allow => {
           const { isConfirmed } = await kernel.dialog({

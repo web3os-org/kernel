@@ -17,13 +17,11 @@ export const help = `
     playground                                Launch the RunKit+NPM playground
 
   Options:
-    --env                                     Set an environment variable; e.g. --env KEY=123
     --help                                    Print this help message
     --version                                 Print the version information
 `
 
 export const spec = {
-  '--env': [String],
   '--help': Boolean,
   '--version': Boolean
 }

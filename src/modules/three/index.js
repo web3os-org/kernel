@@ -129,6 +129,15 @@ export async function createInstance () {
     move(`${coordinates.x - 25}px`, `${coordinates.y - 25}px`)
     amorphous(true, 50)
     angry()
+    console.log({ coordinates }, window.innerWidth, window.innerHeight)
+    if (
+      coordinates.x >= window.innerWidth
+      || coordinates.x <= 0
+      || coordinates.y >= window.innerHeight
+      || coordinates.y <= 0
+    ) {
+      document.querySelector('#web3os-three-orb').remove()
+    }
   }
 
   orb.ondragstart = dragStart
@@ -165,6 +174,9 @@ export async function createInstance () {
 
 export async function run (term, context) {
   let orb
+  let { getUtterance, speak, voices } = Kernel.modules.speak
+  if (voices?.length === 0) voices = speechSynthesis.getVoices()
+  // if (voices.length === 0) return setTimeout(() => run(term, context), 0)
 
   if (!getInstance()) {
     orb = await createInstance()
@@ -175,19 +187,21 @@ export async function run (term, context) {
     orb.style.boxShadow = ''
   }
 
-  const { getUtterance, speak, voices } = Kernel.modules.speak
-  console.log({ voices })
-  const selectedVoice = Kernel.get('three', 'voice') || 'Google UK English Female'
+  const selectedVoice = Kernel.get('three', 'voice') || 'Google UK English'
   const volume = parseFloat(Kernel.get('three', 'volume') || 0.5)
   const pitch = parseFloat(Kernel.get('three', 'pitch') || 0.5)
   const rate = parseFloat(Kernel.get('three', 'rate') || 1)
-  const voice = voices.find(v => v.name === selectedVoice)
+  const voice = voices.find(v => v.name.toLowerCase() === selectedVoice.toLowerCase())
 
   let utter
-  utter = getUtterance("Welcome to web3 OH S", voice, volume, pitch, rate)
+  utter = getUtterance("Welcome to web3 OS", voice, volume, pitch, rate)
   await speak(utter)
   utter = getUtterance("I'm Three, and I'll be your guide.", voice, volume, pitch, rate)
   await speak(utter)
   utter = getUtterance("There's lots to explore, so let's get started!", voice, volume, pitch, rate)
+  await speak(utter)
+  utter = getUtterance("Just double tap me and I'll try to stay out of your way", voice, volume, pitch, rate)
+  await speak(utter)
+  utter = getUtterance("Or you may also drag me to any edge and I'll go away", voice, volume, pitch, rate)
   await speak(utter)
 }

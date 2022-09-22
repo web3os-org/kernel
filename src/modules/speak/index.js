@@ -3,8 +3,38 @@
 // const SpeechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
 // const SpeechRecognitionEvent = window.SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
 
+import arg from 'arg'
+import { parse as cliParse } from 'shell-quote'
+
 export const name = 'speak'
 export const description = 'Speech Synthesis Utility'
+export const help = `
+  Speech Synthesis Utility
+
+  Usage:
+    speak <phrase> [options]
+
+  Options:
+    --help                                    Print this help message
+    --list-voices                             Output the supported voices
+    --pitch                                   Pitch (0-2) {1}
+    --rate                                    Rate (0-2) {1}
+    --reset                                   Perform a speechSynthesis.cancel()
+    --version                                 Print the version information
+    --voice                                   Name of the voice to use
+    --volume                                  Volume (0-2) {1}
+`
+
+export const spec = {
+  '--help': Boolean,
+  '--list-voices': Boolean,
+  '--pitch': Number,
+  '--rate': Number,
+  '--reset': Boolean,
+  '--version': Boolean,
+  '--voice': String,
+  '--volume': Number
+}
 
 export let voices = speechSynthesis.getVoices()
 speechSynthesis.onvoiceschanged = () => {
@@ -18,7 +48,7 @@ export function getUtterance (text, voice, volume = 1, pitch = 1, rate = 1) {
   utter.volume = volume
   utter.pitch = pitch
   utter.rate = rate
-  console.log({ text, voice, volume, pitch, rate, utter })
+  // console.log({ text, voice, volume, pitch, rate, utter })
   return utter
 }
 
@@ -27,14 +57,16 @@ export function speak (utterance) {
 }
 
 export async function run (term, context) {
-  console.log({ voices })
-  for (const voice of speechSynthesis.getVoices()) {
-    console.log('Voice:', voice.name, voice.lang)
-    speak(getUtterance(context, voice, 1, _.random(0.1,2), _.random(0.1,2)))
-  }
+  const args = arg(spec, { argv: cliParse(context) })
+  if (args['--version']) return term.log(version)
+  if (args['--help']) return term.log(help)
+  if (args['--list-voices']) return term.log(voices.map(v => v.name))
+  if (args['--reset']) return speechSynthesis.cancel()
 
-  // For testing and hilarity
-  // for (const voice of voices) {
-  //   speak(getUtterance(context, voice, 1, _.random(0.1,2), _.random(0.1,2)))
-  // }
+  args.terminal = term
+  args.kernel = term.kernel
+
+  const voice = voices.find(v => v.name.toLowerCase() === args['--voice']?.toLowerCase())
+  const utter = getUtterance(args._?.[0], voice, args['--volume'], args['--pitch'], args['--rate'])
+  return speak(utter)
 }

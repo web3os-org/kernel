@@ -349,10 +349,11 @@ function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(m
 function loadLocalStorage () {
   try {
     const storedMemory = localStorage.getItem('memory')
-    memory = storedMemory ? JSON.parse(storedMemory) : { firstBootVersion: rootPkgJson.version,  }
+    memory = storedMemory ? JSON.parse(storedMemory) : { firstBootVersion: rootPkgJson.version }
     updateLocalStorage()
   } catch (err) {
     console.error(err)
+    log(t('Failed to load memory from local storage'))
     memory = {}
   }
 }
