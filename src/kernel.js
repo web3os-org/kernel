@@ -326,9 +326,11 @@ export async function printBootIntro () {
   log(colors.cyan(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:confetti', 'confetti'))} ${t('kernel:bootIntro.confetti', 'to fire the confetti gun 🎉')}`))
   // log(colors.magenta(`${t('typeVerb', 'Type')} ${colors.bold.underline('minipaint')} ${t('kernel:bootIntro.minipaint', 'to draw Art™ 🎨')}`))
 
-  isSmall ? log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
-  log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:install', 'install'))} ${t('kernel:bootIntro.install', 'to install web3os to your device')}`))
-  isSmall ? log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+  if (bootArgs.get('source') !== 'pwa') {
+    isSmall ? log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+    log(colors.success(`${t('typeVerb', 'Type')} ${colors.bold.underline(Terminal.createSpecialLink('web3os:execute:install', 'install'))} ${t('kernel:bootIntro.install', 'to install web3os to your device')}`))
+    isSmall ? log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-') : log('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
+  }
 
   log('\nhttps://docs.web3os.sh')
   log('https://github.com/web3os-org')
