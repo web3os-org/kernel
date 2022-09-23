@@ -62,6 +62,7 @@ The project is still very young, and more documentation and organization is Comi
 - [Scripting](#scripting)
 - [Web3os Package Manager](#web3os-package-manager)
 - [Official Apps](#official-apps)
+- [Three (OS Assistant)](#three-os-assistant)
 - [Kernel Interface](#kernel-interface)
 - [App Structure](#app-structure)
 - [Metal (@web3os-core/metal)](#metal-web3os-coremetal)
@@ -344,6 +345,29 @@ Here are a few examples of npm libraries that can be successfully loaded in web3
 See the [full list](https://www.npmjs.com/org/web3os-apps)
 
 Note: some apps are currently either very basic implementations or just placeholders to be developed further
+
+## Three (OS Assistant)
+
+<details>
+<summary><strong>Expand Three</strong></summary>
+
+---
+(WIP)
+
+Three is just a pet at this point, but eventually it will become a useful assistant.
+
+Just type `three` at the terminal to get started!
+
+Type `three --help` to see other commands you can use to control Three, and you can access all of the features on `Kernel.modules.three`, e.g.:
+
+- `Kernel.modules.three.createInstance()`
+- `Kernel.modules.three.animate('heartBeat', 'infinite')`
+- `Kernel.modules.three.move('50%', '50%')`
+- `Kernel.modules.three.say('Hello world')`
+
+`console.log(Kernel.modules.three)` to inspect.
+
+</details>
 
 ## Kernel Interface
 

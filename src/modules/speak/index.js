@@ -48,7 +48,7 @@ export function getUtterance (text, voice, volume = 1, pitch = 1, rate = 1) {
   utter.volume = volume
   utter.pitch = pitch
   utter.rate = rate
-  // console.log({ text, voice, volume, pitch, rate, utter })
+  console.log({ text, voice, volume, pitch, rate, utter })
   return utter
 }
 

@@ -4,15 +4,30 @@ import { parse as cliParse } from 'shell-quote'
 
 import 'animate.css'
 import classes from './three.module.css'
+import { speak } from '../speak'
 
 export const name = 'three'
-export const version = '0.1.0'
+export const version = '0.2.0'
 export const description = 'Three: The open source assistant for web3os'
 export const help = `
-  Usage: three
+  Usage:
+    three                             Start Three
+    three <command> [options]         Run a Three command
+
+  Commands:
+    move <x> <y>                      Move to specified coordinates; e.g. move 50% 50px
+    say <text>                        Say the specified text
+
+  Options:
+    --help                            Print this help message
+    --version                         Print the version information
 `
 
-export const spec = {}
+export const spec = {
+  '--help': Boolean,
+  '--version': Boolean
+}
+
 export let isAmorphous = true
 
 function random (min, max) {
@@ -121,6 +136,8 @@ export async function createInstance () {
   }
 
   const dragEnd = e => {
+    const { getUtterance, speak, voices } = Kernel.modules.speak
+
     orb.style.transition = ''
     const coordinates = { x: null, y: null }
     coordinates.x = e.type === 'touchend' ? e.changedTouches[0].pageX : e.clientX
@@ -129,13 +146,15 @@ export async function createInstance () {
     move(`${coordinates.x - 25}px`, `${coordinates.y - 25}px`)
     amorphous(true, 50)
     angry()
-    console.log({ coordinates }, window.innerWidth, window.innerHeight)
+
     if (
       coordinates.x >= window.innerWidth
-      || coordinates.x <= 0
       || coordinates.y >= window.innerHeight
+      || coordinates.x <= 0
       || coordinates.y <= 0
     ) {
+      console.log('Three is leaving')
+      say('Goodbye!')
       document.querySelector('#web3os-three-orb').remove()
     }
   }
@@ -161,10 +180,11 @@ export async function createInstance () {
   })
 
   amorphous(true)
+  animate('zoomInUp')
 
   for await (const each of Array.from(Array(15).keys())) {
     move(random(10, 80) + '%', random(10, 80) + '%')
-    await Kernel.wait(random(50, 200))
+    await Kernel.wait(random(50, 100))
   }
 
   move('85%', '5%')
@@ -172,14 +192,35 @@ export async function createInstance () {
   return orb
 }
 
-export async function run (term, context) {
-  let orb
+export async function say (text) {
   let { getUtterance, speak, voices } = Kernel.modules.speak
   if (voices?.length === 0) voices = speechSynthesis.getVoices()
-  // if (voices.length === 0) return setTimeout(() => run(term, context), 0)
+
+  const selectedVoice = Kernel.get('three', 'voice') || 'Google US English'
+  const volume = parseFloat(Kernel.get('three', 'volume') || 2)
+  const pitch = parseFloat(Kernel.get('three', 'pitch') || 0.2)
+  const rate = parseFloat(Kernel.get('three', 'rate') || 1)
+  const voice = voices.find(v => v.name.toLowerCase() === selectedVoice.toLowerCase())
+
+  speak(getUtterance(text, voice, volume, pitch, rate))
+}
+
+export async function run (term, context) {
+  let orb
+  const args = arg(spec, { argv: cliParse(context) })
+  if (args['--version']) return term.log(version)
+  if (args['--help']) return term.log(help)
+
+  const cmd = args._?.[0]
+  args.terminal = term
+  args.kernel = term.kernel
 
   if (!getInstance()) {
     orb = await createInstance()
+    say("Welcome to web3 OS. I'm Three, and I'll be your guide.")
+    say("There's lots to explore, so let's get started!")
+    say("Just double tap me and I'll try to stay out of your way")
+    say("Or you may also drag me to any edge and I'll go away")
   } else {
     orb = getInstance()
     orb.style.opacity = 1
@@ -187,21 +228,14 @@ export async function run (term, context) {
     orb.style.boxShadow = ''
   }
 
-  const selectedVoice = Kernel.get('three', 'voice') || 'Google UK English'
-  const volume = parseFloat(Kernel.get('three', 'volume') || 0.5)
-  const pitch = parseFloat(Kernel.get('three', 'pitch') || 0.5)
-  const rate = parseFloat(Kernel.get('three', 'rate') || 1)
-  const voice = voices.find(v => v.name.toLowerCase() === selectedVoice.toLowerCase())
-
-  let utter
-  utter = getUtterance("Welcome to web3 OS", voice, volume, pitch, rate)
-  await speak(utter)
-  utter = getUtterance("I'm Three, and I'll be your guide.", voice, volume, pitch, rate)
-  await speak(utter)
-  utter = getUtterance("There's lots to explore, so let's get started!", voice, volume, pitch, rate)
-  await speak(utter)
-  utter = getUtterance("Just double tap me and I'll try to stay out of your way", voice, volume, pitch, rate)
-  await speak(utter)
-  utter = getUtterance("Or you may also drag me to any edge and I'll go away", voice, volume, pitch, rate)
-  await speak(utter)
+  switch (cmd) {
+    case 'move':
+      return move(args._?.[1], args._?.[2])
+    case 'say':
+      return await say(args._?.[1])
+    case undefined:
+      return
+    default:
+      return term.log(help)
+  }
 }
