@@ -579,6 +579,7 @@ Access the array of devices within an app: `Kernel.modules.bluetooth.devices`
 
 - There's a lot to do... please help. 😅
 - IO piping
+- Tab completion
 - Typescriptify everything
 - Finish internationalization/translations
 - Decoupling of most built-in modules into their own packages
