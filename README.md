@@ -523,6 +523,31 @@ Access the array of devices within an app: `Kernel.modules.usb.devices`
 
 </details>
 
+# WebHID
+
+<details>
+<summary><strong>Expand WebHID</strong></summary>
+
+Experimental WebHID API features are limited in browser support at this time.
+
+The `hid` command doesn't do much except pair and maintain a list of devices.
+
+```text
+Usage:
+    hid devices            List paired HID devices
+    hid request <options>  Request HID device (blank for user choice)
+
+  Options:
+    --help                 Print this help message
+    --product              Product ID of the HID device
+    --vendor               Vendor ID of the HID device
+    --version              Print the version information
+```
+
+Access the array of devices within an app: `Kernel.modules.hid.devices`
+
+</details>
+
 ## Web Bluetooth
 
 <details>
