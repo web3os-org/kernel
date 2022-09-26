@@ -360,10 +360,18 @@ Just type `three` at the terminal to get started!
 
 Type `three --help` to see other commands you can use to control Three, and you can access all of the features on `Kernel.modules.three`, e.g.:
 
-- `Kernel.modules.three.createInstance()`
-- `Kernel.modules.three.animate('heartBeat', 'infinite')`
 - `Kernel.modules.three.move('50%', '50%')`
 - `Kernel.modules.three.say('Hello world')`
+- `Kernel.modules.three.animate('heartBeat', 'infinite')`
+  - Use any [animate.css](https://animate.style) style
+
+Three uses the `speak` command for speech synthesis. You may customize the voice parameters using the kernel memory as follows:
+
+- <3os># `set three voice Google italiano`
+  - Use `speak --list-voices` to see available voices
+- <3os># `set three volume 2`
+- <3os># `set three pitch 1.5`
+- <3os># `set three rate 0.5`
 
 `console.log(Kernel.modules.three)` to inspect.
 

@@ -362,7 +362,7 @@ function loadLocalStorage () {
  * Set a value in the kernel memory object
  * @param {!string} namespace - The namespace in which to set the value
  * @param {!string} key - The key in which to set the value
- * @param {!string} value - The value to set
+ * @param {!any} value - The value to set
  */
 export function set (namespace, key, value) {
   if (!namespace || namespace === '') throw new Error(t('Invalid namespace'))
@@ -810,7 +810,7 @@ async function registerKernelBins () {
 
   kernelBins.alias = {
     description: t('kernel:bins.descriptions.alias', 'Set or list command aliases'),
-    help: `${t('Usage', 'Usage')}: alias [src] [dest]`,
+    help: `${t('Usage')}: alias [src] [dest]`,
     run: (term, context) => {
       if (!context || context === '') return term.log(term.aliases)
       const command = context.split(' ')
@@ -901,7 +901,7 @@ async function registerKernelBins () {
 
   kernelBins.set = {
     description: t('kernel:bins.descriptions.set', 'Set a kernel memory value'),
-    help: `${t('Usage', 'Usage')}: set <namespace> <key> <value>`,
+    help: `${t('Usage')}: set <namespace> <key> <value>`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -913,7 +913,7 @@ async function registerKernelBins () {
 
   kernelBins.get = {
     description: t('kernel:bins.descriptions.get', 'Get a kernel memory namespace or key'),
-    help: `${t('Usage', 'Usage')}: get <namespace> [key]`,
+    help: `${t('Usage')}: get <namespace> [key]`,
     run: (term, context = '') => {
       const parts = context.split(' ')
       const namespace = parts[0]
@@ -925,7 +925,7 @@ async function registerKernelBins () {
 
   kernelBins.unset = {
     description: t('kernel:bins.descriptions.unset', 'Delete specified memory namespace or key'),
-    help: `${t('Usage', 'Usage')}: unset <namespace> [key]`,
+    help: `${t('Usage')}: unset <namespace> [key]`,
     run: (term, context = '') => {
       try {
         const parts = context.split(' ')
@@ -955,7 +955,7 @@ async function registerKernelBins () {
 
   kernelBins.clip = {
     description: t('kernel:bins.descriptions.clip', 'Copy return value of command to clipboard'),
-    help: `${t('Usage', 'Usage')}: clip <command>`,
+    help: `${t('Usage')}: clip <command>`,
     run: async (term, context) => {
       if (!context || context === '') return
       const parts = context.split(' ')
