@@ -16,7 +16,7 @@ const bbsServer = createServer(ws => {
   const socketStream = createWebSocketStream(ws)
 
   ws.write = ws.send
-  ws.read = ws.socket.read
+  // ws.read = ws.read
   
   ws.program = blessed.program({
     tput: true,
