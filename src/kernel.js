@@ -1426,15 +1426,20 @@ export async function wait (ms) {
 let idleTimer
 const resetIdleTime = () => {
   clearTimeout(idleTimer)
-  if (!modules.screensaver) return
-  idleTimer = setTimeout(() => {
+
+  if (!memory) return
+  const timeout = get('config', 'screensaver-timeout') || 90000
+
+  if (!modules.screensaver || timeout <= 0) return
+  modules.screensaver.endScreensaver()
+
+  idleTimer = setTimeout(async () => {
     events.dispatch('ScreensaverStart')
-    modules.screensaver.run(globalThis.Terminal, get('user', 'screensaver') || 'matrix')
-  }, get('config', 'screensaver-timeout') || get('user', 'screensaver-timeout') || 90000)
+    modules.screensaver.run(globalThis.Terminal, get('config', 'screensaver') || 'matrix')
+  }, timeout)
 }
 
 // Activity listeners to reset idle time
-globalThis.addEventListener('load', resetIdleTime)
 globalThis.addEventListener('mousemove', resetIdleTime)
 globalThis.addEventListener('keydown', resetIdleTime)
 globalThis.addEventListener('keyup', resetIdleTime)

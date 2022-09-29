@@ -148,8 +148,8 @@ export async function createInstance () {
     angry()
 
     if (
-      coordinates.x >= window.innerWidth
-      || coordinates.y >= window.innerHeight
+      coordinates.x >= window.innerWidth - 25
+      || coordinates.y >= window.innerHeight - 25
       || coordinates.x <= 0
       || coordinates.y <= 0
     ) {

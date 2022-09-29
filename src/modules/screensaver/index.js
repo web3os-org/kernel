@@ -1,19 +1,15 @@
 import arg from 'arg'
 import colors from 'ansi-colors'
 
-// Rethinking how to approach the icon situation
-// import { default as appIcon } from './icon.svg'
-
 export const name = 'screensaver'
 export const version = '1.0.0'
-// export const icon = appIcon
 export const description = 'web3os Screensaver'
 export const screensavers = ['blank', 'matrix']
 export const help = `
   Available Screensavers: ${screensavers.join(', ')}
 
   Usage:
-    screensaver              Launch the default screensaver (${colors.green('matrix')})
+    screensaver              Launch the default screensaver {${colors.green('matrix')}}
     screensaver <name>       Launch screensaver with <name>
 `
 
@@ -24,20 +20,20 @@ const spec = {
 
 let kernel = globalThis.Kernel
 let terminal = globalThis.Terminal
-export let running = false
+let keyTrap
+
+export function endScreensaver (callback, e) {
+  kernel.events.dispatch('ScreensaverEnd')
+  terminal.focus()
+  if (e) e.preventDefault()
+  if (keyTrap) keyTrap.remove()
+  if (callback) callback(e)
+}
 
 function listenForKeypress (callback) {
-  const keyTrap = document.createElement('input')
+  keyTrap = document.createElement('input')
   keyTrap.style.opacity = 0
-
-  keyTrap.addEventListener('keydown', e => {
-    kernel.events.dispatch('ScreensaverEnd')
-    e.preventDefault()
-    callback(e)
-    keyTrap.remove()
-    terminal.focus()
-  })
-
+  keyTrap.addEventListener('keydown', e => endScreensaver(e))
   document.body.appendChild(keyTrap)
   keyTrap.focus()
 }
