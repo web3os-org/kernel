@@ -72,7 +72,7 @@ export const KernelEvents = [
 */
 export const builtinModules = [
   '3pm', 'account', 'backend', 'backup', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'gamepad', 'help', 'hid', 'lang', 'markdown', 'peer', 'ping', 'repl', 'runkit', 'screensaver',
+  'files', 'gamepad', 'help', 'hid', 'lang', 'peer', 'ping', 'repl', 'screensaver',
   'speak', 'socket', 'three', 'usb', 'view', 'vm', 'wallet', 'wasm', 'worker', 'www'
 ]
 
@@ -833,11 +833,14 @@ async function registerKernelBins () {
   kernelBins.lsmod = {
     description: t('kernel:bins.descriptions.lsmod', 'List loaded kernel modules'),
     run: async (term = globalThis.Terminal) => {
-      const mods = {
-        ...modules,
-        ...module.exports,
-        ...exports
+      let mods = {
+        ...modules || {},
+        ...module?.exports || {},
+        ...exports || {}
       }
+
+      if (module?.exports) mods = { ...mods, ...module.exports }
+      if (exports) mods = { ...mods, ...exports }
 
       term.log(Object.keys(mods).sort())
       return Object.keys(mods).sort()
@@ -1119,39 +1122,45 @@ export async function importUMDModule (url, name, module = { exports: {} }) {
  * @async
  */
 export async function loadPackages () {
+  const tasks = []
   const packages = JSON.parse(fs.readFileSync('/config/packages').toString())
-  for await (const pkg of packages) {
-    try {
-      if (/^(http|ftp).*\:/i.test(pkg)) {
-        if (modules?.['3pm']) {
-          await modules['3pm'].install(pkg, { warn: false })
-        } else {
-          const waitFor3pm = async () => {
-            if (!modules?.['3pm']) return setTimeout(waitFor3pm, 500)
+
+  for (const pkg of packages) {
+    tasks.push(async () => {
+      try {
+        if (/^(http|ftp).*\:/i.test(pkg)) {
+          if (modules?.['3pm']) {
             await modules['3pm'].install(pkg, { warn: false })
+          } else {
+            const waitFor3pm = async () => {
+              if (!modules?.['3pm']) return setTimeout(waitFor3pm, 500)
+              await modules['3pm'].install(pkg, { warn: false })
+            }
+
+            await waitFor3pm()
           }
 
-          await waitFor3pm()
+          return
         }
 
-        continue
+        const pkgJson = JSON.parse(fs.readFileSync(`/var/packages/${pkg}/package.json`))
+        const main = pkgJson.web3osData.main || pkgJson.main || 'index.js'
+        const type = pkgJson.web3osData.type || 'es'
+        const mainUrl = `${pkgJson.web3osData.url}/${main}`
+
+        const mod = type === 'umd'
+          ? await importUMDModule(mainUrl)
+          : await importModuleUrl(mainUrl)
+
+        await loadModule(mod, pkgJson)
+      } catch (err) {
+        console.error(err)
+        globalThis.Terminal.log(colors.danger(err.message))
       }
-
-      const pkgJson = JSON.parse(fs.readFileSync(`/var/packages/${pkg}/package.json`))
-      const main = pkgJson.web3osData.main || pkgJson.main || 'index.js'
-      const type = pkgJson.web3osData.type || 'es'
-      const mainUrl = `${pkgJson.web3osData.url}/${main}`
-
-      const mod = type === 'umd'
-        ? await importUMDModule(mainUrl)
-        : await importModuleUrl(mainUrl)
-
-      await loadModule(mod, pkgJson)
-    } catch (err) {
-      console.error(err)
-      globalThis.Terminal.log(colors.danger(err.message))
-    }
+    })
   }
+
+  await Promise.all(tasks)
 }
 
 /**
@@ -1207,22 +1216,6 @@ export async function showSplash (msg, options = {}) {
   background.style.width = '100vw'
   background.style.height = '100vh'
   background.style.zIndex = 100001
-
-  // if (!options.disableVideoBackground) {
-  //   const video = document.createElement('video')
-  //   const file = (await import('./assets/splash.mp4')).default
-
-  //   video.id = 'web3os-splash-video'
-  //   video.src = file
-  //   video.muted = true
-  //   video.loop = true
-  //   video.autoplay = true
-  //   video.style.width = '100vw'
-  //   video.style.height = '100vh'
-  //   video.style.objectFit = 'cover'
-
-  //   background.appendChild(video)
-  // }
 
   const message = document.createElement('h3')
   message.id = 'web3os-splash-message'
@@ -1300,7 +1293,7 @@ export async function boot () {
     .init({
       fallbackLng: 'en-US',
       debug: process.env.I18N_DEBUG === 'true',
-      ns: ['common', 'kernel'],
+      ns: ['common', 'kernel', 'app'],
       defaultNS: 'common',
       resources: locales
     })
@@ -1323,7 +1316,6 @@ export async function boot () {
   //   onKeyPress: button => events.dispatch('MobileKeyboardKeyPress', button)
   // })
 
-  // TODO: Make nobootsplash settable in config as well as query string
   if (!bootArgs.has('nobootsplash')) {
     events.dispatch('ShowSplash')
     const closeSplash = await showSplash()

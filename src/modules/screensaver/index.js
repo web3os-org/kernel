@@ -23,6 +23,7 @@ let terminal = globalThis.Terminal
 let keyTrap
 
 export function endScreensaver (callback, e) {
+  if (!keyTrap) return
   kernel.events.dispatch('ScreensaverEnd')
   terminal.focus()
   if (e) e.preventDefault()

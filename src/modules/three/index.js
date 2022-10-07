@@ -28,6 +28,9 @@ export const spec = {
   '--version': Boolean
 }
 
+let kernel = globalThis.Kernel
+let terminal = globalThis.Terminal
+
 export let isAmorphous = true
 
 function random (min, max) {
@@ -154,6 +157,7 @@ export async function createInstance () {
       || coordinates.y <= 0
     ) {
       console.log('Three is leaving')
+      kernel.execute('speak --reset')
       say('Goodbye!')
       document.querySelector('#web3os-three-orb').remove()
     }
@@ -193,6 +197,7 @@ export async function createInstance () {
 }
 
 export async function say (text) {
+  if (kernel.get('three', 'disable-voice')) return
   let { getUtterance, speak, voices } = Kernel.modules.speak
   if (voices?.length === 0) voices = speechSynthesis.getVoices()
 
@@ -212,8 +217,8 @@ export async function run (term, context) {
   if (args['--help']) return term.log(help)
 
   const cmd = args._?.[0]
-  args.terminal = term
-  args.kernel = term.kernel
+  terminal = args.terminal = term
+  kernel = args.kernel = term.kernel
 
   if (!getInstance()) {
     orb = await createInstance()

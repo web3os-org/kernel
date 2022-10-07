@@ -164,7 +164,6 @@ export default class Web3osTerminal extends Terminal {
     const term = new Web3osTerminal({ ...defaults, ...options })
     const fitAddon = new FitAddon()
 
-  
     term.loadAddon(fitAddon)
     term.loadAddon(new WebLinksAddon())
 
@@ -497,6 +496,7 @@ export default class Web3osTerminal extends Terminal {
 
         break
       case 'Tab':
+        break // disable until bug are worked out
         if (this.cmd.trim().length === 0) break
         this.tabCompletion(this.cmd)
         break

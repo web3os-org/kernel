@@ -38,6 +38,11 @@ import('./kernel').then(kernel => {
     globalThis.Terminal.fit()
     globalThis.Terminal.focus()
 
+    globalThis.Terminal.element.addEventListener('blur', e => {
+      console.log('blur:', e)
+      // this.unlisten()
+    })
+
     try {
       await kernel.boot()
     } catch (err) {
