@@ -25,7 +25,6 @@ export const help = `
 
 export const spec = {
   '--help': Boolean,
-  '--name': String,
   '--product': String,
   '--vendor': String,
   '--version': Boolean

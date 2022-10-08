@@ -72,7 +72,7 @@ export const KernelEvents = [
 */
 export const builtinModules = [
   '3pm', 'account', 'backend', 'backup', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'gamepad', 'help', 'hid', 'lang', 'peer', 'ping', 'repl', 'screensaver', 'serial',
+  'files', 'gamepad', 'help', 'hid', 'lang', 'midi', 'peer', 'ping', 'repl', 'screensaver', 'serial',
   'speak', 'socket', 'three', 'usb', 'view', 'vm', 'wallet', 'wasm', 'worker', 'www'
 ]
 
@@ -748,6 +748,8 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         fs.writeFileSync('/proc/platform', navigator.userAgentData.platform)
         fs.writeFileSync('/proc/querystring', location.search)
         fs.writeFileSync('/proc/language', navigator.language)
+        fs.writeFileSync('/proc/user-agent', navigator.userAgent)
+        fs.writeFileSync('/proc/user-agent.json', JSON.stringify(navigator.userAgentData))
         
         const { downlink, effectiveType, rtt, saveData } = navigator.connection
         fs.writeFileSync('/proc/connection', JSON.stringify({ downlink, effectiveType, rtt, saveData }, null, 2))

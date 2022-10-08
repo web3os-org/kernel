@@ -67,7 +67,10 @@ The project is still very young, and more documentation and organization is Comi
 - [App Structure](#app-structure)
 - [Metal (@web3os-core/metal)](#metal-web3os-coremetal)
 - [WebUSB](#webusb)
+- [WebHID](#webhid)
 - [Web Bluetooth](#web-bluetooth)
+- [Web Serial](#web-serial)
+- [Web MIDI](#web-midi)
 - [TODO](#todo)
 - [Can it do *thing*?](#can-it-do-thing)
 - [Further Documentation](#further-documentation)
@@ -603,6 +606,23 @@ Usage:
 ```
 
 Access the array of devices within an app: `await navigator.serial.getPorts()`
+
+</details>
+
+# Web MIDI
+
+<details>
+<summary><strong>Expand Web MIDI</strong></summary>
+
+```text
+Usage:
+    midi inputs                       List MIDI inputs
+    midi outputs                      List MIDI outputs
+
+  Options:
+    --help                            Print this help message
+    --version                         Print the version information
+```
 
 </details>
 
