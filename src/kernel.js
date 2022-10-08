@@ -749,7 +749,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         fs.writeFileSync('/proc/querystring', location.search)
         fs.writeFileSync('/proc/language', navigator.language)
         fs.writeFileSync('/proc/user-agent', navigator.userAgent)
-        fs.writeFileSync('/proc/user-agent.json', JSON.stringify(navigator.userAgentData))
+        fs.writeFileSync('/proc/user-agent.json', JSON.stringify(navigator.userAgentData, null, 2))
         
         const { downlink, effectiveType, rtt, saveData } = navigator.connection
         fs.writeFileSync('/proc/connection', JSON.stringify({ downlink, effectiveType, rtt, saveData }, null, 2))
@@ -789,7 +789,7 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
 /**
  * Load the kernel's core internal commands
  * 
- * These are here because they're relatively simple, but many of them should be
+ * @todo These are here because they're relatively simple, but many of them should be
  * moved to their own respective external modules.
  * 
  * @async
@@ -840,14 +840,8 @@ async function registerKernelBins () {
   kernelBins.lsmod = {
     description: t('kernel:bins.descriptions.lsmod', 'List loaded kernel modules'),
     run: async (term = globalThis.Terminal) => {
-      let mods = {
-        ...modules || {},
-        ...module?.exports || {},
-        ...exports || {}
-      }
-
+      let mods = { ...modules }
       if (module?.exports) mods = { ...mods, ...module.exports }
-      if (exports) mods = { ...mods, ...exports }
 
       term.log(Object.keys(mods).sort())
       return Object.keys(mods).sort()
