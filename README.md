@@ -535,7 +535,7 @@ Access the array of devices within an app: `Kernel.modules.usb.devices`
 
 </details>
 
-# WebHID
+## WebHID
 
 <details>
 <summary><strong>Expand WebHID</strong></summary>
@@ -584,7 +584,7 @@ Access the array of devices within an app: `Kernel.modules.bluetooth.devices`
 
 </details>
 
-# Web Serial
+## Web Serial
 
 <details>
 <summary><strong>Expand Web Serial</strong></summary>
@@ -609,7 +609,7 @@ Access the array of devices within an app: `await navigator.serial.getPorts()`
 
 </details>
 
-# Web MIDI
+## Web MIDI
 
 <details>
 <summary><strong>Expand Web MIDI</strong></summary>
