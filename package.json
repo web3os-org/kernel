@@ -3,7 +3,7 @@
   "description": "The OS for the next web",
   "homepage": "https://web3os.sh",
   "funding": "https://github.com/sponsors/mathiscode",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "license": "MIT",
   "main": "dist/kernel.js",
   "module": "src/kernel.js",
