@@ -14,7 +14,7 @@ import arg from 'arg'
 import colors from 'ansi-colors'
 import { parse as cliParse } from 'shell-quote'
 
-export const DefaultPackageRegistry = 'https://unpkg.com'
+export let DefaultPackageRegistry = 'https://unpkg.com'
 
 export const name = '3pm'
 export const version = '0.1.0'
@@ -75,6 +75,7 @@ let terminal = globalThis.Terminal
  * @returns {Promise<(boolean|ModInfo)>} ModInfo or false on error
  */
 export async function install (url, args = { warn: true }) {
+  console.log({ url })
   const warned = localStorage.getItem('web3os_3pm_install_warning_hidden')
   if (!warned && args.warn) {
     localStorage.setItem('web3os_3pm_install_warning_hidden', true)
@@ -87,7 +88,7 @@ export async function install (url, args = { warn: true }) {
   if (typeof url === 'object') url = url.url || url.pattern
   if (!url) throw new Error('Invalid package name or URL')
 
-  if (!/^(http|ftp).*\:/i.test(url)) url = `${args['--registry'] || DefaultPackageRegistry}/${url}`
+  if (!/^(http|ftp).*\:/i.test(url)) url = `${args['--registry'] || kernel.get('3pm', 'default-package-registry') || DefaultPackageRegistry}/${url}`
   const pkgJson = await (await fetch(`${url}/package.json?t=${Math.random().toString(36)}`, { cache: 'no-store' })).json()
   const name = pkgJson.name
   const pkgName = name.split('/')
@@ -143,7 +144,7 @@ export async function install (url, args = { warn: true }) {
   await kernel.loadModule(mod, modInfo)
   await mod.web3osInstall?.(modInfo)
 
-  kernel.execute(`snackbar Installed ${modInfo.name}@${pkgJson.version}`)
+  kernel.notify.success(`Installed ${modInfo.name}@${pkgJson.version}`)
   return modInfo
 }
 
@@ -183,14 +184,19 @@ export async function run (term, context) {
   if (args['--help']) return term.log(help)
   if (args['--version']) return term.log(version)
 
-  switch (cmd) {
-    case 'install':
-      return await install(args._?.slice(1)[0], args)
-    case 'ls':
-      return await kernel.execute('cat /config/packages')
-    case 'uninstall':
-      return await uninstall(args._?.slice(1)[0], args)
-    default:
-      return term.log(help)
+  try {
+    switch (cmd) {
+      case 'install':
+        return await install(args._?.slice(1)[0], args)
+      case 'ls':
+        return await kernel.execute('cat /config/packages')
+      case 'uninstall':
+        return await uninstall(args._?.slice(1)[0], args)
+      default:
+        return term.log(help)
+    }
+  } catch (err) {
+    console.error(err)
+    term.log(err.message)
   }
 }

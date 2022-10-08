@@ -90,6 +90,7 @@ The project is still very young, and more documentation and organization is Comi
 - WebSocket support
 - WebUSB support
 - WebHID support
+- Web Serial Support
 - Web Bluetooth support
 - Gamepad support
 - Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
@@ -577,6 +578,31 @@ Usage:
 ```
 
 Access the array of devices within an app: `Kernel.modules.bluetooth.devices`
+
+</details>
+
+# Web Serial
+
+<details>
+<summary><strong>Expand Web Serial</strong></summary>
+
+Experimental Web Serial API features are limited in browser support at this time.
+
+The `serial` command doesn't do much except pair and maintain a list of devices.
+
+```text
+Usage:
+    serial devices            List paired serial devices
+    serial request <options>  Request serial device (blank for user choice)
+
+  Options:
+    --help                    Print this help message
+    --product                 Product ID of the serial device
+    --vendor                  Vendor ID of the serial device
+    --version                 Print the version information
+```
+
+Access the array of devices within an app: `await navigator.serial.getPorts()`
 
 </details>
 

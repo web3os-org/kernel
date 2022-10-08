@@ -72,12 +72,16 @@ export const KernelEvents = [
 */
 export const builtinModules = [
   '3pm', 'account', 'backend', 'backup', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'gamepad', 'help', 'hid', 'lang', 'peer', 'ping', 'repl', 'screensaver',
+  'files', 'gamepad', 'help', 'hid', 'lang', 'peer', 'ping', 'repl', 'screensaver', 'serial',
   'speak', 'socket', 'three', 'usb', 'view', 'vm', 'wallet', 'wasm', 'worker', 'www'
 ]
 
 /** The array of default 3pm packages to install on new system */
 export const defaultPackages = [
+  'https://unpkg.com/@web3os-apps/etherscan',
+  'https://unpkg.com/@web3os-apps/git',
+  'https://unpkg.com/@web3os-apps/runkit',
+  'https://unpkg.com/@web3os-apps/markdown',
   'https://unpkg.com/@web3os-apps/doom',
   'https://unpkg.com/@web3os-apps/wolfenstein',
   'https://unpkg.com/@web3os-apps/minipaint',
@@ -149,7 +153,7 @@ export const Web3osTerminal = W3OSTerminal
  * @todo Do this better
  * @type {Object}
  */
-export const utils = { bytes, colorChars, path, wait }
+export const utils = { bytes, colors, colorChars, path, wait }
 
 /**
  * Contains all registered kernel modules
@@ -507,7 +511,7 @@ export async function execute (cmd, options = {}) {
   options.doPrompt = options.doPrompt || false
   if (options.topbar) topbar.hide()
   if (!command?.run) {
-    term.log(colors.danger(`Invalid command; try ${colors.underline.white('help')}`))
+    term.log(colors.danger(`Invalid command; try ${Terminal.createSpecialLink('web3os:execute:help', colors.white('help'))} or ${Terminal.createSpecialLink(`web3os:execute:3pm install ${exec}`, colors.blue(`3pm install ${exec}`))}`))
     navigator.vibrate([200, 50, 200])
     return term.prompt()
   }
@@ -735,17 +739,18 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         if (!fs.existsSync('/var')) fs.mkdirSync('/var')
         if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
         if (!fs.existsSync('/config')) fs.mkdirSync('/config')
-        if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
+        if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(bootArgs.has('noDefaultPackages') ? [] : defaultPackages))
 
         // Populate initial procfs
+        // TODO: Make procfs separate module and live
         fs.writeFileSync('/proc/host', location.host)
         fs.writeFileSync('/proc/version', rootPkgJson.version)
         fs.writeFileSync('/proc/platform', navigator.userAgentData.platform)
         fs.writeFileSync('/proc/querystring', location.search)
-  
-        if (!bootArgs.has('noDefaultPackages') && !fs.existsSync('/config/packages')) {
-          fs.writeFileSync('/config/packages', JSON.stringify(defaultPackages))
-        }
+        fs.writeFileSync('/proc/language', navigator.language)
+        
+        const { downlink, effectiveType, rtt, saveData } = navigator.connection
+        fs.writeFileSync('/proc/connection', JSON.stringify({ downlink, effectiveType, rtt, saveData }, null, 2))
 
         // Drag and drop on terminal
         // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
@@ -1126,7 +1131,7 @@ export async function loadPackages () {
   const packages = JSON.parse(fs.readFileSync('/config/packages').toString())
 
   for (const pkg of packages) {
-    tasks.push(async () => {
+    tasks.push(new Promise(async (resolve, reject) => {
       try {
         if (/^(http|ftp).*\:/i.test(pkg)) {
           if (modules?.['3pm']) {
@@ -1140,7 +1145,7 @@ export async function loadPackages () {
             await waitFor3pm()
           }
 
-          return
+          return resolve()
         }
 
         const pkgJson = JSON.parse(fs.readFileSync(`/var/packages/${pkg}/package.json`))
@@ -1153,11 +1158,13 @@ export async function loadPackages () {
           : await importModuleUrl(mainUrl)
 
         await loadModule(mod, pkgJson)
+        resolve()
       } catch (err) {
         console.error(err)
         globalThis.Terminal.log(colors.danger(err.message))
+        reject(err)
       }
-    })
+    }))
   }
 
   await Promise.all(tasks)
@@ -1352,7 +1359,7 @@ export async function boot () {
     console.log('%chttps://github.com/web3os-org/kernel', 'font-size:14px;')
     console.log({ Kernel, Terminal, System })
 
-    for (const evt of KernelEvents) events.on(evt, console.log('Kernel Event:', evt))
+    for (const event of KernelEvents) events.on(event, detail => console.log('Kernel Event:', { event, detail }))
 
     if (!bootArgs.has('nobootintro')) await printBootIntro()
     await loadLocalStorage()
