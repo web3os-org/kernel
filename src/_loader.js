@@ -39,6 +39,7 @@ import('./kernel').then(kernel => {
     globalThis.Terminal.focus()
 
     try {
+      for (const event of globalThis.Kernel.KernelEvents) globalThis.Kernel.events.off(event)
       await kernel.boot()
     } catch (err) {
       console.error(err)

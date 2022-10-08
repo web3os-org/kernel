@@ -63,7 +63,7 @@ export const version = rootPkgJson.version
 
 export const KernelEvents = [
   'MemoryLoaded', 'FilesystemLoaded', 'KernelBinsLoaded', 'BuiltinModulesLoaded',
-  'PackagesLoaded', 'AutostartStart', 'AutostartEnd', 'ScreensaverStart'
+  'PackagesLoaded', 'AutostartStart', 'AutostartEnd', 'ScreensaverStart', 'ScreensaverEnd'
 ]
 
 /** 
