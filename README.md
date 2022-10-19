@@ -89,6 +89,9 @@ The project is still very young, and more documentation and organization is Comi
 - Installable as a Progressive Web App
 - Optional desktop environment (type `desktop`)
 - Optional backend environment / host link with [metal](https://github.com/web3os-org/metal)
+- It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/) (@web3os-apps/doom, @web3os-apps/wolfenstein)
+- It runs Diablo with [diabloweb](https://d07riv.github.io/diabloweb) (@web3os-apps/diablo)
+- It runs Winamp with [webamp](https://github.com/captbaritone/webamp) (@web3os-apps/webamp)
 - Provides interfaces for many standard and experimental browser APIs
 - WebSocket support
 - WebUSB support
@@ -108,8 +111,7 @@ The project is still very young, and more documentation and organization is Comi
 - Moralis integration with [Moralis](https://moralis.io)
 - P2P communication (chat, audio, video, screenshare, fileshare) with [PeerJS](https://peerjs.com)
 - Torrent integration with [WebTorrent](https://webtorrent.io)
-- It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/)
-- It runs Diablo with [diabloweb](https://d07riv.github.io/diabloweb)
+
 - WebAssembly executable support *(WIP)*:
   - [Native](https://developer.mozilla.org/en-US/docs/WebAssembly)
   - [WIP] [WASI](https://wasi.dev/)
