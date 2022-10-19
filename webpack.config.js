@@ -83,6 +83,7 @@ module.exports = {
     clean: true,
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
+    devtoolModuleFilenameTemplate: 'file:///[absolute-resource-path]',
     publicPath: ''
   },
 

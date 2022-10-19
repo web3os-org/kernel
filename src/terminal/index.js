@@ -529,12 +529,12 @@ export default class Web3osTerminal extends Terminal {
 
         this.cmd = ''
         this.cursorPosition = 0
-        this.setOption('cursorStyle', 'block')
+        this.options.cursorStyle = 'block'
         this.writeln('')
         this.prompt()
         break
       case 'Insert':
-        this.setOption('cursorStyle', this.options.cursorStyle === 'block' ? 'underline' : 'block')
+        this.options.cursorStyle = this.options.cursorStyle === 'block' ? 'underline' : 'block'
         break
       case 'PageUp':
         this.scrollPages(-1)

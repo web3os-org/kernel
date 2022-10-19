@@ -15,9 +15,7 @@ export function createImage (mime, url, appWindow) {
   content.style.objectFit = 'contain'
   content.style.width = '100%'
   content.style.height = '100%'
-  content.onload = () => {
-    // appWindow.window.resize(content.width, content.height + 35)
-  }
+  content.onload = () => {}
 
   return content
 }

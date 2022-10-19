@@ -15,6 +15,7 @@ export const help = `
     three <command> [options]         Run a Three command
 
   Commands:
+    exit                              Close Three
     move <x> <y>                      Move to specified coordinates; e.g. move 50% 50px
     say <text>                        Say the specified text
 
@@ -25,7 +26,9 @@ export const help = `
 
 export const spec = {
   '--help': Boolean,
-  '--version': Boolean
+  '--version': Boolean,
+  '-h': '--help',
+  '-v': '--version'
 }
 
 let kernel = globalThis.Kernel
@@ -39,6 +42,13 @@ function random (min, max) {
 
 export function getInstance () {
   return document.querySelector('#web3os-three-orb')
+}
+
+export function exit () {
+  console.log('Three is leaving')
+  kernel.execute('speak --reset')
+  say('Goodbye!')
+  document.querySelector('#web3os-three-orb').remove()
 }
 
 export function move (x, y) {
@@ -156,10 +166,7 @@ export async function createInstance () {
       || coordinates.x <= 0
       || coordinates.y <= 0
     ) {
-      console.log('Three is leaving')
-      kernel.execute('speak --reset')
-      say('Goodbye!')
-      document.querySelector('#web3os-three-orb').remove()
+      exit()
     }
   }
 
@@ -234,6 +241,8 @@ export async function run (term, context) {
   }
 
   switch (cmd) {
+    case 'exit':
+      return exit()
     case 'move':
       return move(args._?.[1], args._?.[2])
     case 'say':

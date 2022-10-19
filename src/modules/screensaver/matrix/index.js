@@ -1,15 +1,27 @@
 /* Inspired by https://codepen.io/yaclive/pen/EayLYO */
 
-export default async function ({ listenForKeypress }) {
+let canvas
+let interval
+let endScreensaverFn
+
+export async function exit () {
+  clearInterval(interval)
+  canvas.remove()
+  endScreensaverFn()
+}
+
+export default async function ({ endScreensaver }) {
   if (document.getElementById('screensaver')) return false
-  const canvas = document.createElement('canvas')
+
+  endScreensaverFn = endScreensaver
+  canvas = document.createElement('canvas')
   canvas.id = 'screensaver'
   canvas.width = globalThis.innerWidth
   canvas.height = globalThis.innerHeight
   canvas.style.position = 'absolute'
   canvas.style.top = 0
   canvas.style.left = 0
-  canvas.style.zIndex = 1000000
+  canvas.style.zIndex = Number.MAX_SAFE_INTEGER
 
   document.body.appendChild(canvas)
   const ctx = canvas.getContext('2d')
@@ -33,12 +45,6 @@ export default async function ({ listenForKeypress }) {
     }
   }
 
-  const interval = setInterval(animatrix, 33)
-  const exit = () => {
-    clearInterval(interval)
-    canvas.remove()
-  }
-
+  interval = setInterval(animatrix, 33)
   canvas.addEventListener('click', exit)
-  listenForKeypress(exit)
 }

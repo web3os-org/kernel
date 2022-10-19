@@ -10,8 +10,10 @@
 /* global Kernel, Terminal, System */
 /* global fetch, File, FileReader, localStorage, location, Notification */
 
+'use strict'
+
 import rootPkgJson from '../package.json'
-import Config from './config'
+import getConfig from './config'
 
 import AwesomeNotifications from 'awesome-notifications'
 import bytes from 'bytes'
@@ -47,89 +49,24 @@ import AppWindow from './windows'
 import locales from './locales'
 import README from '../README.md'
 import theme from './themes/default/index.js'
-import { default as W3OSTerminal } from './terminal'
+import W3OSTerminal from './terminal'
 import { fsModules } from './fs'
 
 let BrowserFS
 let memory
+const Config = getConfig()
 const figletFontName = 'Graffiti'
 
+console.time('web3os:boot')
+colors.theme(theme)
 globalThis.topbar = topbar
 globalThis.global = globalThis.global || globalThis
 
+export let eventsProcessed = 0
+export const poweronTime = new Date()
 export const bootArgs = new URLSearchParams(globalThis.location.search)
 export const isMobile = window.matchMedia('only screen and (max-width: 760px)').matches
-export const version = rootPkgJson.version
-
-export const KernelEvents = [
-  'MemoryLoaded', 'FilesystemLoaded', 'KernelBinsLoaded', 'BuiltinModulesLoaded',
-  'PackagesLoaded', 'AutostartStart', 'AutostartEnd', 'ScreensaverStart', 'ScreensaverEnd'
-]
-
-/** 
- * The array of default builtin modules 
- * @todo Whittle this down and migrate to packages
-*/
-export const builtinModules = [
-  '3pm', 'account', 'backend', 'backup', 'bluetooth', 'confetti', 'contract', 'desktop', 'edit',
-  'files', 'gamepad', 'help', 'hid', 'lang', 'midi', 'peer', 'ping', 'repl', 'screensaver', 'serial',
-  'speak', 'socket', 'three', 'usb', 'view', 'vm', 'wallet', 'wasm', 'worker', 'www'
-]
-
-/** The array of default 3pm packages to install on new system */
-export const defaultPackages = [
-  'https://unpkg.com/@web3os-apps/etherscan',
-  'https://unpkg.com/@web3os-apps/git',
-  'https://unpkg.com/@web3os-apps/runkit',
-  'https://unpkg.com/@web3os-apps/markdown',
-  'https://unpkg.com/@web3os-apps/doom',
-  'https://unpkg.com/@web3os-apps/wolfenstein',
-  'https://unpkg.com/@web3os-apps/minipaint',
-  'https://unpkg.com/@web3os-apps/rubikscube',
-]
-
-const FileSystemOverlayConfig = {
-  // AsyncMirror is not the ideal way to handle this, but it works for now
-  // until migration from sync to async in the fsModules is complete
-  '/': {
-    fs: 'AsyncMirror',
-    options: {
-      sync: { fs: 'InMemory' },
-      async: {
-        fs: 'IndexedDB',
-        options: {
-          storeName: 'web3os'
-        }
-      }
-    }
-  },
-
-  '/bin': { fs: 'InMemory' },
-  '/tmp': { fs: 'InMemory' },
-  '/mount': { fs: 'InMemory' },
-  '/proc': { fs: 'InMemory' }
-}
-
-/**
- * Add HTML5
- * @todo Broken on Firefox
- * @see: webkitStorageOptions
- */
-
-if (!navigator.userAgent.includes('Firefox')) {
-  FileSystemOverlayConfig['/mount/html5fs'] = {
-    fs: 'AsyncMirror',
-    options: {
-      sync: { fs: 'InMemory' },
-      async: {
-        fs: 'HTML5FS',
-        options: {}
-      }
-    }
-  }
-}
-
-colors.theme(theme)
+export const { name, version } = rootPkgJson
 
 /**
  * References the initialized i18next instance
@@ -137,7 +74,7 @@ colors.theme(theme)
  * @see https://i18next.com
  */
 export const i18n = i18next
-const t = i18n.t
+const { t } = i18n
 
 i18n.loadAppLocales = locales => {
   for (const [key, data] of Object.entries(locales)) {
@@ -153,7 +90,21 @@ export const Web3osTerminal = W3OSTerminal
  * @todo Do this better
  * @type {Object}
  */
-export const utils = { bytes, colors, colorChars, path, wait }
+export const utils = { bytes, colors, path, wait }
+
+/**
+ * Colorize a string to differentiate numbers and letters
+ * @param {string} str - The string to colorize
+ * @param {Object=} options - Options for colorization
+ * @param {Function=} [options.numbers=colors.blue()] - The function to colorize numbers
+ * @param {Function=} [options.letters=colors.white()] - The function to colorize letters
+ */
+utils.colorChars = (str, options = {}) => {
+  if (typeof str !== 'string') throw new Error(t('You must provide a string to colorChars'))
+  const numbers = options.numbers || colors.blue
+  const letters = options.letters || colors.white
+  return str.split('').map(c => isNaN(c) ? letters(c) : numbers(c)).join('')
+}
 
 /**
  * Contains all registered kernel modules
@@ -223,6 +174,11 @@ export let fs
 export const events = CustomEvent
 
 /**
+ * The list of kernel events
+ */
+export const KernelEvents = Config.kernelEvents
+
+/**
  * The primary Broadcast Channel for web3os
  * 
  * @type {BroadcastChannel}
@@ -267,7 +223,7 @@ export async function printSystemInfo () {
     const browser = `${brand} v${version}`
 
     output += `${colors.info(`${t('Host')}:    `)}\t${location.host}\n`
-    output += `${colors.info(`${t('Platform')}:`)}\t${navigator.userAgentData.platform || t('unknown', 'Unknown')}\n`
+    output += `${colors.info(`${t('Platform')}:`)}\t${navigator.userAgentData.platform || t('Unknown')}\n`
     output += `${colors.info(`${t('Browser')}:`)}\t${browser}\n`
   }
 
@@ -301,7 +257,6 @@ export async function printSystemInfo () {
  * Output the boot introduction
  * */
 export async function printBootIntro () {
-  const { t } = i18n
   const isSmall = window.innerWidth <= 445
 
   log(colors.info(`${t('kernel:bootIntroSubtitle', '\t     https://web3os.sh')}`))
@@ -345,12 +300,12 @@ export async function printBootIntro () {
 /**
  * Write the kernel memory to localStorage
  */
-function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }
+export function updateLocalStorage () { localStorage.setItem('memory', JSON.stringify(memory)) }
 
 /**
  * Restore the kernel memory from localStorage
  */
-function loadLocalStorage () {
+export function loadLocalStorage () {
   try {
     const storedMemory = localStorage.getItem('memory')
     memory = storedMemory ? JSON.parse(storedMemory) : { firstBootVersion: rootPkgJson.version }
@@ -360,6 +315,8 @@ function loadLocalStorage () {
     log(t('Failed to load memory from local storage'))
     memory = {}
   }
+
+  console.assert(typeof memory === 'object', t('Failed to load memory from local storage'))
 }
 
 /**
@@ -567,22 +524,8 @@ export async function autostart (defaultAutoStart) {
     console.error(err)
     log(colors.danger('Failed to complete autostart script'))
   } finally {
-    globalThis.Terminal?.prompt()
+    globalThis.Terminal.prompt()
   }
-}
-
-/**
- * Colorize a string to differentiate numbers and letters
- * @param {string} str - The string to colorize
- * @param {Object=} options - Options for colorization
- * @param {Function=} [options.numbers=colors.blue()] - The function to colorize numbers
- * @param {Function=} [options.letters=colors.white()] - The function to colorize letters
- */
-export function colorChars (str, options = {}) {
-  if (typeof str !== 'string') throw new Error('You must provide a string to colorChars')
-  const numbers = options.numbers || colors.blue
-  const letters = options.letters || colors.white
-  return str.split('').map(c => isNaN(c) ? letters(c) : numbers(c)).join('')
 }
 
 /**
@@ -658,7 +601,7 @@ export async function snackbar (options = {}) {
  * 
  * @async
  * @param {string=} initfsUrl - URL to a zipped filesystem snapshot
- * @param {MountableFileSystemOptions=} mountableFilesystemConfig - Filesystem configuration object for BrowserFS for customization
+ * @param {MountableFileSystemOptions=} mountableFilesystemConfig - Filesystem configuration object for BrowserFS
  * @see https://jvilk.com/browserfs/2.0.0-beta/index.html
  */
 export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
@@ -668,8 +611,8 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
   
     let initfs
     initfsUrl = initfsUrl || bootArgs.get('initfsUrl')
-    mountableFilesystemConfig = initfsUrl || bootArgs.get('mountableFilesystemConfig')
-      ? JSON.parse(bootArgs.get('mountableFilesystemConfig')) : FileSystemOverlayConfig
+    mountableFilesystemConfig = bootArgs.get('mountableFilesystemConfig')
+      ? JSON.parse(bootArgs.get('mountableFilesystemConfig')) : Config.defaultFilesystemOverlayConfig
   
     if (bootArgs.has('initfsUrl')) {
       try {
@@ -708,6 +651,25 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         console.error(err)
       }
     }
+
+    /**
+     * Add HTML5FS
+     * @todo Broken on Firefox
+     * @see: webkitStorageOptions
+     */
+
+    if (!navigator.userAgent.includes('Firefox')) {
+      mountableFilesystemConfig['/mount/html5fs'] = {
+        fs: 'AsyncMirror',
+        options: {
+          sync: { fs: 'InMemory' },
+          async: {
+            fs: 'HTML5FS',
+            options: {}
+          }
+        }
+      }
+    }
   
     browserfs.install(filesystem)
     browserfs.configure({
@@ -735,14 +697,15 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
           })
         }
   
-        // Prepare required paths
+        // Prepare required paths for packages
+        const defaultPackages = bootArgs.get('defaultPackages') || Config.defaultPackages || []
         if (!fs.existsSync('/var')) fs.mkdirSync('/var')
         if (!fs.existsSync('/var/packages')) fs.mkdirSync('/var/packages')
         if (!fs.existsSync('/config')) fs.mkdirSync('/config')
         if (!fs.existsSync('/config/packages')) fs.writeFileSync('/config/packages', JSON.stringify(bootArgs.has('noDefaultPackages') ? [] : defaultPackages))
 
         // Populate initial procfs
-        // TODO: Make procfs separate module and live
+        // TODO: Make procfs separate module and self-updating
         fs.writeFileSync('/proc/host', location.host)
         fs.writeFileSync('/proc/version', rootPkgJson.version)
         fs.writeFileSync('/proc/platform', navigator.userAgentData.platform)
@@ -783,6 +746,8 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         resolve(fs)
       }
     })
+
+    
   })
 }
 
@@ -829,7 +794,8 @@ async function registerKernelBins () {
   kernelBins.ipecho = {
     description: t('kernel:bins.descriptions.ipecho', 'Echo your public IP address'),
     run: async (term = globalThis.Terminal) => {
-      const result = await fetch('https://ipecho.net/plain')
+      const endpoint = get('config', 'ipecho-endpoint') || Config.ipechoEndpoint || 'https://ipecho.net/plain'
+      const result = await fetch(endpoint)
       const ip = await result.text()
       console.log({ ip })
       term.log(ip)
@@ -841,10 +807,11 @@ async function registerKernelBins () {
     description: t('kernel:bins.descriptions.lsmod', 'List loaded kernel modules'),
     run: async (term = globalThis.Terminal) => {
       let mods = { ...modules }
+      // This is useless right now, but in the future it may help us transition to other environments:
       if (module?.exports) mods = { ...mods, ...module.exports }
-
-      term.log(Object.keys(mods).sort())
-      return Object.keys(mods).sort()
+      const sortedMods = Object.keys(mods).sort()
+      term.log(sortedMods)
+      return sortedMods
     }
   }
 
@@ -1035,7 +1002,7 @@ async function registerKernelBins () {
  * @async
  */
 async function registerBuiltinModules () {
-  const mods = process.env.BUILTIN_MODULES ? process.env.BUILTIN_MODULES.split(',') : builtinModules
+  const mods = process.env.BUILTIN_MODULES ? process.env.BUILTIN_MODULES.split(',') : (Config.builtinModules || [])
 
   for (const mod of mods) {
     try {
@@ -1091,6 +1058,8 @@ export async function loadModule (mod, options = {}) {
 
     fs.writeFileSync(modBin, JSON.stringify(modInfo, null, 2))
   }
+
+  events.dispatch('ModuleLoaded', { modInfo })
 }
 
 /**
@@ -1304,7 +1273,7 @@ export async function boot () {
   topbar.show()
   const bootArgs = new URLSearchParams(globalThis.location.search)
   globalThis.addEventListener('beforeunload', async () => {
-    await showSplash(`${t('Rebooting', 'Rebooting')}...`, { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })
+    await showSplash(`${t('Rebooting')}...`, { icon: 'autorenew', disableAnimation: true, disableVideoBackground: true })
     document.querySelector('#web3os-splash-icon').classList.add('rotating')
   })
 
@@ -1336,9 +1305,9 @@ export async function boot () {
 
   const isSmall = window.innerWidth <= 445
   figlet.parseFont(figletFontName, figletFont)
-  figlet.text('web3os', { font: figletFontName }, async (err, data) => {
+  figlet.text('web3os', { font: figletFontName }, async (err, logoFiglet) => {
     if (err) log(err)
-    if (data && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(data)}`)
+    if (logoFiglet && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(logoFiglet)}`)
     else log(`\n${colors.green.bold(`${isSmall ? '' : '\t   '}🐉  web3os 🐉`)}`)
 
     console.log(`%cweb3os %c${rootPkgJson.version}`, `
@@ -1353,9 +1322,23 @@ export async function boot () {
       text-transform: none;`, null)
 
     console.log('%chttps://github.com/web3os-org/kernel', 'font-size:14px;')
-    console.log({ Kernel, Terminal, System })
+    console.debug({ Kernel, Terminal, System })
 
-    for (const event of KernelEvents) events.on(event, detail => console.log('Kernel Event:', { event, detail }))
+    for (const event of KernelEvents) {
+      events.on(event, payload => {
+        let data
+        switch (event) {
+          case 'ModuleLoaded':
+            data = payload.detail.modInfo.name
+            break
+          default:
+            data = payload
+        }
+
+        eventsProcessed++
+        console.debug('Kernel Event:', { event, data })
+      })
+    }
 
     if (!bootArgs.has('nobootintro')) await printBootIntro()
     await loadLocalStorage()
@@ -1372,7 +1355,9 @@ export async function boot () {
       loadModule(mod, { name: `@web3os-fs/${name}` })
     }
 
-    await loadPackages() // TODO: This should be offloaded to 3pm
+    events.dispatch('FilesystemModulesLoaded')
+
+    await loadPackages()
     events.dispatch('PackagesLoaded')
 
     // Copy namespaced core modules onto root object
@@ -1384,24 +1369,27 @@ export async function boot () {
 
     // Check for notification permission and request if necessary
     if (Notification?.permission === 'default') Notification.requestPermission()
-    if (Notification?.permission === 'denied') log(colors.warning('Notification permission denied'))
+    if (Notification?.permission === 'denied') log(colors.warning(t('Notification permission denied')))
 
     localStorage.setItem('web3os_first_boot_complete', 'true')
     events.dispatch('AutostartStart')
     await autostart()
     events.dispatch('AutostartEnd')
-    await execute('confetti --startVelocity 90 --particleCount 150')
+
+    if (modules.confetti) await execute('confetti --startVelocity 90 --particleCount 150')
     topbar.hide()
     const heartbeat = setInterval(() => navigator.vibrate([200, 50, 200]), 1000)
     setTimeout(() => clearInterval(heartbeat), 5000)
     
     // Expose this globally in case it needs to be cleared externally by an app
-    window.blinkyTitleInterval = setInterval(() => {
+    globalThis.web3osBlinkyTitleInterval = setInterval(() => {
       document.title = document.title.includes('_') ? 'web3os# ' : 'web3os# _'
     }, 600)
 
     events.dispatch('BootComplete')
-    analyticsEvent({ event: 'boot-complete' })
+    console.timeEnd('web3os:boot')
+    console.debug('Navigation Performance:', globalThis.performance?.getEntriesByType('navigation')?.[0]?.duration)
+    if (location.hostname !== 'localhost') analyticsEvent({ event: 'boot-complete' })
   })
 }
 
@@ -1415,21 +1403,22 @@ export async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// ----------------------------------------------------------------
-
 // Setup screensaver interval
 let idleTimer
 const resetIdleTime = () => {
   clearTimeout(idleTimer)
-
   if (!memory) return
-  const timeout = get('config', 'screensaver-timeout') || 90000
 
-  if (!modules.screensaver || timeout <= 0) return
-  modules.screensaver.endScreensaver()
+  const timeout = get('config', 'screensaver-timeout') || Config.screensaverTimeout
+  if (!modules?.screensaver || timeout <= 0) return
+  const saver = modules.screensaver.getSaver()
+  const startTime = modules.screensaver.getStartTime()
+  
+  // Prevent screensaver from immediately exiting to overcome
+  // late enter-key event when entering command at terminal
+  if (Date.now() - startTime > 500) saver?.exit?.()
 
   idleTimer = setTimeout(async () => {
-    events.dispatch('ScreensaverStart')
     modules.screensaver.run(globalThis.Terminal, get('config', 'screensaver') || 'matrix')
   }, timeout)
 }

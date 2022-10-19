@@ -54,7 +54,7 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
             const buffer = BrowserFS.Buffer.from(reader.result)
             const filepath = utils.path.resolve(term.cwd, file.name)
             fs.writeFileSync(filepath, buffer)
-            snackbar({ labelText: `Uploaded ${filepath}` })
+            Kernel.notify.success(`Uploaded ${filepath}`)
           }
         }
       })
@@ -69,13 +69,12 @@ export default async function ({ BrowserFS, fs, execute, modules, t, utils }) {
       let filename = context
       if (!filename || filename === '') return log(colors.danger('Invalid filename'))
 
-      if (/^(http|https|ftp|blob)\:/i.test(context) || /^blob/i.test(context)) {
+      if (/^(http|https|ftp|blob)\:/i.test(context)) {
         const url = new URL(context.split(' ')[0])
         filename = utils.path.parse(url.pathname).base
         if (context.split(' ')?.[1] && context.split(' ')[1] !== '') filename = context.split(' ')[1]
         const buffer = await (await fetch(url.href)).arrayBuffer()
         const data = BrowserFS.Buffer.from(buffer)
-        console.log({ filename, data })
         fs.writeFileSync(utils.path.resolve(term.cwd, filename), data)
       } else {
         filename = utils.path.resolve(term.cwd, filename)

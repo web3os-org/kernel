@@ -21,23 +21,34 @@ const spec = {
 let kernel = globalThis.Kernel
 let terminal = globalThis.Terminal
 let keyTrap
+export let saver
+export let startTime
 
-export function endScreensaver (callback, e) {
-  if (!keyTrap) return
-  kernel.events.dispatch('ScreensaverEnd')
-  terminal.focus()
+export function getSaver () {
+  return saver
+}
+
+export function getStartTime () {
+  return startTime
+}
+
+export async function endScreensaver (callback, e) {
+  if (!saver) return
   if (e) e.preventDefault()
   if (keyTrap) keyTrap.remove()
   if (callback) callback(e)
+  saver = undefined
+  kernel.events.dispatch('ScreensaverEnd')
+  terminal.focus()
 }
 
-function listenForKeypress (callback) {
-  keyTrap = document.createElement('input')
-  keyTrap.style.opacity = 0
-  keyTrap.addEventListener('keydown', e => endScreensaver(e))
-  document.body.appendChild(keyTrap)
-  keyTrap.focus()
-}
+// function listenForKeypress (callback) {
+//   keyTrap = document.createElement('input')
+//   keyTrap.style.opacity = 0
+//   keyTrap.addEventListener('keydown', e => endScreensaver(null, e))
+//   document.body.appendChild(keyTrap)
+//   keyTrap.focus()
+// }
 
 export async function run (term = globalThis.Terminal, context = '') {
   terminal = term
@@ -47,8 +58,6 @@ export async function run (term = globalThis.Terminal, context = '') {
   const cmd = args._?.[0]
 
   if (args['--version']) return term.log(version)
-
-  let saver
 
   switch (cmd) {
     case 'blank':
@@ -61,5 +70,7 @@ export async function run (term = globalThis.Terminal, context = '') {
 
   if (!saver) throw new Error('Screensaver not found')
   terminal.blur()
-  return await saver.default({ listenForKeypress })
+  kernel.events.dispatch('ScreensaverStart')
+  startTime = Date.now()
+  return await saver.default({ endScreensaver })
 }

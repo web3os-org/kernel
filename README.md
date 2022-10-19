@@ -634,8 +634,9 @@ Usage:
 - There's a lot to do... please help. 😅
 - IO piping
 - Tab completion
+- Much more work on the `desktop` module
 - Typescriptify everything
-- Finish internationalization/translations
+- Work on internationalization system and translations; RTL support
 - Decoupling of most built-in modules into their own packages
 - Unified WASM handling
 - Rewrite expensive core modules using Emscripten

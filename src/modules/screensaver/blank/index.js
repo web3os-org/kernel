@@ -1,4 +1,4 @@
-export default async function ({ listenForKeypress }) {
+export default async function ({ endScreensaver }) {
   if (document.getElementById('screensaver')) return false
   const canvas = document.createElement('canvas')
   canvas.id = 'screensaver'
@@ -14,7 +14,10 @@ export default async function ({ listenForKeypress }) {
   ctx.fillStyle = 'black'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  const exit = () => canvas.remove()
-  canvas.addEventListener('click', exit)
-  listenForKeypress(exit)
+  this.exit = () => {
+    canvas.remove()
+    endScreensaver()
+  }
+
+  canvas.addEventListener('click', this.exit)
 }
