@@ -87,8 +87,8 @@ The project is still very young, and more documentation and organization is Comi
 - [3pm: The web3os package manager](#web3os-package-manager)
 - Modules may also be imported with [SystemJS](https://github.com/systemjs/systemjs)
 - Installable as a Progressive Web App
-- Optional desktop environment
-- Optional backend environment runs in Docker container
+- Optional desktop environment (type `desktop`)
+- Optional backend environment / host link with [metal](https://github.com/web3os-org/metal)
 - Provides interfaces for many standard and experimental browser APIs
 - WebSocket support
 - WebUSB support
@@ -96,11 +96,11 @@ The project is still very young, and more documentation and organization is Comi
 - Web Serial Support
 - Web Bluetooth support
 - Gamepad support
-- Web3 wallet integration with [web3.js](https://github.com/ChainSafe/web3.js)
 - Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
 - IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
   - Built-in IPFS video search (WIP) and player; type `flix`
 - Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
+- Awesome notifications system with [awesome-notifications](https://f3oall.github.io/awesome-notifications)
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
 - Decentralized messaging support with [Mailchain](https://mailchain.xyz)
 - Git integration with [isomorphic-git](https://isomorphic-git.org/)
@@ -109,13 +109,14 @@ The project is still very young, and more documentation and organization is Comi
 - P2P communication (chat, audio, video, screenshare, fileshare) with [PeerJS](https://peerjs.com)
 - Torrent integration with [WebTorrent](https://webtorrent.io)
 - It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/)
+- It runs Diablo with [diabloweb](https://d07riv.github.io/diabloweb)
 - WebAssembly executable support *(WIP)*:
   - [Native](https://developer.mozilla.org/en-US/docs/WebAssembly)
   - [WIP] [WASI](https://wasi.dev/)
   - [WIP] [Emscripten](https://emscripten.org/)
   - [WIP] [AssemblyScript](https://www.assemblyscript.org/)
 - Decentralized:
-  - Open source to customize and host your own copy
+  - Open source to customize and host your own copy ([MIT License](https://github.com/web3os-org/kernel/blob/master/LICENSE))
   - Included [Fleek](https://github.com/web3os-org/kernel/blob/master/.fleek.json) and [Netlify](https://github.com/web3os-org/kernel/blob/master/netlify.toml) configs for easy deployment
   - Main site hosted by [Fleek](https://fleek.co) at [https://web3os.sh](https://web3os.sh)
   - Backup site hosted on IPFS at [https://web3os-sh.ipns.dweb.link/](https://web3os-sh.ipns.dweb.link/)

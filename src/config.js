@@ -35,6 +35,7 @@ export default function () {
     },
 
     defaultPackages: [
+      'https://unpkg.com/@web3os-apps/account',
       'https://unpkg.com/@web3os-apps/etherscan',
       'https://unpkg.com/@web3os-apps/git',
       'https://unpkg.com/@web3os-apps/runkit',
@@ -43,7 +44,8 @@ export default function () {
       'https://unpkg.com/@web3os-apps/diablo',
       'https://unpkg.com/@web3os-apps/wolfenstein',
       'https://unpkg.com/@web3os-apps/minipaint',
-      'https://unpkg.com/@web3os-apps/rubikscube'
+      'https://unpkg.com/@web3os-apps/rubikscube',
+      'https://unpkg.com/@web3os-apps/webamp'
     ],
 
     ipechoEndpoint: 'https://ipecho.net/plain',
