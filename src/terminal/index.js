@@ -351,7 +351,7 @@ export default class Web3osTerminal extends Terminal {
     const cursorPosition = this.cursorPosition
     const cmd = this.cmd
 
-    if (this.debug) console.log({ cursorPosition, cmd, keyName, domEvent, key, printable })
+    if (this.debug) console.debug({ cursorPosition, cmd, keyName, domEvent, key, printable })
 
     if (domEvent.ctrlKey) {
       switch (keyName.toLowerCase()) {
@@ -379,7 +379,7 @@ export default class Web3osTerminal extends Terminal {
           break
         }
 
-        if (this.debug) console.log('Enter:', this.cmd, this.textarea)
+        if (this.debug) console.debug('Enter:', this.cmd, this.textarea)
 
         this.write('\n')
         this.unlisten()
@@ -496,7 +496,7 @@ export default class Web3osTerminal extends Terminal {
 
         break
       case 'Tab':
-        break // disable until bug are worked out
+        break // disable until bugs are worked out
         if (this.cmd.trim().length === 0) break
         this.tabCompletion(this.cmd)
         break
@@ -545,7 +545,7 @@ export default class Web3osTerminal extends Terminal {
       default:
         if (printable) {
           if (this.tabSelectMode) {
-            if (this.debug) console.log({ tabSelectChoices: this.tabSelectChoices })
+            if (this.debug) console.debug({ tabSelectChoices: this.tabSelectChoices })
             this.cmd = this.tabSelectChoices[this.tabSelectCurrentChoice]
             this.cursorPosition = this.cmd.length
             this.tabSelectMode = false

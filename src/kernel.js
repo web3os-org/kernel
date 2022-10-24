@@ -266,10 +266,10 @@ export async function printBootIntro () {
   await printSystemInfo()
 
   if (!localStorage.getItem('web3os_first_boot_complete')) {
-    log(colors.danger(`\n⚠ ${t('kernel:firstBootWarning', 'The first boot will take the longest, please be patient!')} ⚠`))
+    log(colors.danger(`\n⚠ ${t('kernel:firstBootWarning', 'The first boot will take the longest, please be patient!')} ⚠\n`))
   }
 
-  if (navigator.userAgentData?.platform === 'Android' || window.innerWidth < 500 || window.innerHeight < 500) {
+  if (navigator.userAgentData?.platform === 'Android' || navigator.userAgentData?.platform === 'iPhone' || window.innerWidth < 500 || window.innerHeight < 500) {
     log(colors.danger(`\n⚠ 🐉  ${t('kernel:mobileExperienceWarning', 'NOTE: The mobile experience is pretty wacky and experimental - proceed with caution!')} ⚠`))
   }
 
@@ -714,8 +714,10 @@ export async function setupFilesystem (initfsUrl, mountableFilesystemConfig) {
         fs.writeFileSync('/proc/user-agent', navigator.userAgent)
         fs.writeFileSync('/proc/user-agent.json', JSON.stringify(navigator.userAgentData, null, 2))
         
-        const { downlink, effectiveType, rtt, saveData } = navigator.connection
-        fs.writeFileSync('/proc/connection', JSON.stringify({ downlink, effectiveType, rtt, saveData }, null, 2))
+        try {
+          const { downlink, effectiveType, rtt, saveData } = navigator.connection
+          fs.writeFileSync('/proc/connection', JSON.stringify({ downlink, effectiveType, rtt, saveData }, null, 2))
+        } catch {}
 
         // Drag and drop on terminal
         // const dragenter = e => { e.stopPropagation(); e.preventDefault() }
@@ -1308,7 +1310,7 @@ export async function boot () {
   figlet.text('web3os', { font: figletFontName }, async (err, logoFiglet) => {
     if (err) log(err)
     if (logoFiglet && globalThis.innerWidth >= 768) log(`\n${colors.green.bold(logoFiglet)}`)
-    else log(`\n${colors.green.bold(`${isSmall ? '' : '\t   '}🐉  web3os 🐉`)}`)
+    else log(`\n${colors.green.bold(`${isSmall ? '' : '\t\t'}🐉  web3os 🐉`)}`)
 
     console.log(`%cweb3os %c${rootPkgJson.version}`, `
       font-family: "Lucida Console", Monaco, monospace;

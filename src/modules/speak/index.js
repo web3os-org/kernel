@@ -22,6 +22,7 @@ export const help = `
     --reset                                   Perform a speechSynthesis.cancel()
     --version                                 Print the version information
     --voice                                   Name of the voice to use
+    --voice-index                             Index of the voice to use
     --volume                                  Volume (0-2) {1}
 `
 
@@ -33,6 +34,7 @@ export const spec = {
   '--reset': Boolean,
   '--version': Boolean,
   '--voice': String,
+  '--voice-index': Number,
   '--volume': Number
 }
 
@@ -66,7 +68,9 @@ export async function run (term, context) {
   args.terminal = term
   args.kernel = term.kernel
 
-  const voice = voices.find(v => v.name.toLowerCase() === args['--voice']?.toLowerCase())
+  let voice = voices.find(v => v.name.toLowerCase() === args['--voice']?.toLowerCase())
+  if (typeof args['--voice-index'] === 'number') voice = voices[args['--voice-index']]
+
   const utter = getUtterance(args._?.[0], voice, args['--volume'], args['--pitch'], args['--rate'])
   return speak(utter)
 }
