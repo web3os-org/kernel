@@ -92,6 +92,7 @@ The project is still very young, and more documentation and organization is Comi
 - It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/) (@web3os-apps/doom, @web3os-apps/wolfenstein)
 - It runs Diablo with [diabloweb](https://d07riv.github.io/diabloweb) (@web3os-apps/diablo)
 - It runs Winamp with [webamp](https://github.com/captbaritone/webamp) (@web3os-apps/webamp)
+- It runs virtual machines with v86 by Copy.sh
 - Provides interfaces for many standard and experimental browser APIs
 - WebSocket support
 - WebUSB support
@@ -361,7 +362,7 @@ Note: some apps are currently either very basic implementations or just placehol
 ---
 (WIP)
 
-Three is just a pet at this point, but eventually it will become a useful assistant.
+Three is just a pet at this point, but eventually it will become a useful assistant, or go the way of Clippy.
 
 Just type `three` at the terminal to get started!
 
