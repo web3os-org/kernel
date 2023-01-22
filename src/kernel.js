@@ -231,7 +231,7 @@ export async function printSystemInfo () {
     const batt = await navigator.getBattery()
 
     batt.addEventListener('chargingchange', () => {
-      if (batt.charging) execute('confetti')
+      if (batt.charging && !get('config', 'battery-no-charge-confetti')) execute('confetti')
     })
 
     output += `${colors.info(`${t('Battery')}:`)}\t${batt.charging ? `${batt.level * 100}% ⚡` : `${batt.level * 100}% 🔋`}\n`
@@ -367,7 +367,7 @@ export function restore (json) {
  * @param {!key} key - The key to delete
  */
 export function deleteKey (namespace, key) {
-  if (!memory[namespace]?.[key]) throw new Error('Invalid namespace or key')
+  if (!memory[namespace]?.[key]) throw new Error(t('Invalid namespace or key'))
   delete memory[namespace][key]
   updateLocalStorage()
 }
@@ -377,7 +377,7 @@ export function deleteKey (namespace, key) {
  * @param {!namespace} namespace - The namespace to delete
  */
 export function deleteNamespace (namespace) {
-  if (!memory[namespace]) throw new Error('Invalid namespace')
+  if (!memory[namespace]) throw new Error(t('Invalid namespace'))
   delete memory[namespace]
   updateLocalStorage()
 }

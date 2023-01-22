@@ -36,7 +36,7 @@ export async function request (url) {
 
   const publicKey = { ...result, challenge, user: { ...result.user, id } }
   const cred = await navigator.credentials.create({ publicKey })
-  console.log({ cred })
+  console.log({ challenge, cred })
 
   const decoder = new TextDecoder('utf-8')
   const clientData = JSON.parse(decoder.decode(cred.response.clientDataJSON))

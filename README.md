@@ -83,16 +83,13 @@ The project is still very young, and more documentation and organization is Comi
 <summary><strong>Expand Features</strong></summary>
 
 - Runs completely in the browser (Chromium-based browsers are ideal)
-- Web-based terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
+- Browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
+- CLI Terminal with [xterm.js](https://github.com/xtermjs/xterm.js)
 - [3pm: The web3os package manager](#web3os-package-manager)
 - Modules may also be imported with [SystemJS](https://github.com/systemjs/systemjs)
 - Installable as a Progressive Web App
 - Optional desktop environment (type `desktop`)
 - Optional backend environment / host link with [metal](https://github.com/web3os-org/metal)
-- It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/) (@web3os-apps/doom, @web3os-apps/wolfenstein)
-- It runs Diablo with [diabloweb](https://d07riv.github.io/diabloweb) (@web3os-apps/diablo)
-- It runs Winamp with [webamp](https://github.com/captbaritone/webamp) (@web3os-apps/webamp)
-- It runs virtual machines with v86 by Copy.sh
 - Provides interfaces for many standard and experimental browser APIs
 - WebSocket support
 - WebUSB support
@@ -100,19 +97,21 @@ The project is still very young, and more documentation and organization is Comi
 - Web Serial Support
 - Web Bluetooth support
 - Gamepad support
-- Fully in-browser filesystem with [BrowserFS](https://github.com/jvilk/BrowserFS)
-- IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
-  - Built-in IPFS video search (WIP) and player; type `flix`
-- Sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
-- Awesome notifications system with [awesome-notifications](https://f3oall.github.io/awesome-notifications)
+- It runs Doom (and Wolfenstein 3D! and other DOS stuff!) with [JS-DOS](https://js-dos.com/) (@web3os-apps/doom, @web3os-apps/wolfenstein)
+- It runs Diablo with [diabloweb](https://d07riv.github.io/diabloweb) (@web3os-apps/diablo)
+- It runs Winamp with [webamp](https://github.com/captbaritone/webamp) (@web3os-apps/webamp)
+- It runs virtual machines with v86 by Copy.sh
+- Apps can create sexy dialogs with [sweetalert2](https://github.com/sweetalert2/sweetalert2)
+- Apps can create notifications with [awesome-notifications](https://f3oall.github.io/awesome-notifications) or native browser notifications
 - Slick windowing system with [WinBox](https://github.com/nextapps-de/winbox)
-- Decentralized messaging support with [Mailchain](https://mailchain.xyz)
+- Decentralized messaging support with [Mailchain](https://mailchain.xyz) (@web3os-apps/mailchain)
 - Git integration with [isomorphic-git](https://isomorphic-git.org/)
 - GunJS integration with [GUN](https://gun.eco)
 - Moralis integration with [Moralis](https://moralis.io)
 - P2P communication (chat, audio, video, screenshare, fileshare) with [PeerJS](https://peerjs.com)
 - Torrent integration with [WebTorrent](https://webtorrent.io)
-
+- **(WIP)** IPFS Integration with [js-ipfs](https://github.com/ipfs/js-ipfs)
+  - Built-in IPFS video search and player; type `flix`
 - WebAssembly executable support *(WIP)*:
   - [Native](https://developer.mozilla.org/en-US/docs/WebAssembly)
   - [WIP] [WASI](https://wasi.dev/)
@@ -137,7 +136,7 @@ The project is still very young, and more documentation and organization is Comi
 <details>
 <summary><strong>Expand Disclaimer</strong></summary>
 
-This project is still considered to be in an alpha state. All apps run in the same context and can access every other app, as well as the entire virtual browserfs.
+This project is still considered to be in an early preview state. Any code that runs can access the entire virtual browser filesystem, so there are currently no user accounts, access control lists, or anything of that nature.
 
 The code in this repository has not been audited. Do not rely on it to keep anything safe, and never paste commands you don't understand. Anywhere, ever.
 
