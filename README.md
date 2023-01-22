@@ -47,7 +47,9 @@ A decentralized web-based operating system for the next web, empowering users an
 
 Documentation: [https://docs.web3os.sh](https://docs.web3os.sh)
 
-The project is still very young, and more documentation and organization is Coming Soon™.
+This project is still very young, and more documentation and organization is Coming Soon™.
+
+This project is tested with [BrowserStack](https://browserstack.com).
 
 ---
 
