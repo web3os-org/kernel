@@ -1,5 +1,16 @@
 <!-- markdownlint-disable MD033 MD036 MD041 -->
 
+# DEPRECATED
+
+## web3os is being replaced by ecmaOS
+
+- [https://ecmaos.sh](https://ecmaos.sh)
+- [https://docs.ecmaos.sh](https://docs.ecmaos.sh)
+- [https://github.com/ecmaos/ecmaos](https://github.com/ecmaos/ecmaos)
+- [https://www.youtube.com/watch?v=WOsbRim0b6E](https://www.youtube.com/watch?v=WOsbRim0b6E)
+
+---
+
 <img alt="Web3OS" src="http://github.com/web3os-org/kernel/raw/master/.github/iconlogo.png" style="width:100%">
 
 *"The computer can be used as a tool to liberate and protect people, rather than to control them."*
